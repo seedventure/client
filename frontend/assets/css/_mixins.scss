@@ -1,0 +1,387 @@
+//
+// Mixins
+// Based on Twitter Bootstrap's _mixings.scss
+
+@mixin clearfix() {
+  &:before,
+  &:after {
+    content: " "; // 1
+    display: table; // 2
+  }
+  &:after {
+    clear: both;
+  }
+}
+
+// Opacity
+
+@mixin opacity($value, $important: '') {
+  opacity: $value #{$important};
+  filter: alpha(opacity=#{$value * 100}) #{$important};
+}
+
+// Border radius.
+
+@mixin border-radius($radius, $important: '') {
+  -webkit-border-radius: $radius#{$important};
+  -moz-border-radius: $radius#{$important};
+  -ms-border-radius: $radius#{$important};
+  -o-border-radius: $radius#{$important};
+  border-radius: $radius#{$important};
+}
+
+// Placeholder text
+// -------------------------
+@mixin placeholder($color: $input-color-placeholder) {
+  &::-moz-placeholder           { color: $color; opacity: 1; } // See https://github.com/twbs/bootstrap/pull/11526
+  &:-ms-input-placeholder       { color: $color; } // Internet Explorer 10+
+  &::-webkit-input-placeholder  { color: $color; } // Safari and Chrome
+}
+
+// Drop shadows
+// By default set to: none
+@mixin box-shadow($shadow) {
+  -webkit-box-shadow: none; // iOS <4.3 & Android <4.1
+          box-shadow: none;
+}
+
+// Labels
+// -------------------------
+@mixin label-variant($color) {
+  background-color: $color;
+  &[href] {
+    &:hover,
+    &:focus {
+      background-color: darken($color, 10%);
+    }
+  }
+}
+
+@mixin  ease-out($duration: 450ms, $property: all, $delay: 0ms) {
+  transition: $property $duration cubic-bezier(0.23, 1, 0.32, 1) $delay;
+}
+
+@mixin  pulsate($animation-name, $start-size: 0.75, $end-size: 1, $duration: 1.5s) {
+  @keyframes "#{$animation-name}" {
+    0%, 100% {
+      transform: scale($start-size);
+    }
+    50% {
+      transform: scale($end-size);
+    }
+  }
+  animation: $animation-name $duration ease 0s infinite;
+}
+
+/* Cubic Bezier Transition */
+@mixin cubic-transition ($delay, $duration, $property) {
+    transition: {
+        duration: $duration;
+        property: $property;
+        timing-function: cubic-bezier(0.7, 1, 0.7, 1);
+    }
+}
+
+@mixin background-opacity($color, $opacity: 0.3) {
+    background: rgba($color, $opacity);
+}
+
+@mixin vertical-align($position: absolute) {
+  position: #{$position};
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+@mixin burger-icon($line-color, $line-color-hover, $line-width, $line-height, $base-top: -5px, $above-top: 5px, $below-top: -5px) {
+  > span {
+    outline: none !important;
+
+    &:hover {
+      background: $line-color-hover;
+      &:before,
+      &:after {
+        background: $line-color-hover;
+      }
+    }
+  }
+
+  > span,
+  > span:before,
+  > span:after {
+    display: inline-block;
+    width: $line-width;
+    height: $line-height;
+    background: $line-color;
+    position: relative;
+    top: $base-top;
+    transition: all ease .3s;
+  }
+
+  > span:before,
+  > span:after {
+    position: absolute;
+    left: 0;
+    content: '';
+  }
+
+  > span:before {
+    top: $above-top;
+  }
+
+  > span:after {
+    top: $below-top;
+  }
+
+  &.th-toggle-exit {
+    > span {
+      background-color: transparent !important;
+    }
+
+    > span:after {
+      @include transform(translateY(-$base-top) rotateZ(45deg));
+    }
+
+    > span:before {
+      @include transform(translateY($base-top) rotateZ(-45deg));
+    }
+  }
+}
+
+@mixin burger-icon-color-change($line-color, $line-color-hover) {
+  > span,
+  > span:before,
+  > span:after {
+    background: $line-color;
+  }
+
+  > span {
+    &:hover {
+      background: $line-color-hover;
+      &:before,
+      &:after {
+        background: $line-color-hover;
+      }
+    }
+  }
+
+  &.th-toggle-exit {
+    > span {
+      background-color: transparent !important;
+    }
+  }
+}
+
+@mixin close-icon($icon-size, $line-size, $color, $color-hover) {
+  position: relative;
+  display: inline-block;
+  width: $icon-size;
+  height: $icon-size;
+  overflow: hidden;
+  outline: none !important;
+
+  &:hover {
+    cursor: pointer;
+
+    &::before,
+    &::after {
+      background: $color-hover;
+    }
+  }
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    height: $line-size;
+    width: 100%;
+    top: 50%;
+    left: 0;
+    margin-top: $line-size / 2;
+    background: $color;
+  }
+
+  &::before {
+    @include transform(rotate(45deg));
+  }
+
+  &::after {
+    @include transform(rotate(-45deg));
+  }
+}
+
+@mixin close-icon-color-change($color, $color-hover) {
+  &:hover {
+    &::before,
+    &::after {
+      background: $color-hover;
+    }
+  }
+
+  &::before,
+  &::after {
+    background: $color;
+  }
+}
+// Button variants
+//
+// Easily pump out default styles, as well as :hover, :focus, :active,
+// and disabled options for all buttons
+
+@mixin button-variant($color, $background, $border) {
+  color: $color;
+  background-color: $background;
+  border-color: $border;
+
+  &:focus,
+  &.focus {
+    color: $color;
+    background-color: darken($background, 10%);
+        border-color: darken($border, 25%);
+  }
+  &:hover {
+    color: $color;
+    background-color: darken($background, 10%);
+        border-color: darken($border, 12%);
+  }
+  &:active,
+  &.active,
+  .open > &.dropdown-toggle {
+    color: $color;
+    background-color: darken($background, 10%);
+        border-color: darken($border, 12%);
+
+    &:hover,
+    &:focus,
+    &.focus {
+      color: $color;
+      background-color: darken($background, 17%);
+          border-color: darken($border, 25%);
+    }
+  }
+  &:active,
+  &.active,
+  .open > &.dropdown-toggle {
+    background-image: none;
+  }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
+      background-color: $background;
+          border-color: $border;
+    }
+  }
+
+  .badge {
+    color: $background;
+    background-color: $color;
+  }
+}
+
+// Button sizes
+@mixin button-size($padding-vertical, $padding-horizontal, $font-size, $line-height, $border-radius) {
+  padding: $padding-vertical $padding-horizontal;
+  font-size: $font-size;
+  line-height: $line-height;
+  border-radius: $border-radius;
+}
+
+
+
+
+@mixin keyframes($name) {
+  @-webkit-keyframes #{$name} {
+    @content;
+  }
+  @-moz-keyframes #{$name} {
+    @content;
+  }
+  @keyframes #{$name} {
+    @content;
+  }
+}
+
+@mixin animation ($name, $duration, $easing, $count) {
+  -webkit-animation-name:       $name;
+    -webkit-animation-duration:     $duration;
+  -webkit-animation-timing-function:   $easing;
+  -webkit-animation-iteration-count:   $count;
+
+  -moz-animation-name:       $name;
+    -moz-animation-duration:     $duration;
+  -moz-animation-timing-function: $easing;
+  -moz-animation-iteration-count: $count;
+
+  -ms-animation-name:       $name;
+    -ms-animation-duration:     $duration;
+  -ms-animation-timing-function:   $easing;
+  -ms-animation-iteration-count:   $count;
+
+  -o-animation-name:         $name;
+    -o-animation-duration:       $duration;
+  -o-animation-timing-function:   $easing;
+  -o-animation-iteration-count:   $count;
+
+  animation-name:         $name;
+    animation-duration:       $duration;
+  animation-timing-function:     $easing;
+  animation-iteration-count:     $count;
+}
+
+@mixin transition($property, $duration, $easing...) {
+  -webkit-transition-property:     $property;
+  -webkit-transition-duration:     $duration;
+  -webkit-transition-timing-function:  $easing;
+
+  -moz-transition-property:        $property;
+  -moz-transition-duration:       $duration;
+  -moz-transition-timing-function:  $easing;
+
+  -ms-transition-property:       $property;
+  -ms-transition-duration:       $duration;
+  -ms-transition-timing-function:    $easing;
+
+  -o-transition-property:          $property;
+  -o-transition-duration:       $duration;
+  -o-transition-timing-function:    $easing;
+
+  transition-property:         $property;
+  transition-duration:         $duration;
+  transition-timing-function:      $easing;
+}
+
+@mixin transform($transforms) {
+  -moz-transform:   $transforms;
+  -o-transform:     $transforms;
+  -ms-transform:     $transforms;
+  -webkit-transform:   $transforms;
+  transform:       $transforms;
+}
+@mixin transform-origin ($origin) {
+    -moz-transform-origin:     $origin;
+   -o-transform-origin:     $origin;
+  -ms-transform-origin:     $origin;
+  -webkit-transform-origin:   $origin;
+  transform-origin:       $origin;
+}
+// Backface visibility
+// Prevent browsers from flickering when using CSS 3D transforms.
+// Default value is `visible`, but can be changed to `hidden`
+
+@mixin backface-visibility($visibility) {
+  -webkit-backface-visibility: $visibility;
+  -moz-backface-visibility: $visibility;
+  backface-visibility: $visibility;
+}
+
+@mixin user-select($select) {
+  -webkit-user-select: none !important;
+  -khtml-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
