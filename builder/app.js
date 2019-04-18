@@ -17,7 +17,7 @@ var useStrict = '"use strict";';
 var safeTypeof = 'function _typeof(e){return e&&typeof Symbol!=\"undefined\"&&e.constructor===Symbol?\"symbol\":typeof e}';
 var asyncToGenerator = 'function _asyncToGenerator(e){return function(){var t=e.apply(this,arguments);return new Promise(function(e,n){function r(i,s){try{var o=t[i](s),u=o.value}catch(a){n(a);return}if(!o.done)return Promise.resolve(u).then(function(e){r("next",e)},function(e){r("throw",e)});e(u)}return r("next")})}}';
 var style = '';
-var script = useStrict + safeTypeof + asyncToGenerator;
+var script = '';
 var scripts = 'window.preloadedScripts=[';
 var stylePath = null;
 var scriptPath = null;

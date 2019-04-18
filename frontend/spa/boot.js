@@ -14,10 +14,6 @@ function Boot(callback) {
     }
     ReactModuleLoader.load({
         modules: ['spa/' + pathName],
-        scripts: [
-            'spa/loader.jsx',
-            'assets/css/loader.min.css'
-        ],
         callback : function() {
           React.globalLoader = function() { 
               return React.createElement(Loader, {size : 'x2'});
