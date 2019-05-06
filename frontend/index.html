@@ -19,7 +19,7 @@
     <!-- END THEME LAYOUT STYLES -->
     <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon"/>
 
-    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script type="text/javascript" id="generalPurpose">if (typeof module === 'object') {window.module = module; module = undefined;}var element=document.getElementById("generalPurpose");element.parentNode.removeChild(element);</script>
     <!-- BEGIN CORE PLUGINS -->
     <script src="assets/plugins/jquery.min.js" type="text/javascript"></script>
     <script src="assets/plugins/jquery-ui/jquery-ui.min.js" type="text/javascript"></script>
@@ -50,8 +50,12 @@
     <!-- END REACT PLUGINS -->
     <!-- BEGIN THEME GLOBAL SCRIPTS -->
     <script src="assets/scripts/utils.js" type="text/javascript"></script>
-    <script src="assets/scripts/locale.manager.js" type="text/javascript"></script>
+    <script src="assets/scripts/configuration.manager.js" type="text/javascript"></script>
     <script src="assets/scripts/persistence.manager.js" type="text/javascript"></script>
+    <script src="assets/scripts/locale.manager.js" type="text/javascript"></script>
+    <script src="assets/scripts/user.manager.js" type="text/javascript"></script>
+    <script src="assets/scripts/blockchain.provider.ganache.js" type="text/javascript"></script>
+    <script src="assets/scripts/blockchain.manager.js" type="text/javascript"></script>
     <script src="assets/scripts/client.js" type="text/javascript"></script>
     <!-- END THEME GLOBAL SCRIPTS -->
     <script src="assets/scripts/react.static.components.min.js" type="text/javascript"></script>${REPLACE}

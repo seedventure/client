@@ -198,7 +198,11 @@ var ReactModuleManager = function() {
                 }
                 if (reactClass.prototype.emit === undefined) {
                     reactClass.prototype.emit = function emit() {
-                        $.publish.apply($, arguments)
+                        var args = [arguments[0], []];
+                        for(var i = 1; i < arguments.length; i++) {
+                            args[1].push(arguments[i]);
+                        } 
+                        $.publish.apply($, args);
                     }
                 }
             }

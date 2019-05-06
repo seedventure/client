@@ -28,5 +28,8 @@
     "electron": "^4.1.4",
     "electron-packager": "^13.1.1",
     "electron-zip-packager": "^4.0.2"
+  },
+  "dependencies": {
+    "crypto-js": "^3.1.9-1"
   }
 }

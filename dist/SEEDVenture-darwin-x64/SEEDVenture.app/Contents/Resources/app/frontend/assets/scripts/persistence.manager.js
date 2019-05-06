@@ -3,37 +3,34 @@ function PersistenceManager() {
   var context = this;
 
   context.PERSISTENCE_PROPERTIES = {
-    locale : 'locale'
+    locale : 'locale',
+    user : 'user'
   };
 
-  context.set = function(name, value) {
+  context.set = function set(name, value) {
     var ret = context.remove(name);
-    if (value !== undefined && value !== null && value !== '') {
-      var valueString = $.stringify(value);
-      var valueEncodedString = $.base64.encode(valueString);
-      $.jStorage.set(name, valueEncodedString);
+    if (client.configurationManager.content && value !== undefined && value !== null && value !== '') {
+      client.configurationManager.content[name] = value;
+      client.configurationManager.save();
     }
     return ret;
   }
 
-  context.get = function(name) {
-    var value = null;
+  context.get = function get(name) {
     context.assertIsKey(name);
-    var valueEncodedString = $.jStorage.get(name);
-    if(valueEncodedString !== undefined && valueEncodedString !== null && valueEncodedString !== '') {
-      valueString = $.base64.decode(valueEncodedString);
-      value = $.parseJSON(valueString);
-    }
-    return value;
+    return client.configurationManager.content && client.configurationManager.content[name] ? client.configurationManager.content[name] : null;
   }
 
-  context.remove = function(name) {
+  context.remove = function remove(name) {
     var ret = context.get(name);
-    $.jStorage.deleteKey(name);
+    if(client.configurationManager.content) {
+      delete client.configurationManager.content[name];
+      client.configurationManager.save();
+    }
     return ret;
   };
 
-  context.assertIsKey = function(key) {
+  context.assertIsKey = function assertIsKey(key) {
     if(key === undefined || key === null || key === '') {
       throw new Exception("Invalid key value");
     }
@@ -43,11 +40,5 @@ function PersistenceManager() {
       }
     }
     throw new Exception(key + ' is NOT a recognized key.');
-  };
-
-  context.clear = function() {
-    for (var name in context.PERSISTENCE_PROPERTIES) {
-      $.jStorage.deleteKey(context.PERSISTENCE_PROPERTIES[name]);
-    }
   };
 };

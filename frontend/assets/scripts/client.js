@@ -18,8 +18,11 @@ function Client() {
 
     context.init = function(callback) {
         context.callback = callback
+        context.configurationManager = new ConfigurationManager();
         context.persistenceManager = new PersistenceManager();
         context.localeManager = new LocaleManager();
+        context.userManager = new UserManager();
+        context.blockchainManager = new BlockchainManager();
         setTimeout(context.start);
     };
 }
