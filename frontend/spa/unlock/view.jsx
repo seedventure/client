@@ -9,7 +9,6 @@ var Unlock = React.createClass({
             alert("Password is wrong");
             return;
         }
-        this.emit('page/change');
     },
     askForget(e) {
         e && e.preventDefault();

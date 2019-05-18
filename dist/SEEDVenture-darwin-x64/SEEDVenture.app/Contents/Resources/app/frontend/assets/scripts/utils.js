@@ -1,5 +1,7 @@
 var Utils = function() {
 
+  window.web3 = new Web3();
+
   pageTitlePreamble = 'SEEDVenture - Platform';
 
   getJQueryElement = function(element, defaultElementName) {

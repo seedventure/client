@@ -2,10 +2,18 @@ function PersistenceManager() {
 
   var context = this;
 
-  context.PERSISTENCE_PROPERTIES = {
-    locale : 'locale',
-    user : 'user'
-  };
+  context.PERSISTENCE_PROPERTIES = [
+    'locale',
+    'user',
+    'list',
+    'lastCheckedBlockNumber'
+  ];
+
+  var persistenceProperties = {};
+  for(var i in context.PERSISTENCE_PROPERTIES) {
+    persistenceProperties[context.PERSISTENCE_PROPERTIES[i]] = context.PERSISTENCE_PROPERTIES[i];
+  }
+  context.PERSISTENCE_PROPERTIES = persistenceProperties;
 
   context.set = function set(name, value) {
     var ret = context.remove(name);
@@ -18,7 +26,7 @@ function PersistenceManager() {
 
   context.get = function get(name) {
     context.assertIsKey(name);
-    return client.configurationManager.content && client.configurationManager.content[name] ? client.configurationManager.content[name] : null;
+    return client.configurationManager.content && client.configurationManager.content[name] !== undefined ? client.configurationManager.content[name] : null;
   }
 
   context.remove = function remove(name) {

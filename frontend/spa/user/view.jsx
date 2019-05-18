@@ -48,7 +48,7 @@ var User = React.createClass({
                 <h4>
                     Welcome
                     {client.userManager.user && this.renderUserWallet()}
-                    {!client.configurationManager.hasConfig() && !client.configurationManager.hasUnlockedConfig() && [
+                    {!client.configurationManager.hasUser() && !client.configurationManager.hasUnlockedUser() && [
                         <span> guest, </span>,
                         <a href="javascript:;" onClick={this.importConfiguration}>import your configuration</a>,
                         <span> or </span>,

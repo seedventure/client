@@ -4,7 +4,7 @@ var UnlockController = function(view) {
 
     context.tryUnlock = function tryUnlock(password) {
         try {
-            client.configurationManager.unlock(password);
+            client.configurationManager.unlockUser(password);
         } catch(e) {
             return false;
         }

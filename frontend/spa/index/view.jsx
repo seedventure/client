@@ -28,7 +28,7 @@ var Index = React.createClass({
         }
     },
     getDefaultRenderer() {
-        return !client.configurationManager.hasConfig() ? Products : client.configurationManager.hasUnlockedConfig() ? MyProducts : Unlock;
+        return !client.configurationManager.hasUser() ? Products : client.configurationManager.hasUnlockedUser() ? MyProducts : Unlock;
     },
     render() {
         return (
