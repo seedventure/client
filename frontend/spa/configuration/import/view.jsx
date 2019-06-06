@@ -9,7 +9,7 @@ var ImportConfiguration = React.createClass({
         if(!this.checkPassword(this.mnemonicPassword.value, this.mnemonicRetype.value)) {
             return;
         }
-        client.userManager.save(this.mnemonic.value, this.mnemonicPassword.value);
+        client.userManager.fromMnemonic(this.mnemonic.value, this.mnemonicPassword.value);
         this.emit('page/change');
     },
     importPrivateKey(e) {
@@ -21,6 +21,7 @@ var ImportConfiguration = React.createClass({
         if(!this.checkPassword(this.privateKeyPassword.value, this.privateKeyRetype.value)) {
             return;
         }
+        client.userManager.fromPrivateKey(this.privateKey.value, this.privateKeyPassword.value);
         this.emit('page/change');
     },
     browseJSONFile(e) {

@@ -2,8 +2,10 @@ var MyProducts = React.createClass({
     requiredModules: [
         'spa/product'
     ],
+    getTitle() {
+        'My Products'
+    },
     componentDidMount() {
-        this.emit('index/title', 'My Baskets');
         this.controller.loadMyProducts();
     },
     render() {
@@ -18,11 +20,11 @@ var MyProducts = React.createClass({
                         return (
                             <div className="row">
                                 <div className="col-md-6">
-                                    <Product element={product} />
+                                    <Product element={product} type={this.props.type} />
                                 </div>
                                 <div className="col-md-6">
                                     {i + 1 < products.length &&
-                                        <Product element={products[i + 1]} />
+                                        <Product element={products[i + 1]} type={this.props.type} />
                                     }
                                 </div>
                             </div>

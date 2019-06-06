@@ -61,7 +61,7 @@ function ContractsManager() {
     };
 
     context.manage_SEEDToken_0xa9059cbb = function ciao() {
-        alert('New Notification!');
+        //alert('New Notification!');
     };
 
 }

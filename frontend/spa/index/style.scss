@@ -5,4 +5,34 @@
         text-decoration: none;
     }
 
+    .btn.choose.selected {
+        text-decoration: underline;
+    }
+
+    div.row.sections {
+        margin-bottom: 20px;
+    }
+
+    &.modal.loader {
+        .modal-header {
+            border-bottom: none;
+        }
+        .modal-body {
+            * {
+                text-align: center;
+            }
+            .loader {
+                position: relative;
+            }
+        }
+        .modal-footer {
+            border-top: none;
+        }
+    }
+
+    &.modal.wallet {
+        i.copy {
+            margin-left: 5px;
+        }
+    }
 }

@@ -3,6 +3,6 @@ var CreateConfigurationController = function(view) {
     context.view = view;
 
     context.saveWallet = function saveWallet(words, password) {
-        client.userManager.save(words, password);
+        client.userManager.fromMnemonic(words, password);
     }
 }

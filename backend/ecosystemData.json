@@ -1,0 +1,13 @@
+{
+    "seedTokenAddress" : "0x029eb9c1810A97431200C08B827944B30f615325",
+    "factoryAddress" : "0x0b1cee48ce3ecb0384e92f1c64ab7dddb6e0ca4f",
+    "web3Provider" : "assets/scripts/blockchain.provider.web3.js",
+    "etherscanURL" : "https://ropsten.etherscan.io/",
+    "ipfsProvider" : "assets/scripts/ipfs.provider.http.js",
+    "ipfsHost" : "ipfs.infura.io",
+    "ipfsPort" : "5001",
+    "ipfsProtocol" : "https",
+    "ipfsUrlTemplate" : "https://ipfs.io/ipfs/",
+    "gasPrice" : 30,
+    "gasLimit" : 8000000
+}

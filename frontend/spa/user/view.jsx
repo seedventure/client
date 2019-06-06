@@ -35,7 +35,7 @@ var User = React.createClass({
     },
     renderUserWallet() {
         return [
-            <span> {client.userManager.user.wallet}... </span>,
+            <a href="#" onClick={() => this.emit('wallet/show')}> {client.userManager.user.wallet.substring(0,9)}... </a>,
             <a href="javascript:;" onClick={this.backupConfiguration}>Backup my configuration</a>,
             <a href="javascript:;" onClick={this.moveConfiguration}>, move it</a>,
             <span> or </span>,

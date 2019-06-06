@@ -1,5 +1,14 @@
 var {app, BrowserWindow, globalShortcut, remote} = require('electron');
 const fs = require('fs');
+var ecosystemData = JSON.parse(fs.readFileSync(__dirname + '/ecosystemData.json', 'UTF-8'));
+var ecosystemDataLocal = {};
+try {
+    ecosystemDataLocal = JSON.parse(fs.readFileSync(__dirname + '/ecosystemData.local.json', 'UTF-8'));
+} catch {
+}
+Object.keys(ecosystemDataLocal).map(key => ecosystemData[key] = ecosystemDataLocal[key]);
+ecosystemData = JSON.stringify(ecosystemData);
+const contracts = fs.readFileSync(__dirname + '/contracts.json', 'UTF-8');
 
 app = app || remote.app;
 
@@ -16,7 +25,7 @@ var test = false;
 process.argv.forEach(it => it === '--test' && (test = true));
 
 var distURL = (debug || test) ? '' : 'https://cdn.jsdelivr.net/gh/seedventure/client/frontend/';
-var replace = '\n    <script type="text/javascript" id="toDelete">window.userDataPath="' + userDataPath + '";window.distURL="' + distURL + '";var element=document.getElementById("toDelete");element.parentNode.removeChild(element);</script>';
+var replace = '\n    <script type="text/javascript" id="toDelete">window.userDataPath="' + userDataPath + '";window.contracts=' + contracts + ';window.distURL="' + distURL + '";window.ecosystemData=' + ecosystemData + ';var element=document.getElementById("toDelete");element.parentNode.removeChild(element);</script>';
 
 var spaURL = distURL + 'spa/';
 var styleTag = '<link href="' + spaURL + 'style.min.css" rel="stylesheet" type="text/css"></link>';

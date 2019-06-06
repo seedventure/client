@@ -6,7 +6,15 @@ function PersistenceManager() {
     'locale',
     'user',
     'list',
-    'lastCheckedBlockNumber'
+    'lastCheckedBlockNumber',
+    'web3Provider',
+    'web3URL',
+    'ipfsProvider',
+    'ipfsHost',
+    'ipfsPort',
+    'ipfsProtocol',
+    'gasLimit',
+    'gasPrice'
   ];
 
   var persistenceProperties = {};

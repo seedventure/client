@@ -4,7 +4,7 @@ var Product = React.createClass({
     ],
     onClick(e) {
         e.preventDefault();
-        this.emit('page/change', Detail, {element : this.props.element});
+        this.emit((this.props.type ? this.props.type : 'page') + '/change', Detail, {element : this.props.element});
     },
     render() {
         return (

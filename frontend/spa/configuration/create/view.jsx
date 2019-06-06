@@ -1,18 +1,18 @@
 var CreateConfiguration = React.createClass({
     title : 'Create New Wallet',
     getInitialState() {
-        return {words : ["burro", "pancrazio", "ginopaoli", "testo", "camera", "interruttore", "casalinga", "biglietto", "suono"]};
+        return {words : ethers.utils.HDNode.entropyToMnemonic(ethers.utils.randomBytes(16)).split(' ')};
     },
     toWords(e) {
         e && e.preventDefault();
-        var state = this.getInitialState();
+        var state = this.state;
         state.wordsOK = false;
         state.passwordsOK = false;
         this.setState(state);
     },
     toCheck(e) {
         e && e.preventDefault();
-        var state = this.getInitialState();
+        var state = this.state;
         state.wordsOK = true;
         state.passwordsOK = false;
         this.setState(state);
@@ -30,7 +30,7 @@ var CreateConfiguration = React.createClass({
                 return;
             }
         }
-        var state = this.getInitialState();
+        var state = this.state;
         state.wordsOK = true;
         state.passwordsOK = true;
         this.setState(state);

@@ -4,6 +4,18 @@ function BlockchainManager() {
     context.defaultLastCheckedBlockNumber = -1
     context.defaultTimeToNextBlockCheck = 7000;
 
+    context.sendSignedTransaction = async function sendSignedTransaction(signedTransaction) {
+        return await context.provider.sendSignedTransaction(signedTransaction);
+    }
+
+    context.getChainId = async function getChainId() {
+        return await context.provider.getChainId();
+    };
+
+    context.getNonce = async function getNonce(address) {
+        return await context.provider.getNonce(address);
+    };
+
     context.getLastCkeckedBlockNumber = function getLastCkeckedBlockNumber() {
         var lastCkeckedBlockNumber = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.lastCheckedBlockNumber);
         if(lastCkeckedBlockNumber === undefined || lastCkeckedBlockNumber === null) {
@@ -39,7 +51,7 @@ function BlockchainManager() {
         delete context.nextBlockCheckTimeout;
         (msec === undefined || msec === null) && (msec = context.timeToNextBlockCheck);
         (msec === undefined || msec === null) && (msec = context.defaultTimeToNextBlockCheck);
-        setTimeout(context.mainLoop, msec);
+        context.nextBlockCheckTimeout = setTimeout(context.mainLoop, msec);
     };
 
     context.mainLoop = async function mainLoop() {
@@ -55,9 +67,20 @@ function BlockchainManager() {
         context.scheduleNextBlockCheckTimeout();
     };
 
-    context.init = async function init() {
-        context.provider = new BlockchainProvider(context.onNewBlock);
-        setTimeout(context.mainLoop);
-    };
-    context.init();
+    context.newProvider = function newProvider() {
+        context.nextBlockCheckTimeout && clearTimeout(context.nextBlockCheckTimeout);
+        try { 
+            context.provider.stop();
+        } catch {
+        }
+        ScriptLoader.load({
+            script: client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3Provider),
+            callback : function() {
+                context.provider = new BlockchainProvider(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL), context.onNewBlock);
+                //context.nextBlockCheckTimeout = setTimeout(context.mainLoop);
+            }
+        });
+    }
+
+    context.newProvider();
 };

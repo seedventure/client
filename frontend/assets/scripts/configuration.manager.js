@@ -95,7 +95,7 @@ function ConfigurationManager() {
       privateContext.encryptedContent.data = $.base64.encode(privateContext.encryptedContent.data);
     }
     privateContext.encryptedContent && (context.content.user = privateContext.encryptedContent);
-    privateContext.fs.writeFileSync(privateContext.data, JSON.stringify(context.content));
+    privateContext.fs.writeFileSync(privateContext.data, JSON.stringify(context.content, null, 4));
     delete context.content.user;
     user && (context.content.user = user);
     lang && (context.content.lang = lang);
@@ -131,6 +131,19 @@ function ConfigurationManager() {
     return context.hasUser() && context.content.user !== undefined && context.content.user !== null;
   };
 
+  context.getDefaultConfiguration = function getDefaultConfiguration() {
+    return {
+      web3Provider : ecosystemData.web3Provider,
+      web3URL : ecosystemData.web3URL,
+      ipfsProvider : ecosystemData.ipfsProvider,
+      ipfsHost : ecosystemData.ipfsHost,
+      ipfsPort : ecosystemData.ipfsPort,
+      ipfsProtocol : ecosystemData.ipfsProtocol,
+      gasLimit : ecosystemData.gasLimit,
+      gasPrice : ecosystemData.gasPrice
+    };
+  };
+
   (context.load = function load() {
     delete privateContext.password;
     delete context.content;
@@ -138,7 +151,7 @@ function ConfigurationManager() {
     privateContext.data = window.userDataPath + 'data.json'
     if (!privateContext.fs.existsSync(privateContext.configuration)) {
       privateContext.fs.writeFileSync(privateContext.configuration, JSON.stringify({ data: privateContext.data }));
-      privateContext.fs.writeFileSync(privateContext.data, '{}');
+      privateContext.fs.writeFileSync(privateContext.data, JSON.stringify(context.getDefaultConfiguration(), null, 4));
     }
     privateContext.data = JSON.parse(privateContext.fs.readFileSync(privateContext.configuration, 'UTF-8')).data;
     if (!privateContext.fs.existsSync(privateContext.data)) {

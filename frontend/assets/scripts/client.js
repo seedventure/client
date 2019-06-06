@@ -23,6 +23,7 @@ function Client() {
         context.contractsManager = new ContractsManager();
         context.localeManager = new LocaleManager();
         context.userManager = new UserManager();
+        context.ipfsManager = new IPFSManager();
         context.blockchainManager = new BlockchainManager();
         setTimeout(context.start);
     };
