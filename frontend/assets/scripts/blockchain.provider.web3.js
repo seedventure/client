@@ -5,7 +5,7 @@ function BlockchainProvider(url, newBlockCallback) {
     context.newBlockCallback = newBlockCallback;
 
     var input = context.url;
-    input.indexOf('ws') === 0 && (input = new Web3.providers.WebsocketProvider(input));
+    input && input.indexOf('ws') === 0 && (input = new Web3.providers.WebsocketProvider(input));
     context.web3 = new Web3(input);
 
     context.fetchLastBlockNumber = async function fetchLastBlockNumber() {

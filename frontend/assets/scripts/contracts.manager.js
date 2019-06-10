@@ -1,8 +1,8 @@
 function ContractsManager() {
     var context = this;
 
-    context.SEEDTokenAddress = "0x89bf1ddd4cedcb36d168583ba6c30122549e33d1"
-    context.factoryAddress = "0xdef";
+    context.SEEDTokenAddress = ecosystemData.seedTokenAddress;
+    context.factoryAddress = ecosystemData.factoryAddress;
     context.dexAddress = "0xghi";
 
     context.getList = function getList() {

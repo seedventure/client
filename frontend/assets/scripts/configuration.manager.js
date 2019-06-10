@@ -79,7 +79,7 @@ function ConfigurationManager() {
       }
     }
     user && (context.content.user = user);
-    password && (privateContext.password = md5(password));
+    password && (privateContext.password = md5(password).toUpperCase());
     user = context.content.user;
     var lang = context.content.lang;
     lang && (context.content.lang = {
@@ -105,8 +105,8 @@ function ConfigurationManager() {
     if (password === undefined || password === null || password.split(' ').join('') === '') {
       return false;
     }
-    privateContext.password = md5(password);
-    var data = $.base64.decode(privateContext.encryptedContent.data);
+    privateContext.password = md5(password).toUpperCase();
+    var data = $.base64.decode(privateContext.encryptedContent.data).split('\n').join('');
     data = privateContext.CryptoJS.AES.decrypt(data, privateContext.password);
     data = data.toString(privateContext.CryptoJS.enc.Utf8);
     var hash = md5(data);

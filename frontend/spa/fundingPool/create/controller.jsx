@@ -11,8 +11,8 @@ var CreateFundingPoolController = function(view) {
             image : data.image
         });
         var url = ecosystemData.ipfsUrlTemplate + hash;
-        var contract = new web3.eth.Contract(contracts.ClientFactory.abi);
-        var method = contract.methods.create(
+        var contract = new web3.eth.Contract(contracts.Factory);
+        var method = contract.methods.deployPanelContracts(
             data.name,
             data.symbol,
             url, 
