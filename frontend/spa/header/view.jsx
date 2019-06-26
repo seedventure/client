@@ -83,7 +83,7 @@ var Header = React.createClass({
             <header id="kt_header" className="kt-header kt-grid__item kt-header--fixed row mx-0" data-ktheader-minimize="on">
                 <div className="kt-header__top col-12 py-3 bg-primary">
                     <div className="kt-container">
-                        <div className="kt-header__topbar header-left">
+                        <div className="kt-header__topbar header-left back-title">
                             {this.props.title && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Back" className="back" onClick={() => this.emit('page/change')}>
                                 <i className="fas fa-arrow-left"></i>
                             </a>}

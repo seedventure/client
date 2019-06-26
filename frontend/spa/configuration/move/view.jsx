@@ -16,19 +16,17 @@ var MoveConfiguration = React.createClass({
     },
     render() {
         return (
-            <div>
-                <div className="row">
-                    <div className="col-md-4">
-                        Insert your password
-                    </div>
-                    <div className="col-md-4">
-                        <input type="password" ref={ref => this.password = ref}></input>
-                    </div>
-                    <div className="col-md-4">
-                        <button className="btn" onClick={this.ok}>OK</button>
-                    </div>
+            <form className="kt-form" action="">
+                <br/>
+                <div>
+                    <h2>Insert your password to proceed</h2>
                 </div>
-            </div>
+                <br/>
+                <div className="form-group">
+                    <input className="form-control form-control-last" type="password" placeholder="Password" name="password" ref={ref => this.password = ref} />
+                </div>
+                <button className="btn btn-brand btn-pill btn-elevate" onClick={this.ok}>OK</button>
+            </form>
         );
     }
 });
