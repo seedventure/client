@@ -2,7 +2,9 @@ function BlockchainManager() {
     var context = this;
 
     context.defaultLastCheckedBlockNumber = -1
-    context.defaultTimeToNextBlockCheck = 7000;
+    context.defaultTimeToNextEventsCheck = 9000;
+    context.blockSequenceToCheck = 45000;
+    context.addressesSplit = 500;
 
     context.sendSignedTransaction = async function sendSignedTransaction(signedTransaction) {
         return await context.provider.sendSignedTransaction(signedTransaction);
@@ -18,69 +20,99 @@ function BlockchainManager() {
 
     context.getLastCkeckedBlockNumber = function getLastCkeckedBlockNumber() {
         var lastCkeckedBlockNumber = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.lastCheckedBlockNumber);
-        if(lastCkeckedBlockNumber === undefined || lastCkeckedBlockNumber === null) {
+        if (lastCkeckedBlockNumber === undefined || lastCkeckedBlockNumber === null) {
             lastCkeckedBlockNumber = context.defaultLastCheckedBlockNumber;
         }
         return lastCkeckedBlockNumber;
     };
 
-    context.onNewBlock = async function onNewBlock(block) {
-        if(block.transactions) {
-            for(var i in block.transactions) {
-                var tx = await context.provider.retrieveTransaction(block.transactions[i], block.number);
-                var to = tx.to;
-                if(to === undefined || to === null) {
-                    continue;
-                }
-                to = to.toLowerCase();
-                var contract = client.contractsManager.getDictionary().Where(it => it.address === to).FirstOrDefault();
-                if(contract === undefined || contract === null) {
-                    continue;
-                }
-                var code = tx.input.substring(0, 10);
-                var func = client.contractsManager['manage_' + contract.type + '_' + code];
-                func && func(tx, block, contract);
+    context.onEvents = async function onEvents(events) {
+        if (!context.addressesToCheck || context.addressesToCheck.length === 0) {
+            var newBlockNumber = context.getLastCkeckedBlockNumber() + context.blockSequenceToCheck;
+            if(newBlockNumber > context.lastFetchedBlockNumber) {
+                newBlockNumber = context.lastFetchedBlockNumber;
             }
+            client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.lastCheckedBlockNumber, newBlockNumber);
         }
-        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.lastCheckedBlockNumber, block.number);
-        context.scheduleNextBlockCheckTimeout();
+        if (!events || events.length === 0) {
+            context.scheduleNextEventCheckTimeout();
+            return;
+        }
+        for (var i in events) {
+            var event = events[i];
+            var func = client.contractsManager[event.topics[0]];
+            func && context.scheduleCallFunc(func, event);
+        }
+        context.scheduleNextEventCheckTimeout();
     };
 
-    context.scheduleNextBlockCheckTimeout = function scheduleNextBlockCheckTimeout(msec) {
-        context.nextBlockCheckTimeout && clearTimeout(context.nextBlockCheckTimeout);
-        delete context.nextBlockCheckTimeout;
-        (msec === undefined || msec === null) && (msec = context.timeToNextBlockCheck);
-        (msec === undefined || msec === null) && (msec = context.defaultTimeToNextBlockCheck);
-        context.nextBlockCheckTimeout = setTimeout(context.mainLoop, msec);
+    context.scheduleCallFunc = function scheduleCallFunc(func, event) {
+        setTimeout(function() {
+            var element = client.contractsManager.getDictionary().Where(it => it.address.toLowerCase() === event.address.toLowerCase()).First();
+            func(event, element.element ? element.element : element);
+        });
+    };
+
+    context.scheduleNextEventCheckTimeout = function scheduleNextEventCheckTimeout(msec) {
+        context.nextEventCheckTimeout && clearTimeout(context.nextEventCheckTimeout);
+        delete context.nextEventCheckTimeout;
+        (msec === undefined || msec === null) && (msec = context.timeToNextEventCheck);
+        (msec === undefined || msec === null) && (msec = context.defaultTimeToNextEventsCheck);
+        context.nextEventCheckTimeout = setTimeout(context.mainLoop, msec);
     };
 
     context.mainLoop = async function mainLoop() {
-        delete context.timeToNextBlockCheck;
+        delete context.timeToNextEventCheck;
         context.lastFetchedBlockNumber === undefined && (context.lastFetchedBlockNumber = await context.provider.fetchLastBlockNumber());
         var lastCheckedBlockNumber = context.getLastCkeckedBlockNumber();
-        if(context.lastFetchedBlockNumber !== lastCheckedBlockNumber) {
-            context.timeToNextBlockCheck = 0;
-            context.provider.retrieveBlock(lastCheckedBlockNumber + 1);
+        if (lastCheckedBlockNumber >= context.lastFetchedBlockNumber) {
+            delete context.lastFetchedBlockNumber;
+            context.scheduleNextEventCheckTimeout();
             return;
         }
-        delete context.lastFetchedBlockNumber;
-        context.scheduleNextBlockCheckTimeout();
+        context.timeToNextEventCheck = 0;
+        !context.addressesToCheck && (context.addressesToCheck = []);
+        !context.topicsToCheck && (context.topicsToCheck = []);
+
+        if (context.addressesToCheck.length === 0) {
+            var addressesToCheck = client.contractsManager.getDictionary().Select(it => it.address).ToArray();
+            while (addressesToCheck.length) {
+                context.addressesToCheck.push(addressesToCheck.splice(0, addressesToCheck.length > context.addressesSplit ? context.addressesSplit : addressesToCheck.length));
+            }
+        }
+        var address = context.addressesToCheck.shift();
+        var fromBlock = lastCheckedBlockNumber + 1;
+        var toBlock = fromBlock + context.blockSequenceToCheck;
+        if(toBlock > context.lastFetchedBlockNumber) {
+            toBlock = context.lastFetchedBlockNumber;
+        }
+        setTimeout(function(){context.provider.retrieveEvents(fromBlock, toBlock, address)});
     };
 
-    context.newProvider = function newProvider() {
-        context.nextBlockCheckTimeout && clearTimeout(context.nextBlockCheckTimeout);
-        try { 
-            context.provider.stop();
-        } catch {
-        }
-        ScriptLoader.load({
-            script: client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3Provider),
-            callback : function() {
-                context.provider = new BlockchainProvider(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL), context.onNewBlock);
-                //context.nextBlockCheckTimeout = setTimeout(context.mainLoop);
-            }
-        });
+    context.call = async function call(to, data) {
+        return await context.provider.call(to, data);
     }
 
-    context.newProvider();
+    context.balanceOf = async function balanceOf(address) {
+        return await context.provider.balanceOf(address);
+    }
+
+    context.newProvider = function newProvider() {
+        context.nextEventCheckTimeout && clearTimeout(context.nextEventCheckTimeout);
+        return new Promise(function(ok, ko) {
+            try {
+                context.provider.stop();
+            } catch {
+            }
+            ScriptLoader.load({
+                script: client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3Provider),
+                callback: function () {
+                    context.provider = new BlockchainProvider(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL), context.onEvents);
+                    context.nextEventCheckTimeout = setTimeout(context.mainLoop);
+                    ok();
+                }
+            });
+        });
+    }
+    client.collaterateStart.push(context.newProvider);
 };

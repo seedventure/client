@@ -1,11 +1,7 @@
 var ListFundingPool = React.createClass({
     requiredModules: [
-        'spa/myProducts',
         'spa/fundingPool/create'
     ],
-    getTitle() {
-        return "My Funding Pools"
-    },
     getDefaultSubscriptions() {
         return {
             'section/change': this.changeSection,
@@ -22,7 +18,7 @@ var ListFundingPool = React.createClass({
                 modules: element.prototype.requiredModules || [],
                 scripts: element.prototype.requiredScripts || [],
                 callback: function () {
-                    _this.setState({ element, props });
+                    _this.setState({title: element.prototype.title || (element.prototype.getTitle ? element.prototype.getTitle() : null), element, props });
                 }
             });
         }
@@ -33,21 +29,24 @@ var ListFundingPool = React.createClass({
         if(this.state && this.state.props) {
             Object.keys(this.state.props).map(i => props[i] = _this.state.props[i]);
         }
-        if(!(this.state && this.state.element && this.state.element !== MyProducts)) {
-            props.type = 'section'
+        if(!(this.state && this.state.element && this.state.element !== Products)) {
+            props.type = 'section';
+            props.view = 'mine';
         }
         return (
-            <div>
-                <div className="row">
-                    <div className="col-md-6">
-                        {this.state && this.state.element && this.state.element !== MyProducts && <button type="button" className="btn" onClick={e => this.changeSection()}>My Baskets</button>}
-                    </div>
-                    <div className="col-md-6">
-                        <button type="button" className="btn" onClick={e => this.changeSection(CreateFundingPool)}>New Basket</button>
+            <span>
+                <div className="kt-subheader   kt-grid__item" id="kt_subheader">
+                    <div className="kt-subheader__main">
+                        <h3 className="kt-subheader__title">{(this.state && this.state.title) || "Owned Baskets"}</h3>
+                        <span className="kt-subheader__separator"></span>
+                        <div className="kt-subheader__breadcrumbs">
+                            <a href="javascript:;" onClick={() => this.changeSection(Products)} className="kt-subheader__breadcrumbs-home"><i className="fas fa-home"></i></a>
+                            <a href="javascript:;" onClick={() => this.changeSection(CreateFundingPool)}  className="kt-subheader__breadcrumbs-home"><i className="fas fa-plus"></i></a>
+                        </div>
                     </div>
                 </div>
-                {React.createElement(this.state && this.state.element ? this.state.element : MyProducts, props)}
-            </div>
+                {React.createElement(this.state && this.state.element ? this.state.element : Products, props)}
+            </span>
         );
     }
 });

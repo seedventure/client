@@ -30,9 +30,7 @@
         }
     }
 
-    &.modal.wallet {
-        i.copy {
-            margin-left: 5px;
-        }
+    .kt-wrapper.guest {
+        padding-top: 65px !important;
     }
 }

@@ -1,48 +1,28 @@
 var Index = React.createClass({
     requiredModules: [
-        'spa/products',
-        'spa/user',
         'spa/unlock',
-        'spa/myProducts',
+        'spa/header',
+        'spa/products',
         'spa/fundingPool/list'
     ],
     requiredScripts: [
-        'spa/welcome.jsx',
         'spa/modal.jsx'
     ],
     getDefaultSubscriptions() {
         return {
+            'user/askForget': this.askForget,
             'page/change': this.changePage,
-            'index/title': title => this.setState({ title }),
             'loader/show': this.showLoaderModal,
             'loader/hide': () => this.genericLoadingModal.hide(),
-            'transaction/show': this.showTransactionModal,
-            'wallet/show': this.showWalletModal
+            'transaction/show': this.showTransactionModal
         };
     },
-    showWalletModal() {
-        this.addressLink.attr('href', ecosystemData.etherscanURL + 'address/' + client.userManager.user.wallet);
-        this.addressLink.html(client.userManager.user.wallet);
-        this.privateKeyLabel.html(client.userManager.user.privateKey.substring(0, 55) + '...');
-        this.walletModal.isHidden() && this.walletModal.show();
-    },
-    copyAddress(e) {
-        e && e.preventDefault();
-        const el = document.createElement('textarea');
-        el.value = client.userManager.user.wallet;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-    },
-    copyPrivateKey(e) {
-        e && e.preventDefault(); 
-        const el = document.createElement('textarea');
-        el.value = client.userManager.user.privateKey;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
+    askForget(e) {
+        e && e.preventDefault && e.preventDefault();
+        if(confirm('All your data will be lost, do you want to continue?')) {
+            this.controller.forgetUser();
+            this.emit('page/change');
+        }
     },
     showTransactionModal(transaction) {
         console.log(transaction);
@@ -70,39 +50,25 @@ var Index = React.createClass({
         }
     },
     getDefaultRenderer() {
-        return !client.configurationManager.hasUser() ? Products : client.configurationManager.hasUnlockedUser() ? Welcome : Unlock;
-    },
-    renderChoose() {
-        if (!client.configurationManager.hasUnlockedUser()) {
-            return null;
-        }
-        return (
-            <div className="row sections">
-                <div className="col-md-6">
-                    <button type="button" className={"btn choose " + (this.state.element === ListFundingPool ? "" : "selected")} onClick={() => this.changePage(MyProducts)}>Investments</button>
-                </div>
-                <div className="col-md-6">
-                    <button type="button" className={"btn choose " + (this.state.element === ListFundingPool ? "selected" : "")} onClick={() => this.changePage(ListFundingPool)}>Baskets</button>
-                </div>
-            </div>
-        )
+        return !client.configurationManager.hasUser() ? Products : client.configurationManager.hasUnlockedUser() ? Products : Unlock;
     },
     render() {
+        var rendered = this.state && this.state.element ? this.state.element : this.getDefaultRenderer();
+        if(rendered === Unlock) {
+            return (
+                <div className="kt-grid kt-grid--hor kt-grid--root">
+                    {React.createElement(rendered, this.state && this.state.props ? this.state.props : null)}
+                </div>
+            );
+        }
         return (
-            <div>
-                <div className="row">
-                    <div className="col-md-6">
-                        <h1>
-                            {this.state && this.state.element && <a className="back" href="javascript:;" onClick={() => this.changePage()}>{"<"}{'\u00A0'}{'\u00A0'}{'\u00A0'}</a>}
-                            {this.state && this.state.title}
-                        </h1>
-                    </div>
-                    <div className="col-md-6">
-                        <User />
+            <div className="kt-grid kt-grid--hor kt-grid--root">
+                <div className="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--ver kt-page">
+                    <div className={"kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor kt-wrapper" + (client.userManager.user ? "" : " guest")} id="kt_wrapper">
+                        <Header title={this.state && this.state.title ? this.state.title : ''} element={rendered}/>
+                        {React.createElement(rendered, this.state && this.state.props ? this.state.props : null)}
                     </div>
                 </div>
-                {this.renderChoose()}
-                {React.createElement(this.state && this.state.element ? this.state.element : this.getDefaultRenderer(), this.state && this.state.props ? this.state.props : null)}
                 <Modal
                     ref={ref => this.genericLoadingModal = ref}
                     readonly={true}
@@ -120,21 +86,6 @@ var Index = React.createClass({
                     <h2>
                         <a ref={ref => this.transactionLink = $(ref)} target="_blank">View on Etherscan</a>
                     </h2>
-                </Modal>
-                <Modal
-                    title="Your Wallet"
-                    ref={ref => this.walletModal = ref}
-                    className="index wallet">
-                    <h4>Your Address:</h4>
-                    <div>
-                        <a target="_blank" ref={ref => this.addressLink = $(ref)}></a>
-                        <a href="#" onClick={this.copyAddress}><i className="copy fa fa-file"></i></a>
-                    </div>
-                    <h4>Your Private Key:</h4>
-                    <div>
-                        <span ref={ref => this.privateKeyLabel = $(ref)}></span>
-                        <a href="#" onClick={this.copyPrivateKey}><i className="copy fa fa-file"></i></a>
-                    </div>
                 </Modal>
             </div>
         );

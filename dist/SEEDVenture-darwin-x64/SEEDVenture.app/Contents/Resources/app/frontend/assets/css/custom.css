@@ -1,0 +1,11 @@
+.unlock .welcome-page {
+    background-image: url(../images/bg-login.png);
+}
+
+.modal.fade.in:not(.show) {
+    opacity: 1;
+}
+
+.modal {
+    height: auto;
+}

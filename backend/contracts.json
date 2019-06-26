@@ -2615,24 +2615,6 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_memberAddress",
-          "type": "address"
-        },
-        {
-          "name": "newHash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "changeMemberHash",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
           "name": "memberWallet",
           "type": "address"
         },
@@ -2768,24 +2750,6 @@
       "constant": false,
       "inputs": [
         {
-          "name": "_memberAddress",
-          "type": "address"
-        },
-        {
-          "name": "newURL",
-          "type": "string"
-        }
-      ],
-      "name": "changeMemberURL",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
           "name": "newExchRate",
           "type": "uint8"
         }
@@ -2813,20 +2777,6 @@
       ],
       "payable": false,
       "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_dataHash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "setOwnerDataHash",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
@@ -2858,6 +2808,28 @@
           "type": "uint256"
         }
       ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_memberAddress",
+          "type": "address"
+        },
+        {
+          "name": "newURL",
+          "type": "string"
+        },
+        {
+          "name": "newHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "changeMemberData",
+      "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
@@ -2973,20 +2945,6 @@
         }
       ],
       "name": "disableMemberByStaffRetire",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "_dataURL",
-          "type": "string"
-        }
-      ],
-      "name": "setOwnerDataURL",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -3114,6 +3072,24 @@
         }
       ],
       "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_dataURL",
+          "type": "string"
+        },
+        {
+          "name": "_dataHash",
+          "type": "bytes32"
+        }
+      ],
+      "name": "setOwnerData",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",

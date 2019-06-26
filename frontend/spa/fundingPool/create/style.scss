@@ -1,0 +1,12 @@
+.createFundingPool {
+    .editor {
+        min-height: 200px;
+        .btn {
+            height: auto;
+            font-size: 13px;
+        }
+        .note-toolbar {
+            z-index: 1;
+        }
+    }
+}

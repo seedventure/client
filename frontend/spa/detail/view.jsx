@@ -1,7 +1,5 @@
 var Detail = React.createClass({
-    componentDidMount() {
-        this.emit('index/title', this.props.element.name);
-    },
+    title: "View incubator",
     render() {
         return (
             <div>

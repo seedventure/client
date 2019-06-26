@@ -1,6 +1,6 @@
 @import '_mixins';
 .loader {
-    position: absolute;
+    position: relative;
     top: 0;
     bottom: 0;
     left: 0;
@@ -14,8 +14,8 @@
 }
 
 .loaderContainer {
-    position: relative;
-    margin: 0 auto;
+    position: absolute;
+    margin: auto auto;
     &:before {
         content: '';
         display: block;
@@ -30,6 +30,7 @@ $widths: 50px 100px 200px;
         width: $w;
         height: $w;
         top: calc(50% - (#{$w} / 2));
+        left: calc(50% - (#{$w} / 2));
     }
 }
 

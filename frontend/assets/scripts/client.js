@@ -4,12 +4,15 @@ function Client() {
 
     context.collaterateStart = [];
 
-    context.start = function() {
+    context.start = async function start() {
         delete context.start
         context.localeManager.init();
         if (context.collaterateStart && context.collaterateStart.length > 0) {
-            for (i in context.collaterateStart) {
-                context.collaterateStart[i]();
+            for (var i in context.collaterateStart) {
+                var x = context.collaterateStart[i]();
+                if(x && x.then && x.catch) {
+                    await x;
+                }
             }
             context.collaterateStart = [];
         }
@@ -20,11 +23,11 @@ function Client() {
         context.callback = callback
         context.configurationManager = new ConfigurationManager();
         context.persistenceManager = new PersistenceManager();
+        context.ipfsManager = new IPFSManager();
+        context.blockchainManager = new BlockchainManager();
         context.contractsManager = new ContractsManager();
         context.localeManager = new LocaleManager();
         context.userManager = new UserManager();
-        context.ipfsManager = new IPFSManager();
-        context.blockchainManager = new BlockchainManager();
         setTimeout(context.start);
     };
 }

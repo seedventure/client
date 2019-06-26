@@ -1,0 +1,5 @@
+@font-face {
+  font-family: "Poppins";
+  src: url("poppins-v6-latin-regular.eot");
+  src: url("poppins-v6-latin-regular.eot?#iefix") format("embedded-opentype"), url("poppins-v6-latin-regular.woff") format("woff"), url("poppins-v6-latin-regular.ttf") format("truetype"), url("poppins-v6-latin-regular.svg#poppins") format("svg");
+  font-weight: normal; }

@@ -1,8 +1,8 @@
-function BlockchainProvider(url, newBlockCallback) {
+function BlockchainProvider(url, eventsCallback) {
     var context = this;
 
     context.url = url;
-    context.newBlockCallback = newBlockCallback;
+    context.eventsCallback = eventsCallback;
 
     var input = context.url;
     input && input.indexOf('ws') === 0 && (input = new Web3.providers.WebsocketProvider(input));
@@ -19,18 +19,29 @@ function BlockchainProvider(url, newBlockCallback) {
         return (context.chainId = await context.web3.eth.net.getId());
     };
 
-    context.retrieveBlock = async function retrieveBlock(blockNumber) {
-        var block = await context.web3.eth.getBlock(blockNumber);
-        context.newBlockCallback && setTimeout(() => context.newBlockCallback(block));
-        return block;
+    context.retrieveEvents = async function retrieveEvents(fromBlock, toBlock, address) {
+        !fromBlock && (fromBlock = '0');
+        !toBlock && (toBlock = await context.getBlockNumber());
+        fromBlock = fromBlock.toString();
+        toBlock = toBlock.toString();
+        var events = await context.web3.eth.getPastLogs({
+            fromBlock,
+            toBlock,
+            address
+        });
+        context.eventsCallback && setTimeout(() => context.eventsCallback(events));
+        return events;
     };
 
     context.retrieveTransaction = async function retrieveTransaction(transactionNumber) {
         return context.web3.eth.getTransaction(transactionNumber);
     };
 
-    context.call = async function call(address, data) {
-
+    context.call = async function call(to, data) {
+        return await context.web3.eth.call({
+            to, 
+            data
+        });
     };
 
     context.getNonce = async function getNonce(address) {
@@ -39,5 +50,9 @@ function BlockchainProvider(url, newBlockCallback) {
 
     context.sendSignedTransaction = async function sendSignedTransaction(signedTransaction) {
         return await context.web3.eth.sendSignedTransaction(signedTransaction);
+    }
+
+    context.balanceOf = async function balanceOf(address) {
+        return await context.web3.eth.getBalance(address);
     }
 };

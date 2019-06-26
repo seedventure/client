@@ -1,10 +1,5 @@
 .product {
-    margin: 10px;
-    padding : 10px;
-    border: 1px solid black;
-    display: block;
-    &:hover {
-        cursor: pointer;
-        border: 1px solid cornflowerblue;
+    .text-cta {
+        margin-left: 10px;
     }
 }

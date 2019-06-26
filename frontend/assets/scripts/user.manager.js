@@ -16,24 +16,16 @@ function UserManager() {
     context.save = function save(wallet, pass) {
       context.user = {
         wallet : wallet.address,
-        privateKey : wallet.privateKey
+        privateKey : wallet.privateKey,
+        list : client.contractsManager.getDictionary()
+        .Where(it => it.element !== undefined)
+        .Select(it => it.element)
+        .Where(it => it.owner.toLowerCase() === wallet.address.toLowerCase())
+        .Select(it => it.position)
+        .Distinct().ToArray()
       };
       client.configurationManager.save(context.user, pass, true);
-    };
-
-    context.getList = function getList() {
-      var list = [];
-      context.user && context.user.list && (list = context.user.list);
-      return list;
-    };
-
-    context.addToList = function addToList(position) {
-      var list = context.getList();
-      context.save();
-    };
-
-    context.removeFromList = function removeFromList() {
-      context.save();
+      context.getBalances();
     };
 
     context.forget = function forget() {
@@ -58,7 +50,24 @@ function UserManager() {
       tx.sign(Buffer.from(context.user.privateKey.substring(2), 'hex'));
       var signedTX = "0x" + tx.serialize().toString('hex');
       return signedTX;
-    }
+    };
+
+    context.getBalances = async function getBalances() {
+        if(!context.user || !context.user.wallet) {
+          $.publish('amount/eth', 0);
+          $.publish('amount/seed', 0);
+          return {
+            eth : 0, seed: 0
+          };
+        }
+        var eth = await client.blockchainManager.balanceOf(context.user.wallet);
+        $.publish('amount/eth', eth);
+        var seed = await client.contractsManager.seedOf(context.user.wallet);
+        $.publish('amount/seed', seed);
+        return {
+          eth, seed
+        };
+    };
 
     context.init = function init() {
         context.user = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.user);

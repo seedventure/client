@@ -1,7 +1,5 @@
 var BackupConfiguration = React.createClass({
-    componentDidMount() {
-        this.emit('index/title', 'Backup your data');
-    },
+    title : "Backup your data",
     ok(e) {
         e && e.preventDefault();
         var pass = this.password.value;
@@ -9,8 +7,12 @@ var BackupConfiguration = React.createClass({
             alert('Please, insert password');
             return;
         }
-        client.configurationManager.dump(pass);
-        this.emit('page/change');
+        try {
+            client.configurationManager.dump(pass);
+            this.emit('page/change');
+        } catch(e) {
+            alert('Password is wrong');
+        }
     },
     render() {
         return (

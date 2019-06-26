@@ -70,120 +70,91 @@ var ImportConfiguration = React.createClass({
         e && e.preventDefault();
         client.configurationManager.import() && this.emit('page/change');
     },
+    componentDidMount() {
+        var _this = this;
+        $(_this.domRoot.children().find('a.nav-link').click(function() {
+            _this.domRoot.children().find('a.nav-link').removeClass('active');
+            $(this).addClass('active'); 
+        })[0]).click();
+    },
+    /*
+    <li className="nav-item">
+        <a className="nav-link" data-toggle="tab" href="#json" role="tab"><i className="far fa-file-alt mr-2"></i>JSON File</a>
+    </li>*/
     render() {
         return (
-            <div>
-                <div className="row section">
-                    <div className="row">
-                        <div className="col-md-6">
-                            Import your SEEDVenture Backup
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <button className="btn" onClick={this.browserSEEDBackupFile}>Browse...</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="row section">
-                    <div className="row">
-                        <div className="col-md-6">
-                            Insert your mnemonic phrase:
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <textarea ref={ref => this.mnemonic = ref}></textarea>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            Type your password:
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <input type="password" ref={ref => this.mnemonicPassword = ref}></input>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <input type="password" ref={ref => this.mnemonicRetype = ref}></input>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <button className="btn" onClick={this.importMnemonic}>Import</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="row section">
-                    <div className="row">
-                        <div className="col-md-6">
-                            Insert your private key:
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <input ref={ref => this.privateKey = ref}></input>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            Type your password:
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <input type="password" ref={ref => this.privateKeyPassword = ref}></input>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <input type="password" ref={ref => this.privateKeyRetype = ref}></input>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <button className="btn" onClick={this.importPrivateKey}>Import</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="row section">
-                    <div className="row">
-                        <div className="col-md-6">
-                            Insert your JSON File:
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <button className="btn" onClick={this.browseJSONFile}>Browse...</button>
-                        </div>
-                        <div className="col-md-6">
-                            <span>{this.state && this.state.JSONFile}</span>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            Type your password:
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <input type="password" ref={ref => this.JSONPassword = ref}></input>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <input type="password" ref={ref => this.JSONRetype = ref}></input>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-6">
-                            <button className="btn" onClick={this.importJSON}>Import</button>
+            <div className="kt-content kt-grid__item kt-grid__item--fluid">
+                <div className="row">
+                    <div className="col-xl-12 mt-5">
+                        <ul className="nav nav-tabs nav-tabs-line nav-tabs-bold nav-tabs-line-3x mb-5" role="tablist">
+                            <li className="nav-item">
+                                <a className="nav-link" data-toggle="tab" href="#backup" role="tab"><i className="far fa-hdd mr-2"></i>Backup</a>
+                            </li>
+                            <li className="nav-item">
+                                <a className="nav-link" data-toggle="tab" href="#phrase" role="tab"><i className="far fa-comment-dots mr-2"></i>Mnemonic phrase</a>
+                            </li>
+                            <li className="nav-item">
+                                <a className="nav-link" data-toggle="tab" href="#key" role="tab"><i className="fas fa-key mr-2"></i>Private key</a>
+                            </li>
+                        </ul>
+                        <div className="tab-content">
+                            <div className="tab-pane active" id="backup" role="tabpanel">
+                                    <legend>Import you SEEDVenture backup</legend>
+                                    <div className="form-group mb-5">
+                                        <div className="input-container">
+                                            <input type="file" id="real-input" className="form-control form-control-last" />
+                                            <span className="file-info">File...</span>
+                                        </div>
+                                        <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.browserSEEDBackupFile}>Browse...</button>
+                                </div>
+                            </div>
+                            <div className="tab-pane" id="phrase" role="tabpanel">
+                                <form className="kt-form" action="">
+                                    <legend>Insert your mnemonic phrase and password</legend>
+                                    <div className="form-group mb-5">
+                                        <textarea className="form-control form-control-last" ref={ref => this.mnemonic = ref}></textarea>
+                                    </div>
+                                    <div className="form-group mb-5">
+                                        <input className="form-control form-control-last" type="password" placeholder="Type your password" name="password" ref={ref => this.mnemonicPassword = ref}/>
+                                    </div>
+                                    <div className="form-group mb-5">
+                                        <input className="form-control form-control-last" type="password" placeholder="Confirm password" name="password" ref={ref => this.mnemonicRetype = ref}/>
+                                    </div>
+                                    <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.importMnemonic}>Import</button>
+                                </form>
+                            </div>
+                            <div className="tab-pane" id="key" role="tabpanel">
+                                <form className="kt-form" action="">
+                                    <legend>Insert your private key and password</legend>
+                                    <div className="form-group mt-5 mb-5">
+                                        <input className="form-control form-control-last" type="text" placeholder="Private key" name="password" ref={ref => this.privateKey = ref}/>
+                                    </div>
+                                    <div className="form-group mb-5">
+                                        <input className="form-control form-control-last" type="password" placeholder="Type your password" name="password" ref={ref => this.privateKeyPassword = ref}/>
+                                    </div>
+                                    <div className="form-group mb-5">
+                                        <input className="form-control form-control-last" type="password" placeholder="Confirm password" name="password" ref={ref => this.privateKeyRetype = ref}/>
+                                    </div>
+                                    <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.importPrivateKey}>Import</button>
+                                </form>
+                            </div>
+                            <div className="tab-pane" id="json" role="tabpanel">
+                                <form className="kt-form" action="">
+                                    <legend>Import your JSON file and type password</legend>
+                                    <div className="input-container">
+                                        <input type="file" id="real-input" className="form-control form-control-last" />
+                                        <span className="file-info">{this.state && this.state.JSONFile ? this.state.JSONFile : "File..."}</span>
+                                    </div>
+                                    <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.browseJSONFile}>Browse...</button>
+                                    <div className="form-group my-5">
+                                        <input className="form-control form-control-last" type="password" placeholder="Type your password" name="password" ref={ref => this.JSONPassword = ref}/>
+                                    </div>
+                                    <div className="form-group mb-5">
+                                        <input className="form-control form-control-last" type="password" placeholder="Confirm password" name="password" ref={ref => this.JSONRetype = ref}/>
+                                    </div>
+                                    <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.importJSON}>Import</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>

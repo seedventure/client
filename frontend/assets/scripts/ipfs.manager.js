@@ -6,16 +6,19 @@ function IPFSManager() {
     }
 
     context.newProvider = function newProvider() {
-        try { 
-            context.provider.stop();
-        } catch {
-        }
-        ScriptLoader.load({
-            script: client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.ipfsProvider),
-            callback : function() {
-                context.provider = new IPFSProvider(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.ipfsHost), client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.ipfsPort), client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.ipfsProtocol));
+        return new Promise(function(ok, ko) {
+            try { 
+                context.provider.stop();
+            } catch {
             }
+            ScriptLoader.load({
+                script: client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.ipfsProvider),
+                callback : function() {
+                    context.provider = new IPFSProvider(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.ipfsHost), client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.ipfsPort), client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.ipfsProtocol));
+                    ok();
+                }
+            });
         });
     }
-    context.newProvider();
+    client.collaterateStart.push(context.newProvider);
 }

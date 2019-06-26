@@ -1,7 +1,5 @@
 var MoveConfiguration = React.createClass({
-    componentDidMount() {
-        this.emit('index/title', 'Move your data');
-    },
+    title : "Move your data",
     ok(e) {
         e && e.preventDefault();
         var pass = this.password.value;
@@ -9,8 +7,12 @@ var MoveConfiguration = React.createClass({
             alert('Please, insert password');
             return;
         }
-        client.configurationManager.move(pass);
-        this.emit('page/change');
+        try {
+            client.configurationManager.move(pass);
+            this.emit('page/change');
+        } catch(e) {
+            alert('Password is wrong');
+        }
     },
     render() {
         return (
