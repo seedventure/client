@@ -244,7 +244,7 @@ var EditFundingPool = React.createClass({
                                             <input className="form-control form-control-last" type="number" ref={ref => (this.exangeRate = ref) && (this.exangeRate.value = product.exangeRate)} />
                                         </div>
                                         <div className="col-md-2">
-                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateExangeRate}>OK</button>
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateExchangeRate}>OK</button>
                                         </div>
                                     </div>
                                     <br />

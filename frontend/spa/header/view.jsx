@@ -16,7 +16,7 @@ var Header = React.createClass({
     showWalletModal() {
         this.addressLink.attr('href', ecosystemData.etherscanURL + 'address/' + client.userManager.user.wallet);
         this.addressLink.html(client.userManager.user.wallet);
-        this.privateKeyLabel.html(client.userManager.user.privateKey.substring(0, 55) + '...');
+        this.privateKeyLabel.html(client.userManager.user.privateKey.substring(0, 50) + '...');
         this.walletModal.isHidden() && this.walletModal.show();
     },
     copyAddress(e) {
