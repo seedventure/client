@@ -3,7 +3,9 @@ var CreateFundingPool = React.createClass({
         "assets/plugins/summernote/summernote.min.js",
         "assets/plugins/summernote/summernote.css"
     ],
-    title: "Create new Basket",
+    getTitle() {
+        return "Create new " + (this.props.parent ? ("Member for Basket " + this.props.parent.name) : "Basket");
+    },
     deploy(e) {
         e && e.preventDefault();
         var image = '';
@@ -42,7 +44,7 @@ var CreateFundingPool = React.createClass({
             symbol = this.symbol.value.split(' ').join('');
         } catch(error) {
         }
-        if(symbol === '') {
+        if(!this.props.parent && symbol === '') {
             alert('Symbol is mandatory');
             return;
         }
@@ -52,7 +54,7 @@ var CreateFundingPool = React.createClass({
             seedRate = parseInt(this.seedRate.value.split(' ').join(''));
         } catch(error) {
         }
-        if(isNaN(seedRate) || seedRate < 0) {
+        if(!this.props.parent && (isNaN(seedRate) || seedRate < 0)) {
             alert('SEED Rate is a mandatory positive number or zero');
             return;
         }
@@ -62,7 +64,7 @@ var CreateFundingPool = React.createClass({
             exangeRate = parseInt(this.exangeRate.value.split(' ').join(''));
         } catch(error) {
         }
-        if(isNaN(exangeRate) || exangeRate < 0) {
+        if(!this.props.parent && (isNaN(exangeRate) || exangeRate < 0)) {
             alert('Exchange Rate is a mandatory positive number or zero');
             return;
         }
@@ -72,7 +74,7 @@ var CreateFundingPool = React.createClass({
             exchangeRateDecimals = parseInt(this.exchangeRateDecimals.value.split(' ').join(''));
         } catch(error) {
         }
-        if(isNaN(exchangeRateDecimals) || exangeRate < 0) {
+        if(!this.props.parent && (isNaN(exchangeRateDecimals) || exangeRate < 0)) {
             alert('Exchange Rate decimals is a mandatory positive number or zero');
             return;
         }
@@ -82,8 +84,18 @@ var CreateFundingPool = React.createClass({
             totalSupply = parseInt(this.totalSupply.value.split(' ').join(''));
         } catch(error) {
         }
-        if(isNaN(totalSupply) || totalSupply < 0) {
+        if(!this.props.parent && (isNaN(totalSupply) || totalSupply < 0)) {
             alert('Total Supply is a mandatory positive number or zero');
+            return;
+        }
+
+        var walletAddress = '';
+        try {
+            walletAddress = this.walletAddress.value.split(' ').join('');
+        } catch(error) {
+        }
+        if(this.props.parent && !Utils.isEthereumAddress(walletAddress)) {
+            alert('Wallet address is mandatory');
             return;
         }
         var data = {
@@ -95,9 +107,11 @@ var CreateFundingPool = React.createClass({
             seedRate,
             exangeRate,
             exchangeRateDecimals,
-            totalSupply
+            totalSupply,
+            walletAddress
         };
-        this.controller.deploy(data);
+        var type = this.props.parent ? 'Member' : 'Basket';
+        this.controller['deploy' + type](data, this.props.parent);
     },
     loadImage(e) {
         e && e.preventDefault();
@@ -153,51 +167,59 @@ var CreateFundingPool = React.createClass({
                         </a>
                     </div>
                 </div>
-                <div className="row">
+                {!this.props.parent && <div className="row">
                     <div className="col-md-2">
                         <h4>Symbol</h4>
                     </div>
                     <div className="col-md-10 form-group">
                         <input className="form-control form-control-last" type="TEXT" ref={ref => this.symbol = ref} />
                     </div>
-                </div>
-                <div className="row">
+                </div>}
+                {!this.props.parent && <div className="row">
                     <div className="col-md-2">
                         <h4>SEED Rate</h4>
                     </div>
                     <div className="col-md-10 form-group">
                         <input className="form-control form-control-last" type="number" ref={ref => this.seedRate = ref} />
                     </div>
-                </div>
-                <div className="row">
+                </div>}
+                {!this.props.parent && <div className="row">
                     <div className="col-md-2">
                         <h4>Exchange Rate</h4>
                     </div>
                     <div className="col-md-10 form-group">
                         <input className="form-control form-control-last" type="number" ref={ref => this.exangeRate = ref} />
                     </div>
-                </div>
-                <div className="row">
+                </div>}
+                {!this.props.parent && <div className="row">
                     <div className="col-md-2">
                         <h4>Exchange Rate Decimals</h4>
                     </div>
                     <div className="col-md-10 form-group">
                         <input className="form-control form-control-last" type="number" ref={ref => this.exchangeRateDecimals = ref} />
                     </div>
-                </div>
-                <div className="row">
+                </div>}
+                {!this.props.parent && <div className="row">
                     <div className="col-md-2">
                         <h4>Total Supply</h4>
                     </div>
                     <div className="col-md-10 form-group">
                         <input className="form-control form-control-last" type="number" ref={ref => this.totalSupply = ref} />
                     </div>
-                </div>
-                <div className="row">
+                </div>}
+                {this.props.parent && <div className="row">
                     <div className="col-md-2">
-                        <button type="button" className="btn btn-secondary btn-pill" onClick={this.deploy}>DEPLOY</button>
+                        <h4>Wallet Address</h4>
                     </div>
                     <div className="col-md-10 form-group">
+                        <input className="form-control form-control-last" type="address" ref={ref => this.walletAddress = ref} />
+                    </div>
+                </div>}
+                <div className="row">
+                    <div className="col-md-12">
+                        <button type="button" className="btn btn-brand btn-pill" onClick={this.deploy}>DEPLOY</button>
+                        {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                        {this.props.parent && <button type="button" className="btn btn-secondary btn-pill" onClick={() => this.emit('section/change', EditFundingPool, {element: this.props.parent, })}>Back</button>}
                     </div>
                 </div>
             </form>

@@ -9,3 +9,10 @@
 .modal {
     height: auto;
 }
+
+.btn.tiny {
+    font-size: 15px;    
+    height: 46px;
+    padding-left: 3rem;
+    padding-right: 3rem;
+}

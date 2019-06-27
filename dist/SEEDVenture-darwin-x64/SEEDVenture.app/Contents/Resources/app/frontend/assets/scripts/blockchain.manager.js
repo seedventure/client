@@ -7,8 +7,17 @@ function BlockchainManager() {
     context.addressesSplit = 500;
 
     context.sendSignedTransaction = async function sendSignedTransaction(signedTransaction) {
-        var tx = await context.provider.sendSignedTransaction(signedTransaction);
+        var tx = undefined;
+        var error = undefined;
+        try {
+            tx = await context.provider.sendSignedTransaction(signedTransaction);
+        } catch(e) {
+            error = e;
+        }
         client.userManager.getBalances();
+        if(error) {
+            throw error;
+        }
         return tx;
     }
 

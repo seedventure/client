@@ -8,7 +8,7 @@ var ListFundingPool = React.createClass({
             'section/change': this.changeSection,
         };
     },
-    changeSection(element, props) {
+    changeSection(element, props, callback) {
         !element && (element = null);
         !props && (props = null);
         if (!element) {
@@ -19,9 +19,20 @@ var ListFundingPool = React.createClass({
                 modules: element.prototype.requiredModules || [],
                 scripts: element.prototype.requiredScripts || [],
                 callback: function () {
-                    _this.setState({title: element.prototype.title || (element.prototype.getTitle ? element.prototype.getTitle() : null), element, props });
+                    _this.setState({title: element.prototype.title, element, props }, () => callback && setTimeout(callback));
                 }
             });
+        }
+    },
+    onElementRef(ref) {
+        if(ref === undefined || ref === null) {
+            return;
+        }
+        if(ref.getTitle) {
+            var title = ref.getTitle();
+            if(!this.state || !this.state.title || this.state.title !== title) {
+                this.setState({title});
+            }
         }
     },
     render() {
@@ -34,6 +45,7 @@ var ListFundingPool = React.createClass({
             props.type = 'section';
             props.view = 'mine';
         }
+        props.ref = this.onElementRef.bind(this)
         return (
             <span>
                 <div className="kt-subheader   kt-grid__item" id="kt_subheader">

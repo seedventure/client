@@ -68,7 +68,7 @@ function ContractsManager() {
         context.getContractEvents(contracts.FundingPanel, events);
         context.getContractEvents(contracts.Token, events);
         var topics = [];
-        for(var i in events) {
+        for (var i in events) {
             topics.push([events[i]]);
         }
         return topics;
@@ -142,6 +142,46 @@ function ContractsManager() {
         result = web3.eth.abi.decodeParameters(['string'], result);
         product.symbol = result['0'];
 
+        data = contract.methods.balanceOf(product.fundingPanelAddress).encodeABI();
+        result = await client.blockchainManager.call(context.SEEDTokenAddress, data);
+        result = web3.eth.abi.decodeParameters(['uint256'], result);
+        product.totalRaised = result['0'];
+
+        product.members = [];
+        contract = new web3.eth.Contract(contracts.FundingPanel);
+        data = contract.methods.getMembersNumber().encodeABI();
+        result = await client.blockchainManager.call(product.fundingPanelAddress, data);
+        result = web3.eth.abi.decodeParameters(['uint256'], result);
+        var members = parseInt(result['0']);
+        for (var i = 0; i < members; i++) {
+            var member = {
+                position: i
+            };
+            contract = new web3.eth.Contract(contracts.FundingPanel);
+            data = contract.methods.getMemberAddressByIndex(i).encodeABI();
+            result = await client.blockchainManager.call(product.fundingPanelAddress, data);
+            result = web3.eth.abi.decodeParameters(['address'], result);
+            member.address = result['0'];
+
+            data = contract.methods.getMemberDataByAddress(member.address).encodeABI();
+            result = await client.blockchainManager.call(product.fundingPanelAddress, data);
+            result = web3.eth.abi.decodeParameters(['bool', 'uint8', 'string', 'bytes32', 'uint256', 'uint'], result);
+
+            member.disabled = parseInt(result['1']);
+            member.documentUrl = result['2'];
+            member.documentHash = result['3'];
+
+            contract = new web3.eth.Contract(contracts.Token);
+            data = contract.methods.balanceOf(member.address).encodeABI();
+            result = await client.blockchainManager.call(context.SEEDTokenAddress, data);
+            result = web3.eth.abi.decodeParameters(['uint256'], result);
+            member.totalRaised = result['0'];
+
+            product.members.push(member);
+        }
+        for (var i in product.members) {
+            await context.refreshMember(product.members[i]);
+        }
         await new Promise(async function (ok, ko) {
             var deleteTimeout = setTimeout(function () {
                 product.unavailable = true;
@@ -170,7 +210,57 @@ function ContractsManager() {
         return product;
     };
 
-    context['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] = async function (event, element) {
+    context.refreshMember = async function refreshMember(product, fundingPanelAddress) {
+        if (fundingPanelAddress !== undefined && fundingPanelAddress !== null && fundingPanelAddress.split(' ').join('') === '') {
+            var contract = new web3.eth.Contract(contracts.FundingPanel);
+            var data = contract.methods.getMemberAddressByIndex(i).encodeABI();
+            var result = await client.blockchainManager.call(fundingPanelAddress, data);
+            result = web3.eth.abi.decodeParameters(['address'], result);
+            member.address = result['0'];
+
+            data = contract.methods.getMemberDataByAddress(member.address).encodeABI();
+            result = await client.blockchainManager.call(fundingPanelAddress, data);
+            result = web3.eth.abi.decodeParameters(['bool', 'uint8', 'string', 'bytes32', 'uint256', 'uint'], result);
+
+            member.disabled = parseInt(result['1']);
+            member.documentUrl = result['2'];
+            member.documentHash = result['3'];
+
+            contract = new web3.eth.Contract(contracts.Token);
+            data = contract.methods.balanceOf(member.address).encodeABI();
+            result = await client.blockchainManager.call(context.SEEDTokenAddress, data);
+            result = web3.eth.abi.decodeParameters(['uint256'], result);
+            member.totalRaised = result['0'];
+        }
+        await new Promise(async function (ok, ko) {
+            var deleteTimeout = setTimeout(function () {
+                product.unavailable = true;
+                ok(product);
+            }, 7000);
+            $.get({
+                url: product.documentUrl,
+                dataType: 'json',
+                cache: false,
+                success: data => {
+                    clearTimeout(deleteTimeout);
+                    delete product.unavailable;
+                    Object.keys(data).map(key => product[key] = data[key]);
+                    ok(product);
+                }
+            });
+        });
+    };
+
+    context['0xb9f320ca5d6edcd5b5ec403b3a0970d8ff03a3ab365497b976507b20e27c7067'] = async function memberDisabled(event, element) {
+        context.getFundingPanelData(element.element || element, true);
+    };
+
+    context['0x0dcb0d206ae1380b9262e6ac8529c80879595c33706fa1199edd4a7ef72cf3a1'] = async function memberEnabled(event, element) {
+        context.getFundingPanelData(element.element || element, true);
+    };
+
+    context['0x94d9b0a056867efca93631b338c7fde3befc3f54db36b90b8456b069385c30be'] = async function (event, element) {
+        context.getFundingPanelData(element.element || element, true);
     };
 
     context['0xb4630f894cab42818aa587f8d4fc219b8472578638e808b23df12161ad730af6'] = async function fundingPanelDataChanged(event, element) {
@@ -181,7 +271,6 @@ function ContractsManager() {
         delete element.hash;
         await context.getFundingPanelData(element, true);
         client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.list, list);
-        $.publish('list/updated', list);
         try {
             for (var i in client.userManager.user.list) {
                 var position = client.userManager.user.list[i];
@@ -194,8 +283,9 @@ function ContractsManager() {
         }
     };
 
-    context['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'] = async function allowanceIncreased(event) {
+    context['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'] = async function allowanceIncreased(event, element) {
         $.publish('allowance/increased');
+        element.position !== undefined && $.publish('fundingPanel/' + element.position + '/updated');
     };
 
     context['0x28e958703d566ea9825155c28c95c3d92a2da219b51404343e4653bccd47525a'] = async function newFundingPanel(event, element) {

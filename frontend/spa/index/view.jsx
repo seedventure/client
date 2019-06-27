@@ -44,7 +44,7 @@ var Index = React.createClass({
                 modules: element.prototype.requiredModules || [],
                 scripts: element.prototype.requiredScripts || [],
                 callback: function () {
-                    _this.setState({ title: element.prototype.title || (element.prototype.getTitle ? element.prototype.getTitle() : null), element, props });
+                    _this.setState({ title: element.prototype.title, element, props });
                 }
             });
         }
@@ -52,12 +52,26 @@ var Index = React.createClass({
     getDefaultRenderer() {
         return !client.configurationManager.hasUser() ? Products : client.configurationManager.hasUnlockedUser() ? Products : Unlock;
     },
+    onElementRef(ref) {
+        if(ref === undefined || ref === null) {
+            return;
+        }
+        if(ref.getTitle) {
+            var title = ref.getTitle();
+            if(!this.state || !this.state.title || this.state.title !== title) {
+                this.setState({title});
+            }
+        }
+    },
     render() {
         var rendered = this.state && this.state.element ? this.state.element : this.getDefaultRenderer();
+        var props = this.state && this.state.props;
+        !props && (props = {});
+        props.ref = this.onElementRef.bind(this)
         if(rendered === Unlock) {
             return (
                 <div className="kt-grid kt-grid--hor kt-grid--root">
-                    {React.createElement(rendered, this.state && this.state.props ? this.state.props : null)}
+                    {React.createElement(rendered, props)}
                 </div>
             );
         }
@@ -66,7 +80,7 @@ var Index = React.createClass({
                 <div className="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--ver kt-page">
                     <div className={"kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor kt-wrapper" + (client.userManager.user ? "" : " guest")} id="kt_wrapper">
                         <Header title={this.state && this.state.title ? this.state.title : ''} element={rendered}/>
-                        {React.createElement(rendered, this.state && this.state.props ? this.state.props : null)}
+                        {React.createElement(rendered, props)}
                     </div>
                 </div>
                 <Modal
