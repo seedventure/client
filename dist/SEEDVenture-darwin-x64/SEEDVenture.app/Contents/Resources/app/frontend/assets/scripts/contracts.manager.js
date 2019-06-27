@@ -194,6 +194,10 @@ function ContractsManager() {
         }
     };
 
+    context['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'] = async function allowanceIncreased(event) {
+        $.publish('allowance/increased');
+    };
+
     context['0x28e958703d566ea9825155c28c95c3d92a2da219b51404343e4653bccd47525a'] = async function newFundingPanel(event, element) {
         var data = web3.eth.abi.decodeParameters(['address', 'address', 'address', 'address', 'uint'], event.data);
 

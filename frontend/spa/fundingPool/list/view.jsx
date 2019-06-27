@@ -1,6 +1,7 @@
 var ListFundingPool = React.createClass({
     requiredModules: [
-        'spa/fundingPool/create'
+        'spa/fundingPool/create',
+        'spa/fundingPool/allow'
     ],
     getDefaultSubscriptions() {
         return {
@@ -41,7 +42,10 @@ var ListFundingPool = React.createClass({
                         <span className="kt-subheader__separator"></span>
                         <div className="kt-subheader__breadcrumbs">
                             <a href="javascript:;" onClick={() => this.changeSection(Products)} className="kt-subheader__breadcrumbs-home"><i className="fas fa-home"></i></a>
+                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
                             <a href="javascript:;" onClick={() => this.changeSection(CreateFundingPool)}  className="kt-subheader__breadcrumbs-home"><i className="fas fa-plus"></i></a>
+                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                            <a href="javascript:;" onClick={() => this.changeSection(AllowFundingPool)}  className="kt-subheader__breadcrumbs-home"><i className="fas fa-money-check"></i></a>
                         </div>
                     </div>
                 </div>

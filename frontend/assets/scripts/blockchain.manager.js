@@ -7,7 +7,9 @@ function BlockchainManager() {
     context.addressesSplit = 500;
 
     context.sendSignedTransaction = async function sendSignedTransaction(signedTransaction) {
-        return await context.provider.sendSignedTransaction(signedTransaction);
+        var tx = await context.provider.sendSignedTransaction(signedTransaction);
+        client.userManager.getBalances();
+        return tx;
     }
 
     context.getChainId = async function getChainId() {

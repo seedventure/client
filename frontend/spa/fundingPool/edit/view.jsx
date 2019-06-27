@@ -160,6 +160,22 @@ var EditFundingPool = React.createClass({
             $(this).addClass('active');
         })[0]).click();
     },
+    administrationSubmit(e) {
+        e.preventDefault();
+        var $target = $(e.target);
+        var value = $target.html().toLowerCase();
+        var $parent = $($target.parents('.form-group'));
+        var title = $parent.children().find('h4').html().split(' ').join('');
+        var address = $parent.children('input[type="text"]').val();
+        if(!Utils.isEthereumAddress(address)) {
+            alert('You must provide a valid ethereum address');
+            return;
+        }
+        var promise = this.controller[value + title](address);
+        promise && promise.then(function(response) {
+            response && $parent.children().find('span.response').html(response);
+        });
+    },
     render() {
         var product = this.getProduct();
         var description = '';
@@ -174,6 +190,9 @@ var EditFundingPool = React.createClass({
                         <ul className="nav nav-tabs nav-tabs-line nav-tabs-bold nav-tabs-line-3x mb-5" role="tablist">
                             <li className="nav-item">
                                 <a className="nav-link" data-toggle="tab" href="#main-data" role="tab"><i className="fa fa-info-circle mr-2"></i>Main Data</a>
+                            </li>
+                            <li className="nav-item">
+                                <a className="nav-link" data-toggle="tab" href="#administration" role="tab"><i className="fas fa-user mr-2"></i>Administration</a>
                             </li>
                             <li className="nav-item">
                                 <a className="nav-link" data-toggle="tab" href="#economic-data" role="tab"><i className="fas fa-coins mr-2"></i>Economic Info</a>
@@ -220,6 +239,106 @@ var EditFundingPool = React.createClass({
                                         </div>
                                     </div>
                                     <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>Update</button>
+                                </form>
+                            </div>
+                            <div className="tab-pane" id="administration" role="tabpanel">
+                                <form className="kt-form" action="">
+                                    <div className="form-group">
+                                        <br/>
+                                        <label><h4>Funding Manager</h4></label>
+                                        <br/>
+                                        <input className="form-control" type="text" placeholder="Address" />
+                                        <br/>
+                                        <div className="kt-form__actions">
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>GRANT</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-secondary btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>DENY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>VERIFY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <span class="response"></span>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <br/>
+                                        <label><h4>Funding Operator</h4></label>
+                                        <br/>
+                                        <input className="form-control" type="text" placeholder="Address" />
+                                        <br/>
+                                        <div className="kt-form__actions">
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>GRANT</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-secondary btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>DENY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>VERIFY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <span class="response"></span>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <br/>
+                                        <label><h4>Funds Unlock Manager</h4></label>
+                                        <br/>
+                                        <input className="form-control" type="text" placeholder="Address" />
+                                        <br/>
+                                        <div className="kt-form__actions">
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>GRANT</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-secondary btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>DENY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>VERIFY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <span class="response"></span>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <br/>
+                                        <label><h4>Funds Unlock Operator</h4></label>
+                                        <br/>
+                                        <input className="form-control" type="text" placeholder="Address" />
+                                        <br/>
+                                        <div className="kt-form__actions">
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>GRANT</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-secondary btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>DENY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>VERIFY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <span class="response"></span>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <br/>
+                                        <label><h4>White List Manager</h4></label>
+                                        <br/>
+                                        <input className="form-control" type="text" placeholder="Address" />
+                                        <br/>
+                                        <div className="kt-form__actions">
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>GRANT</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-secondary btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>DENY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>VERIFY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <span class="response"></span>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <br/>
+                                        <label><h4>White List Operator</h4></label>
+                                        <br/>
+                                        <input className="form-control" type="text" placeholder="Address" />
+                                        <br/>
+                                        <div className="kt-form__actions">
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>GRANT</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-secondary btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>DENY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>VERIFY</button>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <span class="response"></span>
+                                        </div>
+                                    </div>
                                 </form>
                             </div>
                             <div className="tab-pane" id="economic-data" role="tabpanel">
