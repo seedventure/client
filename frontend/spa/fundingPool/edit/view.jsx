@@ -7,7 +7,16 @@ var EditFundingPool = React.createClass({
         "assets/plugins/summernote/summernote.css"
     ],
     getTitle() {
-        return ("Edit " + (this.props.parent ? "Member of " : "") + "Basket " + (this.props.parent || this.getProduct()).name);
+        if(!this.props.parent) {
+            return "Edit Basket";
+        }
+        return (
+            <div key={this.props.parent.name} className="kt-subheader__breadcrumbs">
+                <h3 className="kt-subheader__title"><a href="javascript:;" className="kt-subheader__breadcrumbs-home" onClick={this.back}><i className="fas fa-arrow-left"></i></a></h3>
+                <span className="kt-subheader__separator"></span>
+                <h3 className="kt-subheader__title">Edit Member of <strong>{this.props.parent.name}</strong></h3>
+            </div>
+        );
     },
     getProduct() {
         return this.state && this.state.product ? this.state.product : this.props.element;
@@ -23,15 +32,14 @@ var EditFundingPool = React.createClass({
         var _this = this;
         this.setState({product}, function() {
             _this.forceUpdate();
-            _this.domRoot.children().find('a.nav-link').click();
-            setTimeout(() => _this.setState({product}), 450);
+            setTimeout(() => _this.setState({product}, () => _this.updateNavLinks()));
         });
     },
     back(e) {
         e && e.preventDefault();
         var _this = this;
         var parent = _this.props.parent;
-        this.emit((this.props.type || 'page') + '/change', this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, type: this.props.type, view: this.props.view }, () => _this.setProduct(parent));
+        this.emit((this.props.type || 'page') + '/change', this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack : true, type: this.props.type, view: this.props.view }, () => _this.setProduct(parent));
     },
     loadImage(e) {
         e && e.preventDefault();
@@ -168,11 +176,17 @@ var EditFundingPool = React.createClass({
         }
         this.controller.updateTotalSupply(totalSupply);
     },
-    componentDidMount() {
+    updateNavLinks() {
+        this.domRoot.children().find('.active').removeClass('active');
         this.domRoot.children().find('a.nav-link').click(function () {
             $($(this).parents('.nav-tabs')).children().find('a.nav-link').removeClass('active');
             $(this).addClass('active');
         });
+        this.domRoot.children().find('ul.nav-tabs').children('li.nav-item:first-of-type').children('a.nav-link').click();
+        this.props.fromBack === true && this.domRoot.children().find('ul.nav-tabs:first-of-type').first().children('li.nav-item:last-of-type').children('a.nav-link').click();
+    },
+    componentDidMount() {
+        this.updateNavLinks();
         client.contractsManager.getFundingPanelData(this.getProduct(), true);
     },
     administrationSubmit(e) {
@@ -204,7 +218,7 @@ var EditFundingPool = React.createClass({
                     <div className="col-xl-12 mt-5">
                         <ul className="nav nav-tabs nav-tabs-line nav-tabs-bold nav-tabs-line-3x mb-5" role="tablist">
                             <li className="nav-item">
-                                <a className="nav-link active" data-toggle="tab" href="#main-data" role="tab"><i className="fa fa-info-circle mr-2"></i>Main Info</a>
+                                <a className="nav-link" data-toggle="tab" href="#main-data" role="tab"><i className="fa fa-info-circle mr-2"></i>Main Info</a>
                             </li>
                             {!this.props.parent && <li className="nav-item">
                                 <a className="nav-link" data-toggle="tab" href="#administration" role="tab"><i className="fas fa-user mr-2"></i>Administration</a>
@@ -217,7 +231,7 @@ var EditFundingPool = React.createClass({
                             </li>}
                         </ul>
                         <div className="tab-content">
-                            <div className="tab-pane active" id="main-data" role="tabpanel">
+                            <div className="tab-pane" id="main-data" role="tabpanel">
                                 <form className="kt-form" action="">
                                     <div className="row">
                                         <div className="col-md-2">
@@ -254,16 +268,15 @@ var EditFundingPool = React.createClass({
                                         </div>
                                     </div>
                                     {!this.props.parent && <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>Update</button>}
-                                    {this.props.parent && <button type="button" className="btn btn-secondary btn-pill btn-elevate browse-btn" onClick={this.back}>Back</button>}
                                 </form>
                             </div>
-                            <div className="tab-pane" id="administration" role="tabpanel">
+                            {!this.props.parent && <div className="tab-pane" id="administration" role="tabpanel">
                                 <form className="kt-form" action="">
                                     <div className="form-group">
                                         <br />
                                         <ul className="nav nav-tabs nav-tabs-line nav-tabs-bold nav-tabs-line-3x mb-5" role="tablist">
                                             <li className="nav-item">
-                                                <a className="nav-link active" data-toggle="tab" role="tab">Funding Manager</a>
+                                                <a className="nav-link" data-toggle="tab" role="tab">Funding Manager</a>
                                             </li>
                                             <li className="nav-item">
                                                 <a className="nav-link" data-toggle="tab" role="tab">Funding Operator</a>
@@ -295,8 +308,8 @@ var EditFundingPool = React.createClass({
                                         </div>
                                     </div>
                                 </form>
-                            </div>
-                            <div className="tab-pane" id="economic-data" role="tabpanel">
+                            </div>}
+                            {!this.props.parent && <div className="tab-pane" id="economic-data" role="tabpanel">
                                 <form className="kt-form" action="">
                                     <div className="row">
                                         <div className="col-md-2">
@@ -346,13 +359,13 @@ var EditFundingPool = React.createClass({
                                         </div>
                                     </div>
                                 </form>
-                            </div>
-                            <div className="tab-pane" id="members" role="tabpanel">
+                            </div>}
+                            {!this.props.parent && <div className="tab-pane" id="members" role="tabpanel">
                                 <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={() => this.emit('section/change', CreateFundingPool, {parent : product, type: 'section', view: 'mine'})}>Add new Member</button>
                                 <br />
                                 <br />
                                 <Members element={product} view={this.props.view} type={this.props.type}/>
-                            </div>
+                            </div>}
                         </div>
                     </div>
                 </div>

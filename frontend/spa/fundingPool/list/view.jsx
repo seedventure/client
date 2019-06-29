@@ -1,3 +1,5 @@
+import { runInThisContext } from "vm";
+
 var ListFundingPool = React.createClass({
     requiredModules: [
         'spa/fundingPool/create',
@@ -28,12 +30,15 @@ var ListFundingPool = React.createClass({
         if(ref === undefined || ref === null) {
             return;
         }
-        if(ref.getTitle) {
-            var title = ref.getTitle();
-            if(!this.state || !this.state.title || this.state.title !== title) {
-                this.setState({title});
-            }
+        var title = ref.getTitle ? ref.getTitle() : <h3 key={"default"} className="kt-subheader__title">Owned Baskets</h3>;
+        typeof title === 'string' && (title = <h3 key={"built"} className="kt-subheader__title">{title}</h3>);
+        if(this.state && this.state.title && this.state.title === title) {
+            return;
         }
+        if(title && this.state && this.state.title && typeof title !== 'string' && typeof this.state.title !== 'string' && title.key === this.state.title.key) {
+            return;
+        }
+        this.setState({title});
     },
     render() {
         var _this = this;
@@ -48,19 +53,19 @@ var ListFundingPool = React.createClass({
         props.ref = this.onElementRef.bind(this)
         return (
             <span>
-                <div className="kt-subheader   kt-grid__item" id="kt_subheader">
+                {this.state && this.state.title && <div className="kt-subheader   kt-grid__item" id="kt_subheader">
                     <div className="kt-subheader__main">
-                        <h3 className="kt-subheader__title">{(this.state && this.state.title) || "Owned Baskets"}</h3>
+                        {this.state.title}
                         <span className="kt-subheader__separator"></span>
                         <div className="kt-subheader__breadcrumbs">
                             <a href="javascript:;" onClick={() => this.changeSection(Products)} className="kt-subheader__breadcrumbs-home"><i className="fas fa-home"></i></a>
                             {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
-                            <a href="javascript:;" onClick={() => this.changeSection(CreateFundingPool)}  className="kt-subheader__breadcrumbs-home"><i className="fas fa-plus"></i></a>
+                            <a href="javascript:;" onClick={() => this.changeSection(AllowFundingPool)} className="kt-subheader__breadcrumbs-home"><i className="fas fa-money-check"></i></a>
                             {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
-                            <a href="javascript:;" onClick={() => this.changeSection(AllowFundingPool)}  className="kt-subheader__breadcrumbs-home"><i className="fas fa-money-check"></i></a>
+                            <a href="javascript:;" onClick={() => this.changeSection(CreateFundingPool)} className="kt-subheader__breadcrumbs-home"><i className="fas fa-plus"></i></a>
                         </div>
                     </div>
-                </div>
+                </div>}
                 {React.createElement(this.state && this.state.element ? this.state.element : Products, props)}
             </span>
         );

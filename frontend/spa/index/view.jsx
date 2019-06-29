@@ -59,6 +59,11 @@ var Index = React.createClass({
         if(ref.getTitle) {
             var title = ref.getTitle();
             if(!this.state || !this.state.title || this.state.title !== title) {
+                if(title && this.state.title && typeof title !== 'string' && typeof this.state.title !== 'string') {
+                    if(title.key === this.state.title.key) {
+                        return;
+                    }
+                }
                 this.setState({title});
             }
         }

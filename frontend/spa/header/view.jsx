@@ -134,7 +134,7 @@ var Header = React.createClass({
                                     </li>
                                 </ul>
                             </div>
-                        </div>                        
+                        </div>
                     </div>
                 </div>}
                 <Modal

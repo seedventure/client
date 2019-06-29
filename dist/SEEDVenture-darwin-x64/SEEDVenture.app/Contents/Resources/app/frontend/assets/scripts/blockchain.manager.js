@@ -97,7 +97,7 @@ function BlockchainManager() {
         if(toBlock > context.lastFetchedBlockNumber) {
             toBlock = context.lastFetchedBlockNumber;
         }
-        setTimeout(function(){context.provider.retrieveEvents(fromBlock, toBlock, address)});
+        setTimeout(function(){context.provider.retrieveEvents(fromBlock, toBlock, address).then(context.onEvents)});
     };
 
     context.call = async function call(to, data) {
@@ -118,7 +118,7 @@ function BlockchainManager() {
             ScriptLoader.load({
                 script: client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3Provider),
                 callback: function () {
-                    context.provider = new BlockchainProvider(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL), context.onEvents);
+                    context.provider = new BlockchainProvider(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL));
                     context.nextEventCheckTimeout = setTimeout(context.mainLoop);
                     ok();
                 }

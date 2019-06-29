@@ -30,8 +30,8 @@ var Unlock = React.createClass({
                                                     <input className="form-control form-control-last" type="password" placeholder="Password" name="password" ref={ref => this.password = ref} />
                                                 </div>
                                                 <div className="kt-login__actions">
-                                                    <button className="btn btn-secondary btn-pill" onClick={this.askForget}>Forget</button>
                                                     <button id="kt_login_signin_submit" className="btn btn-brand btn-pill btn-elevate" onClick={this.unlock}>Unlock</button>
+                                                    <button className="btn btn-secondary btn-pill" onClick={this.askForget}>Forget</button>
                                                 </div>
                                             </form>
                                         </div>

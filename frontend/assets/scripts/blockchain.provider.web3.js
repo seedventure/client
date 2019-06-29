@@ -1,8 +1,7 @@
-function BlockchainProvider(url, eventsCallback) {
+function BlockchainProvider(url) {
     var context = this;
 
     context.url = url;
-    context.eventsCallback = eventsCallback;
 
     var input = context.url;
     input && input.indexOf('ws') === 0 && (input = new Web3.providers.WebsocketProvider(input));
@@ -19,7 +18,7 @@ function BlockchainProvider(url, eventsCallback) {
         return (context.chainId = await context.web3.eth.net.getId());
     };
 
-    context.retrieveEvents = async function retrieveEvents(fromBlock, toBlock, address) {
+    context.retrieveEvents = async function retrieveEvents(fromBlock, toBlock, address, topics) {
         !fromBlock && (fromBlock = '0');
         !toBlock && (toBlock = await context.getBlockNumber());
         fromBlock = fromBlock.toString();
@@ -27,9 +26,9 @@ function BlockchainProvider(url, eventsCallback) {
         var events = await context.web3.eth.getPastLogs({
             fromBlock,
             toBlock,
-            address
+            address,
+            topics
         });
-        context.eventsCallback && setTimeout(() => context.eventsCallback(events));
         return events;
     };
 
