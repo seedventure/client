@@ -4,7 +4,29 @@ var CreateFundingPool = React.createClass({
         "assets/plugins/summernote/summernote.css"
     ],
     getTitle() {
-        return "Create new " + (this.props.parent ? ("Member for Basket " + this.props.parent.name) : "Basket");
+        if(!this.props.parent) {
+            return "Create new Basket";
+        }
+        return (
+            <div key={this.props.parent.name} className="kt-subheader__breadcrumbs">
+                <h3 className="kt-subheader__title"><a href="javascript:;" className="kt-subheader__breadcrumbs-home" onClick={this.back}><i className="fas fa-arrow-left"></i></a></h3>
+                <span className="kt-subheader__separator"></span>
+                <h3 className="kt-subheader__title">Create new Startup for the Basket <strong>{this.props.parent.name}</strong></h3>
+            </div>
+        );
+    },
+    back(e) {
+        e && e.preventDefault();
+        var _this = this;
+        var parent = _this.props.parent;
+        this.emit((this.props.type || 'page') + '/change', this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack : true, type: this.props.type, view: this.props.view }, () => _this.setProduct(parent));
+    },
+    setProduct(product) {
+        var _this = this;
+        this.setState({product}, function() {
+            _this.forceUpdate();
+            setTimeout(() => _this.setState({product}));
+        });
     },
     deploy(e) {
         e && e.preventDefault();
@@ -37,6 +59,18 @@ var CreateFundingPool = React.createClass({
                 alert('Wrong URL');
                 return;
             }
+        }
+
+        var tags = [];
+        try {
+            var tgs = this.tags.value.split(' ');
+            for(var i in tgs) {
+                var tag = tgs[i].split(' ').join('');
+                if(tag.length > 0) {
+                    tags.push(tag);
+                }
+            }
+        } catch(error) {
         }
 
         var symbol = ''
@@ -103,6 +137,8 @@ var CreateFundingPool = React.createClass({
             description: $.base64.encode(this.description.summernote('code')),
             url,
             image,
+            tags,
+            documents: (this.state && this.state.documents) || [],
             symbol,
             seedRate,
             exangeRate,
@@ -110,7 +146,7 @@ var CreateFundingPool = React.createClass({
             totalSupply,
             walletAddress
         };
-        var type = this.props.parent ? 'Member' : 'Basket';
+        var type = this.props.parent ? 'Startup' : 'Basket';
         this.controller['deploy' + type](data, this.props.parent);
     },
     loadImage(e) {
@@ -129,6 +165,39 @@ var CreateFundingPool = React.createClass({
             file = "data:image/png;base64, " + file;
             this.image.attr('src', file);
         }
+    },
+    addDocument(e) {
+        e && e.preventDefault();
+        var name = this.documentName.value;
+        if(name.split(' ').join('') === '') {
+            alert('Name is mandatory');
+            return;
+        }
+        var link = this.documentLink.value;
+        link = link.split(' ').join('');
+        if(link.indexOf('http://') === -1 && link.indexOf('https://') === -1) {
+            alert('Link must start with http or https');
+            return;
+        }
+        var documents = (this.state && this.state.documents) || [];
+        documents.push({
+            name,
+            link
+        });
+        this.documentName.value = '';
+        this.documentLink.value = '';
+        this.setState({documents});
+    },
+    deleteDocument(i, e) {
+        e && e.preventDefault();
+        var documents = this.state.documents;
+        var doc = documents[i];
+        documents.splice(i, 1);
+        var _this = this;
+        this.setState({documents}, function() {
+            _this.documentName.value = doc.name;
+            _this.documentLink.value = doc.link;
+        });
     },
     render() {
         return (
@@ -149,6 +218,48 @@ var CreateFundingPool = React.createClass({
                         <div ref={ref => ref && (this.description = $(ref)).summernote({ minHeight: 350, disableResizeEditor: true })} />
                     </div>
                 </div>
+                <br/>
+                <br/>
+                <div className="row">
+                    <div className="col-md-12">
+                        <h3>Documents</h3>
+                    </div>
+                </div>
+                <br/>
+                <div className="row">
+                    <div className="col-md-2">
+                    </div>
+                    <div className="col-md-4">
+                        <input className="form-control form-control-last" type="text" placeholder="Name" ref={ref => this.documentName = ref} />
+                    </div>
+                    <div className="col-md-4">
+                        <input className="form-control form-control-last" type="text" placeholder="Link" ref={ref => this.documentLink = ref} />
+                    </div>
+                    <div className="col-md-2">
+                        <button type="button" className="btn btn-brand btn-pill tiny" onClick={this.addDocument}>Add</button>
+                    </div>
+                </div>
+                <br/>
+                <br/>
+                {this.state && this.state.documents && this.state.documents.map((it, i) =>
+                    <div key={'document_' + i} className="row">
+                        <div className="col-md-2">
+                        </div>
+                        <div className="col-md-4">
+                            <span>{it.name}</span>
+                        </div>
+                        <div className="col-md-4">
+                            <span>{it.link}</span>
+                        </div>
+                        <div className="col-md-2">
+                            <h3>
+                                <a href="javascript:;" onClick={e => this.deleteDocument(i, e)}><i className="fas fa-remove"></i></a>
+                            </h3>
+                        </div>
+                    </div>
+                )}
+                <br/>
+                <br/>
                 <div className="row">
                     <div className="col-md-2">
                         <h4>URL</h4>
@@ -167,6 +278,14 @@ var CreateFundingPool = React.createClass({
                         </a>
                     </div>
                 </div>
+                {!this.props.parent && <div className="row">
+                    <div className="col-md-2">
+                        <h4>Tags</h4>
+                    </div>
+                    <div className="col-md-10 form-group">
+                        <input className="form-control form-control-last" type="text" ref={ref => this.tags = ref} />
+                    </div>
+                </div>}
                 {!this.props.parent && <div className="row">
                     <div className="col-md-2">
                         <h4>Symbol</h4>
@@ -218,8 +337,6 @@ var CreateFundingPool = React.createClass({
                 <div className="row">
                     <div className="col-md-12">
                         <button type="button" className="btn btn-brand btn-pill" onClick={this.deploy}>DEPLOY</button>
-                        {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
-                        {this.props.parent && <button type="button" className="btn btn-secondary btn-pill" onClick={() => this.emit('section/change', EditFundingPool, {element: this.props.parent, })}>Back</button>}
                     </div>
                 </div>
             </form>

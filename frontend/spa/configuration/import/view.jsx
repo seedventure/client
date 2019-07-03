@@ -127,7 +127,7 @@ var ImportConfiguration = React.createClass({
                                 <form className="kt-form" action="">
                                     <legend>Insert your private key and password</legend>
                                     <div className="form-group mt-5 mb-5">
-                                        <input className="form-control form-control-last" type="text" placeholder="Private key" name="password" ref={ref => this.privateKey = ref}/>
+                                        <input className="form-control form-control-last" type="password" placeholder="Private key" name="password" ref={ref => this.privateKey = ref}/>
                                     </div>
                                     <div className="form-group mb-5">
                                         <input className="form-control form-control-last" type="password" placeholder="Type your password" name="password" ref={ref => this.privateKeyPassword = ref}/>

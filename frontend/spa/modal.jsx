@@ -20,7 +20,7 @@ var Modal = React.createClass({
                 button.props['data-lang-id'] = action.langId;
             }
             if(action.onClick) {
-                button.props.onClick = action.onClick;
+                button.props.onClick = action.onClick.bind(this);
             }
             if(action.props) {
                 for(var z in action.props) {
@@ -49,6 +49,9 @@ var Modal = React.createClass({
     isHidden() {
         return !this.isVisible()
     },
+    setTitle(title, titleLangId) {
+        this.setState({title, titleLangId});
+    },
     componentDidUpdate() {
         if(window.onModalShow === undefined) {
             window.onModalShow = function onModalShow() {
@@ -72,22 +75,23 @@ var Modal = React.createClass({
         if(!($.fn.modal)) {
             return <span style={{'display' : 'none'}}></span>
         }
-        var title = (<span>{this.props.title}</span>);
-        if(this.props.titleLangId) {
-            title.props['data-lang-id'] = this.props.titleLangId
+        var modalTitle = <h4 className="modal-title">{(this.state && this.state.title) || this.props.title}</h4>
+        if((this.state && this.state.titleLangId) || this.props.titleLangId) {
+            modalTitle.props['data-lang-id'] = (this.state && this.state.titleLangId) || this.props.titleLangId
         }
+        var readonly = this.props.readonly === true || this.props.readonly === 'true';
         var modal = (
             <div className="modal fade" tabindex="-1" data-backdrop={this.props.backdrop} data-keyboard={this.props.keyboard}>
                 <div className="modal-header">
-                    <button type="button" className="close" data-dismiss="modal" aria-hidden="true"></button>
-                    <h4 className="modal-title">{title}</h4>
+                    {readonly !== true &&<button type="button" className="close" data-dismiss="modal" aria-hidden="true"></button>}
+                    {modalTitle}
                 </div>
                 <div className="modal-body">
                     {this.props.children}
                 </div>
                 <div className="modal-footer">
-                    {this.props.readonly !== true && <button type="button" data-dismiss="modal" className="btn btn-undo" data-lang-id="close">Close</button>}
-                    {this.props.readonly !== true && this.renderActions()}
+                    {readonly !== true && <button type="button" data-dismiss="modal" className="btn btn-undo" data-lang-id="close">Close</button>}
+                    {readonly !== true && this.renderActions()}
                 </div>
             </div>
         );

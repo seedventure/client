@@ -22,7 +22,7 @@ var Members = React.createClass({
                 <div className="kt-container kt-body kt-grid kt-grid--ver" id="kt_body">
                     <div className="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor">
                         <div className="kt-content kt-grid__item kt-grid__item--fluid">
-                            {members.length === 0 && <h1>No members right now</h1>}
+                            {members.length === 0 && <h1>No Startups right now</h1>}
                             {members.length > 0 && members.map((member, i) => {
                                 if (i !== 0 && i % 3 !== 0) {
                                     return;

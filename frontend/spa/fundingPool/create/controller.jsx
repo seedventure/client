@@ -10,7 +10,9 @@ var CreateFundingPoolController = function(view) {
             name : data.name,
             description : data.description,
             url : data.url,
-            image : data.image
+            image : data.image,
+            documents: data.documents,
+            tags
         };
         var hash = await client.ipfsManager.uploadDocument(document);
         var url = ecosystemData.ipfsUrlTemplate + hash;
@@ -26,10 +28,8 @@ var CreateFundingPoolController = function(view) {
             parseInt(data.totalSupply));
         method = method.encodeABI();
         context.view.emit('loader/hide');
-        var signedTransaction = await client.userManager.signTransaction(ecosystemData.factoryAddress, method);
-        client.blockchainManager.sendSignedTransaction(signedTransaction);
-        setTimeout(() => context.view.emit('transaction/show', web3.utils.sha3(signedTransaction)), 700);
-        setTimeout(() => context.view.emit('section/change'), 700);
+        var tx = await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(ecosystemData.factoryAddress, method), "Create new Funding Panel", true);
+        tx && setTimeout(() => context.view.emit('section/change'), 700);
     };
 
     context.deployMember = async function deploy(data, product) {
@@ -50,7 +50,8 @@ var CreateFundingPoolController = function(view) {
             name : data.name,
             description : data.description,
             url : data.url,
-            image : data.image
+            image : data.image,
+            documents: data.documents
         };
         var hash = await client.ipfsManager.uploadDocument(document);
         var url = ecosystemData.ipfsUrlTemplate + hash;
@@ -62,9 +63,7 @@ var CreateFundingPoolController = function(view) {
             web3.utils.soliditySha3(JSON.stringify(document)));
         method = method.encodeABI();
         context.view.emit('loader/hide');
-        var signedTransaction = await client.userManager.signTransaction(product.fundingPanelAddress, method);
-        client.blockchainManager.sendSignedTransaction(signedTransaction);
-        setTimeout(() => context.view.emit('transaction/show', web3.utils.sha3(signedTransaction)), 700);
-        setTimeout(() => context.view.emit('section/change'), 700);
+        var tx = await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(product.fundingPanelAddress, method), "Create new Funding Panel");
+        tx && setTimeout(() => context.view.emit('section/change'), 700);
     };
 };

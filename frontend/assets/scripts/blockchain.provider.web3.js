@@ -12,7 +12,7 @@ function BlockchainProvider(url) {
     };
 
     context.getChainId = async function getChainId() {
-        if(context.chainId) {
+        if (context.chainId) {
             return context.chainId;
         }
         return (context.chainId = await context.web3.eth.net.getId());
@@ -38,7 +38,7 @@ function BlockchainProvider(url) {
 
     context.call = async function call(to, data) {
         return await context.web3.eth.call({
-            to, 
+            to,
             data
         });
     };

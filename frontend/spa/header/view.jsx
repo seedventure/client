@@ -7,17 +7,10 @@ var Header = React.createClass({
     ],
     getDefaultSubscriptions() {
         return {
-            'wallet/show': this.showWalletModal,
             'index/title': title => this.setState({ title }),
             'amount/seed': seed => this.setState({ seed }),
             'amount/eth': eth => this.setState({ eth }),
         };
-    },
-    showWalletModal() {
-        this.addressLink.attr('href', ecosystemData.etherscanURL + 'address/' + client.userManager.user.wallet);
-        this.addressLink.html(client.userManager.user.wallet);
-        this.privateKeyLabel.html(client.userManager.user.privateKey.substring(0, 50) + '...');
-        this.walletModal.isHidden() && this.walletModal.show();
     },
     copyAddress(e) {
         e && e.preventDefault();
@@ -137,21 +130,6 @@ var Header = React.createClass({
                         </div>
                     </div>
                 </div>}
-                <Modal
-                    title="Your Wallet"
-                    ref={ref => this.walletModal = ref}
-                    className="header wallet">
-                    <h4>Your Address:</h4>
-                    <div>
-                        <a target="_blank" ref={ref => this.addressLink = $(ref)}></a>
-                        <a href="#" onClick={this.copyAddress}><i className="copy fa fa-file"></i></a>
-                    </div>
-                    <h4>Your Private Key:</h4>
-                    <div>
-                        <span ref={ref => this.privateKeyLabel = $(ref)}></span>
-                        <a href="#" onClick={this.copyPrivateKey}><i className="copy fa fa-file"></i></a>
-                    </div>
-                </Modal>
             </header>
         );
     }

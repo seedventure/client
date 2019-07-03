@@ -25,7 +25,7 @@ function UserManager() {
         .Distinct().ToArray()
       };
       client.configurationManager.save(context.user, pass, true);
-      context.getBalances();
+      $.publish('wallet/show');
     };
 
     context.forget = function forget() {

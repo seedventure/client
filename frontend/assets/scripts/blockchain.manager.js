@@ -6,19 +6,39 @@ function BlockchainManager() {
     context.blockSequenceToCheck = 45000;
     context.addressesSplit = 500;
 
-    context.sendSignedTransaction = async function sendSignedTransaction(signedTransaction) {
-        var tx = undefined;
-        var error = undefined;
-        try {
-            tx = await context.provider.sendSignedTransaction(signedTransaction);
-        } catch(e) {
-            error = e;
-        }
-        client.userManager.getBalances();
-        if(error) {
-            throw error;
-        }
-        return tx;
+    context.sendSignedTransaction = function sendSignedTransaction(signedTransaction, title, lock) {
+        return new Promise(async function(ok, ko) {
+            var txHash = web3.utils.sha3(signedTransaction);
+            var submit = async function(event, result) {
+                $.unsubscribe('transaction/submit', submit);
+                if(result !== true) {
+                    ok();
+                    return;
+                }
+                lock === true && $.publish('transaction/lock', txHash);
+                var tx = undefined;
+                var error = undefined;
+                try {
+                    tx = await context.provider.sendSignedTransaction(signedTransaction);
+                } catch(e) {
+                    error = e;
+                }
+                $.publish('transaction/unlock');
+                client.userManager.getBalances();
+                var finalize = function() {
+                    $.unsubscribe('transaction/finalize', finalize);
+                    if(error) {
+                        ko(error);
+                        return;
+                    }
+                    ok(tx);
+                };
+                $.subscribe('transaction/finalize', finalize);
+                $.publish('transaction/submitted', [txHash, title, error, tx]);
+            };
+            $.subscribe('transaction/submit', submit);
+            $.publish('transaction/ask', [txHash, title]);
+        });
     }
 
     context.getChainId = async function getChainId() {
@@ -108,17 +128,30 @@ function BlockchainManager() {
         return await context.provider.balanceOf(address);
     }
 
-    context.newProvider = function newProvider() {
+    context.newProvider = function newProvider(stop) {
         context.nextEventCheckTimeout && clearTimeout(context.nextEventCheckTimeout);
-        return new Promise(function(ok, ko) {
+        return new Promise(async function(ok, ko) {
             try {
                 context.provider.stop();
             } catch {
             }
             ScriptLoader.load({
                 script: client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3Provider),
-                callback: function () {
+                callback: async function () {
                     context.provider = new BlockchainProvider(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL));
+                    try {
+                        await context.provider.fetchLastBlockNumber();
+                    } catch(error) {
+                        if(stop === true) {
+                            ko(error);
+                            return;
+                        }
+                        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL, ecosystemData.web3URL);
+                        setTimeout(async function() {
+                            ok((await context.newProvider(true)));
+                        });
+                        return;
+                    }
                     context.nextEventCheckTimeout = setTimeout(context.mainLoop);
                     ok();
                 }

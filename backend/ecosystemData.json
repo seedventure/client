@@ -4,6 +4,7 @@
     "lastCheckedBlockNumber" : 5723338,
     "web3Provider" : "assets/scripts/blockchain.provider.web3.js",
     "etherscanURL" : "https://ropsten.etherscan.io/",
+    "web3URL" : "wss://testnet.seedventure.io",
     "ipfsProvider" : "assets/scripts/ipfs.provider.http.js",
     "ipfsHost" : "ipfs.infura.io",
     "ipfsPort" : "5001",

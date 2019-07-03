@@ -211,6 +211,9 @@ function ContractsManager() {
     };
 
     context.refreshMember = async function refreshMember(product, fundingPanelAddress) {
+        if(!product) {
+            return;
+        }
         if (fundingPanelAddress !== undefined && fundingPanelAddress !== null && fundingPanelAddress.split(' ').join('') === '') {
             var contract = new web3.eth.Contract(contracts.FundingPanel);
             var data = contract.methods.getMemberAddressByIndex(i).encodeABI();

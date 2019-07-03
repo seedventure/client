@@ -23,7 +23,7 @@ var Member = React.createClass({
     enableDisable(e) {
         e && e.preventDefault();
         var product = this.getProduct();
-        this.controller[(product.disabled === 0 ? 'disable' : 'enable') + 'Member'](product, this.props.parent);
+        this.controller[(product.disabled === 0 ? 'disable' : 'enable') + 'Startup'](product, this.props.parent);
     },
     unlockFunds(e) {
         e && e.preventDefault();

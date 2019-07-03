@@ -7,14 +7,14 @@ var EditFundingPool = React.createClass({
         "assets/plugins/summernote/summernote.css"
     ],
     getTitle() {
-        if(!this.props.parent) {
+        if (!this.props.parent) {
             return "Edit Basket";
         }
         return (
             <div key={this.props.parent.name} className="kt-subheader__breadcrumbs">
                 <h3 className="kt-subheader__title"><a href="javascript:;" className="kt-subheader__breadcrumbs-home" onClick={this.back}><i className="fas fa-arrow-left"></i></a></h3>
                 <span className="kt-subheader__separator"></span>
-                <h3 className="kt-subheader__title">Edit Member of <strong>{this.props.parent.name}</strong></h3>
+                <h3 className="kt-subheader__title">Edit Startup of <strong>{this.props.parent.name}</strong></h3>
             </div>
         );
     },
@@ -30,16 +30,16 @@ var EditFundingPool = React.createClass({
     },
     setProduct(product) {
         var _this = this;
-        this.setState({product}, function() {
+        this.setState({ product, documents: product.documents }, function () {
             _this.forceUpdate();
-            setTimeout(() => _this.setState({product}, () => _this.updateNavLinks()));
+            setTimeout(() => _this.setState({ product }, () => _this.updateNavLinks()));
         });
     },
     back(e) {
         e && e.preventDefault();
         var _this = this;
         var parent = _this.props.parent;
-        this.emit((this.props.type || 'page') + '/change', this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack : true, type: this.props.type, view: this.props.view }, () => _this.setProduct(parent));
+        this.emit((this.props.type || 'page') + '/change', this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack: true, type: this.props.type, view: this.props.view }, () => _this.setProduct(parent));
     },
     loadImage(e) {
         e && e.preventDefault();
@@ -91,17 +91,34 @@ var EditFundingPool = React.createClass({
             image = this.image.attr('src').split("data:image/png;base64, ").join('');
         } catch (error) {
         }
+
+        var tags = [];
+        try {
+            var tgs = this.tags.value.split(' ');
+            for(var i in tgs) {
+                var tag = tgs[i].split(' ').join('');
+                if(tag.length > 0) {
+                    tags.push(tag);
+                }
+            }
+        } catch(error) {
+        }
+
         var newProduct = {
             name,
             description: $.base64.encode(this.description.summernote('code')),
             url,
-            image
+            image,
+            tags,
+            documents: (this.state && this.state.documents) || []
         };
         var thisProduct = this.getProduct();
         var oldProduct = {
             name: thisProduct.name,
             description: thisProduct.description,
-            url: thisProduct.url
+            url: thisProduct.url,
+            tags: thisProduct.tags,
+            documents: thisProduct.documents
         }
         try {
             oldProduct.image = thisProduct.image.split('data:image/png;base64, ').join('');
@@ -187,6 +204,7 @@ var EditFundingPool = React.createClass({
     },
     componentDidMount() {
         this.updateNavLinks();
+        this.setState({documents: this.getProduct().documents});
         client.contractsManager.getFundingPanelData(this.getProduct(), true);
     },
     administrationSubmit(e) {
@@ -203,6 +221,39 @@ var EditFundingPool = React.createClass({
         var promise = this.controller[value + title](address);
         promise && promise.then(function (response) {
             response && $parent.children().find('span.response').html(response);
+        });
+    },
+    addDocument(e) {
+        e && e.preventDefault();
+        var name = this.documentName.value;
+        if(name.split(' ').join('') === '') {
+            alert('Name is mandatory');
+            return;
+        }
+        var link = this.documentLink.value;
+        link = link.split(' ').join('');
+        if(link.indexOf('http://') === -1 && link.indexOf('https://') === -1) {
+            alert('Link must start with http or https');
+            return;
+        }
+        var documents = (this.state && this.state.documents) || [];
+        documents.push({
+            name,
+            link
+        });
+        this.documentName.value = '';
+        this.documentLink.value = '';
+        this.setState({documents});
+    },
+    deleteDocument(i, e) {
+        e && e.preventDefault();
+        var documents = this.state.documents;
+        var doc = documents[i];
+        documents.splice(i, 1);
+        var _this = this;
+        this.setState({documents}, function() {
+            _this.documentName.value = doc.name;
+            _this.documentLink.value = doc.link;
         });
     },
     render() {
@@ -227,7 +278,7 @@ var EditFundingPool = React.createClass({
                                 <a className="nav-link" data-toggle="tab" href="#economic-data" role="tab"><i className="fas fa-coins mr-2"></i>Economic Info</a>
                             </li>}
                             {!this.props.parent && <li className="nav-item">
-                                <a className="nav-link" data-toggle="tab" href="#members" role="tab"><i className="fas fa-rocket mr-2"></i>Members</a>
+                                <a className="nav-link" data-toggle="tab" href="#members" role="tab"><i className="fas fa-rocket mr-2"></i>Startups</a>
                             </li>}
                         </ul>
                         <div className="tab-content">
@@ -249,6 +300,74 @@ var EditFundingPool = React.createClass({
                                             <div ref={ref => ref && (this.description = $(ref)).summernote({ minHeight: 350, disableResizeEditor: true }).summernote('code', description)} />
                                         </div>
                                     </div>
+                                    <br />
+                                    <br />
+                                    <div className="row">
+                                        <div className="col-md-12">
+                                            <h3>Documents</h3>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div className="row">
+                                        <div className="col-md-2">
+                                        </div>
+                                        <div className="col-md-4">
+                                            <input className="form-control form-control-last" type="text" placeholder="Name" ref={ref => this.documentName = ref} />
+                                        </div>
+                                        <div className="col-md-4">
+                                            <input className="form-control form-control-last" type="text" placeholder="Link" ref={ref => this.documentLink = ref} />
+                                        </div>
+                                        <div className="col-md-2">
+                                            <button type="button" className="btn btn-brand btn-pill tiny" onClick={this.addDocument}>Add</button>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <br />
+                                    {this.state && this.state.documents && this.state.documents.map((it, i) =>
+                                        <div key={'document_' + i} className="row">
+                                            <div className="col-md-2">
+                                            </div>
+                                            <div className="col-md-4">
+                                                <span>{it.name}</span>
+                                            </div>
+                                            <div className="col-md-4">
+                                                <span>{it.link}</span>
+                                            </div>
+                                            <div className="col-md-2">
+                                                <h3>
+                                                    <a href="javascript:;" onClick={e => this.deleteDocument(i, e)}><i className="fas fa-remove"></i></a>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <br />
+                                    <br />
+                                    <div className="row">
+                                        <div className="col-md-2">
+                                            <h4>URL</h4>
+                                        </div>
+                                        <div className="col-md-10 form-group">
+                                            <input className="form-control form-control-last" type="text" ref={ref => this.url = ref} />
+                                        </div>
+                                    </div>
+                                    <div className="row">
+                                        <div className="col-md-2">
+                                            <h4>Logo</h4>
+                                        </div>
+                                        <div className="col-md-10 form-group">
+                                            <a href="javascript:;" onClick={this.loadImage}>
+                                                <img width="100" height="100" ref={ref => this.image = $(ref)} />
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {!this.props.parent && <div className="row">
+                                        <div className="col-md-2">
+                                            <h4>Tags</h4>
+                                        </div>
+                                        <div className="col-md-10 form-group">
+                                            <input className="form-control form-control-last" type="text" ref={ref => this.tags = ref} />
+                                        </div>
+                                    </div>}
                                     <div className="row">
                                         <div className="col-md-2">
                                             <h4>URL</h4>
@@ -285,13 +404,13 @@ var EditFundingPool = React.createClass({
                                                 <a className="nav-link" data-toggle="tab" role="tab">Funds Unlock Manager</a>
                                             </li>
                                             <li className="nav-item">
-                                                <a className="nav-link" data-toggle="tab"role="tab">Funds Unlock Operator</a>
+                                                <a className="nav-link" data-toggle="tab" role="tab">Funds Unlock Operator</a>
                                             </li>
                                             <li className="nav-item">
-                                                <a className="nav-link" data-toggle="tab"role="tab">White List Manager</a>
+                                                <a className="nav-link" data-toggle="tab" role="tab">White List Manager</a>
                                             </li>
                                             <li className="nav-item">
-                                                <a className="nav-link" data-toggle="tab"role="tab">White List Operator</a>
+                                                <a className="nav-link" data-toggle="tab" role="tab">White List Operator</a>
                                             </li>
                                         </ul>
                                         <br />
@@ -361,10 +480,10 @@ var EditFundingPool = React.createClass({
                                 </form>
                             </div>}
                             {!this.props.parent && <div className="tab-pane" id="members" role="tabpanel">
-                                <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={() => this.emit('section/change', CreateFundingPool, {parent : product, type: 'section', view: 'mine'})}>Add new Member</button>
+                                <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={() => this.emit('section/change', CreateFundingPool, { parent: product, type: 'section', view: 'mine' })}>Add new Startup</button>
                                 <br />
                                 <br />
-                                <Members element={product} view={this.props.view} type={this.props.type}/>
+                                <Members element={product} view={this.props.view} type={this.props.type} />
                             </div>}
                         </div>
                     </div>
