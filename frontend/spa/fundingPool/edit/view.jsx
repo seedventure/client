@@ -32,7 +32,7 @@ var EditFundingPool = React.createClass({
         var _this = this;
         this.setState({ product, documents: product.documents }, function () {
             _this.forceUpdate();
-            setTimeout(() => _this.setState({ product }, () => _this.updateNavLinks()));
+            setTimeout(() => _this.setState({ product }, () => _this.updateGui()));
         });
     },
     back(e) {
@@ -95,13 +95,13 @@ var EditFundingPool = React.createClass({
         var tags = [];
         try {
             var tgs = this.tags.value.split(' ');
-            for(var i in tgs) {
+            for (var i in tgs) {
                 var tag = tgs[i].split(' ').join('');
-                if(tag.length > 0) {
+                if (tag.length > 0) {
                     tags.push(tag);
                 }
             }
-        } catch(error) {
+        } catch (error) {
         }
 
         var newProduct = {
@@ -202,9 +202,30 @@ var EditFundingPool = React.createClass({
         this.domRoot.children().find('ul.nav-tabs').children('li.nav-item:first-of-type').children('a.nav-link').click();
         this.props.fromBack === true && this.domRoot.children().find('ul.nav-tabs:first-of-type').first().children('li.nav-item:last-of-type').children('a.nav-link').click();
     },
-    componentDidMount() {
+    updateGui() {
         this.updateNavLinks();
-        this.setState({documents: this.getProduct().documents});
+        this.updateProgressBar();
+    },
+    componentDidUpdate() {
+        this.updateProgressBar();
+    },
+    updateProgressBar() {
+        if(this.props.parent || !this.progressBar) {
+            return;
+        }
+        var product = this.getProduct();
+        var totalSupply = parseInt(product.totalSupply);
+        isNaN(totalSupply) && (totalSupply = 0);
+        var totalRaised = parseInt(product.totalRaised);
+        isNaN(totalRaised) && (totalRaised = 0);
+        var percentage = parseFloat(((totalRaised / totalSupply) * 100).toFixed(2));
+        totalRaised = Utils.roundWei(totalRaised);
+        totalSupply = Utils.roundWei(totalSupply);
+        this.progressBar.attr('aria-valuenow', percentage).css('width', percentage + '%').css('color', percentage > 6 ? "white" : "black").html(totalRaised + ' of ' + totalSupply + ' SEEDs raised');
+    },
+    componentDidMount() {
+        this.updateGui();
+        this.setState({ documents: this.getProduct().documents });
         client.contractsManager.getFundingPanelData(this.getProduct(), true);
     },
     administrationSubmit(e) {
@@ -226,13 +247,13 @@ var EditFundingPool = React.createClass({
     addDocument(e) {
         e && e.preventDefault();
         var name = this.documentName.value;
-        if(name.split(' ').join('') === '') {
+        if (name.split(' ').join('') === '') {
             alert('Name is mandatory');
             return;
         }
         var link = this.documentLink.value;
         link = link.split(' ').join('');
-        if(link.indexOf('http://') === -1 && link.indexOf('https://') === -1) {
+        if (link.indexOf('http://') === -1 && link.indexOf('https://') === -1) {
             alert('Link must start with http or https');
             return;
         }
@@ -243,7 +264,7 @@ var EditFundingPool = React.createClass({
         });
         this.documentName.value = '';
         this.documentLink.value = '';
-        this.setState({documents});
+        this.setState({ documents });
     },
     deleteDocument(i, e) {
         e && e.preventDefault();
@@ -251,7 +272,7 @@ var EditFundingPool = React.createClass({
         var doc = documents[i];
         documents.splice(i, 1);
         var _this = this;
-        this.setState({documents}, function() {
+        this.setState({ documents }, function () {
             _this.documentName.value = doc.name;
             _this.documentLink.value = doc.link;
         });
@@ -265,6 +286,9 @@ var EditFundingPool = React.createClass({
         }
         return (
             <div className="kt-content kt-grid__item kt-grid__item--fluid">
+                {!this.props.parent && <div className="progress">
+                    <div className="progress-bar" role="progressbar" ref={ref => this.progressBar = $(ref)} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                </div>}
                 <div className="row">
                     <div className="col-xl-12 mt-5">
                         <ul className="nav nav-tabs nav-tabs-line nav-tabs-bold nav-tabs-line-3x mb-5" role="tablist">
@@ -342,30 +366,12 @@ var EditFundingPool = React.createClass({
                                     )}
                                     <br />
                                     <br />
-                                    <div className="row">
-                                        <div className="col-md-2">
-                                            <h4>URL</h4>
-                                        </div>
-                                        <div className="col-md-10 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => this.url = ref} />
-                                        </div>
-                                    </div>
-                                    <div className="row">
-                                        <div className="col-md-2">
-                                            <h4>Logo</h4>
-                                        </div>
-                                        <div className="col-md-10 form-group">
-                                            <a href="javascript:;" onClick={this.loadImage}>
-                                                <img width="100" height="100" ref={ref => this.image = $(ref)} />
-                                            </a>
-                                        </div>
-                                    </div>
                                     {!this.props.parent && <div className="row">
                                         <div className="col-md-2">
                                             <h4>Tags</h4>
                                         </div>
                                         <div className="col-md-10 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => this.tags = ref} />
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.tags = ref) && product.tags && product.tags.length > 0 && (this.tags.value = product.tags.join(' '))} />
                                         </div>
                                     </div>}
                                     <div className="row">

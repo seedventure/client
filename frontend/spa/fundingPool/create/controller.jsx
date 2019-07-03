@@ -12,7 +12,7 @@ var CreateFundingPoolController = function(view) {
             url : data.url,
             image : data.image,
             documents: data.documents,
-            tags
+            tags: data.tags
         };
         var hash = await client.ipfsManager.uploadDocument(document);
         var url = ecosystemData.ipfsUrlTemplate + hash;

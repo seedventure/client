@@ -40,6 +40,19 @@ var ListFundingPool = React.createClass({
         }
         this.setState({title});
     },
+    search(e) {
+        e && e.preventDefault();
+        this.searchTimeout && clearTimeout(this.searchTimeout);
+        var _this = this;
+        this.searchTimeout = setTimeout(function() {
+            _this.emit('products/search', _this.searchBar.value);
+        }, 300);
+    },
+    clearSearch(e) {
+        e && e.preventDefault();
+        this.searchBar.value = "";
+        this.search();
+    },
     render() {
         var _this = this;
         var props = {};
@@ -53,18 +66,26 @@ var ListFundingPool = React.createClass({
         props.ref = this.onElementRef.bind(this)
         return (
             <span>
-                {this.state && this.state.title && <div className="kt-subheader   kt-grid__item" id="kt_subheader">
+                <div className="kt-subheader   kt-grid__item" id="kt_subheader">
                     <div className="kt-subheader__main">
-                        {this.state.title}
-                        <span className="kt-subheader__separator"></span>
+                        {this.state && this.state.title}
+                        {this.state && this.state.title && <span className="kt-subheader__separator"></span>}
                         <div className="kt-subheader__breadcrumbs">
                             <a href="javascript:;" onClick={() => this.changeSection(Products)} className="kt-subheader__breadcrumbs-home"><i className="fas fa-home"></i></a>
                             {false && <a href="javascript:;" onClick={() => this.changeSection(AllowFundingPool)} className="kt-subheader__breadcrumbs-home"><i className="fas fa-money-check"></i></a>}
-                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
                             <a href="javascript:;" onClick={() => this.changeSection(CreateFundingPool)} className="kt-subheader__breadcrumbs-home"><i className="fas fa-plus"></i></a>
                         </div>
                     </div>
-                </div>}
+                    <div className="kt-subheader__main">
+                        <input type="text" placeholder="Search..." onChange={this.search} ref={ref => this.searchBar = ref}/>
+                        {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                        <span className="kt-subheader__separator"></span>
+                        <div className="kt-subheader__breadcrumbs">
+                            <a href="#" className="kt-subheader__breadcrumbs-home" onClick={this.clearSearch}><i className="fas fa-remove"></i></a>
+                        </div>
+                    </div>
+                </div>
                 {React.createElement(this.state && this.state.element ? this.state.element : Products, props)}
             </span>
         );

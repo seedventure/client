@@ -30,6 +30,10 @@ var Product = React.createClass({
             client.contractsManager.getFundingPanelData(product);
         }
     },
+    makeUnsuitable(e) {
+        e && e.preventDefault();
+        this.controller.makeUnsuitable(this.getProduct());
+    },
     render() {
         var product = this.getProduct();
         return (
@@ -48,6 +52,11 @@ var Product = React.createClass({
                         <br />
                         <dt>Latest Quotation:</dt>
                         <dd className="text-cta">{Utils.roundWei(product.value)} SEED</dd>
+                        {this.props.view === 'mine' && [<br />,
+                        <dt>Total Supply:</dt>,
+                        <dd className="text-cta">{Utils.roundWei(product.totalSupply)} SEED</dd>,
+                        <span>{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}</span>,
+                        <dd><button className="btn btn-pill micro btn-brand" onClick={this.makeUnsuitable}>Make Unsuitable</button></dd>]}
                     </dl>}
                     {!product.name && <Loader />}
                 </div>

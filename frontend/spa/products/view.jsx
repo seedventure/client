@@ -5,7 +5,8 @@ var Products = React.createClass({
     getDefaultSubscriptions() {
         return {
             'list/updated': this.controller.loadProducts,
-            'fundingPanel/updated': this.productUpdated
+            'fundingPanel/updated': this.productUpdated,
+            'products/search' : search => this.search(undefined, search)
         };
     },
     productUpdated(product) {
@@ -17,10 +18,11 @@ var Products = React.createClass({
     },
     componentDidUpdate() {
         this.controller.retryUnavailableProducts();
+        this.state && this.state.search && this.searchBar && (this.searchBar.value = this.state.search);
     },
-    getProductsArray(availableOnly, dontCheckMine) {
+    getProductsArray(availableOnly, all) {
         var favorites = undefined;
-        if (dontCheckMine !== true) {
+        if (all !== true) {
             try {
                 favorites = this.props.view !== 'mine' ? favorites : Enumerable.From(client.userManager.user.list);
             } catch (e) {
@@ -39,26 +41,65 @@ var Products = React.createClass({
                 }
             });
         }
-        this.props.view === 'mine' && (products = Enumerable.From(products).OrderByDescending(it => parseInt(it.position)).ToArray())
+        this.props.view === 'mine' && (products = Enumerable.From(products).Where(it => parseInt(it.totalSupply) > 0).OrderByDescending(it => parseInt(it.position)).ToArray());
+        this.props.view !== 'mine' && (products = Enumerable.From(products).OrderByDescending(it => parseInt(it.totalSupply)).ToArray());
+        var search = this.state && this.state.search;
+        search && (search = search.toLowerCase());
+        search && all !== true && (products = Enumerable.From(products).Where(product => {
+            if(product.fundingPanelAddress && product.fundingPanelAddress.toLowerCase().indexOf(search) !== -1) {
+                return true;
+            }
+            if(product.name && product.name.toLowerCase().indexOf(search) !== -1) {
+                return true;
+            }
+            if(product.name && product.symbol.toLowerCase().indexOf(search) !== -1) {
+                return true;
+            }
+            if(product.tags && product.tags.length > 0 && Enumerable.From(product.tags).Any(it => it.toLowerCase().indexOf(search) !== -1)) {
+                return true;
+            }
+            return false;
+        }).ToArray());
         return products;
+    },
+    search(e, search) {
+        e && e.preventDefault();
+        this.searchTimeout && clearTimeout(this.searchTimeout);
+        var _this = this;
+        this.searchTimeout = setTimeout(function() {
+            _this.setState({search : (_this.searchBar && _this.searchBar.value) || search});
+        }, 300);
+    },
+    clearSearch(e) {
+        e && e.preventDefault();
+        this.searchBar.value = "";
+        this.search();
     },
     render() {
         var products = this.getProductsArray(true);
         if (products.length === 0) {
             products = this.getProductsArray(true, true);
-            if(products.length === 0) {
+            if (products.length === 0) {
                 return <Loader size="x2" />
             }
             products = this.getProductsArray(true);
         }
         return (
             <span>
-                {this.props.view !== 'mine' && products.length > 0 && <div className="kt-subheader   kt-grid__item" id="kt_subheader">
+                {this.props.view !== 'mine' && <div className="kt-subheader kt-grid__item" id="kt_subheader">
                     <div className="kt-subheader__main">
                         <h3 className="kt-subheader__title">Baskets</h3>
                         <span className="kt-subheader__separator"></span>
                         <div className="kt-subheader__breadcrumbs">
                             <a href="#" className="kt-subheader__breadcrumbs-home"><i className="fas fa-home"></i></a>
+                        </div>
+                    </div>
+                    <div className="kt-subheader__main">
+                        <input type="text" placeholder="Search..." onChange={this.search} ref={ref => this.searchBar = ref}/>
+                        {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                        <span className="kt-subheader__separator"></span>
+                        <div className="kt-subheader__breadcrumbs">
+                            <a href="#" className="kt-subheader__breadcrumbs-home" onClick={this.clearSearch}><i className="fas fa-remove"></i></a>
                         </div>
                     </div>
                 </div>}
