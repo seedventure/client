@@ -6,12 +6,23 @@ var CreateFundingPoolController = function(view) {
 
     context.deployBasket = async function deploy(data) {
         context.view.emit('loader/show', 'Uploading to IPFS...');
+        var documents = data && data.documents;
+        if(documents && documents.length > 0) {
+            for(var i = 0; i < documents.length; i++) {
+                var document = documents[i];
+                if(document.link.indexOf('http') === 0) {
+                    continue;
+                }
+                var hash = await client.ipfsManager.uploadFile(document.link);
+                documents[i].link = ecosystemData.ipfsUrlTemplate + hash;
+            }
+        }
         var document = {
             name : data.name,
             description : data.description,
             url : data.url,
             image : data.image,
-            documents: data.documents,
+            documents,
             tags: data.tags
         };
         var hash = await client.ipfsManager.uploadDocument(document);

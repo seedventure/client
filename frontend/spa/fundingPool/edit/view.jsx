@@ -127,7 +127,7 @@ var EditFundingPool = React.createClass({
         if (JSON.stringify(oldProduct) === JSON.stringify(newProduct)) {
             return;
         }
-        this.controller.saveDoc(newProduct);
+        this.controller.saveDoc(newProduct, this.props.parent !== undefined && this.props.parent !== null);
     },
     updateSeedRate(e) {
         e && e.preventDefault();
@@ -252,9 +252,8 @@ var EditFundingPool = React.createClass({
             return;
         }
         var link = this.documentLink.value;
-        link = link.split(' ').join('');
-        if (link.indexOf('http://') === -1 && link.indexOf('https://') === -1) {
-            alert('Link must start with http or https');
+        if (link.indexOf('http://') === -1 && link.indexOf('https://') === -1 && !window.require('electron').remote.require('fs').existsSync(link)) {
+            alert('Link must be an existing file or start with http:// or https://');
             return;
         }
         var documents = (this.state && this.state.documents) || [];
@@ -265,6 +264,18 @@ var EditFundingPool = React.createClass({
         this.documentName.value = '';
         this.documentLink.value = '';
         this.setState({ documents });
+    },
+    browseLocalDocument(e) {
+        e && e.preventDefault();
+        var userChosenPath = undefined;
+        (userChosenPath = window.require('electron').remote.dialog.showOpenDialog({
+            defaultPath: window.require('electron').remote.app.getPath("desktop"),
+            options: {
+                openDirectory: false,
+                multiSelections: false
+            }
+        }));
+        userChosenPath && (this.documentLink.value = userChosenPath);
     },
     deleteDocument(i, e) {
         e && e.preventDefault();
@@ -311,14 +322,17 @@ var EditFundingPool = React.createClass({
                                     <div className="row">
                                         <div className="col-md-2">
                                             <h4>Name</h4>
+                                            <p className="small">of the {(this.props.parent && "Startup") || "Incubator"}</p>
                                         </div>
                                         <div className="col-md-10 form-group">
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.name = ref) && (this.name.value = product.name)} />
                                         </div>
                                     </div>
+                                    <br />
                                     <div className="row">
                                         <div className="col-md-2">
                                             <h4>Description</h4>
+                                            <p className="small">of the {(this.props.parent && "Startup") || "Incubator"}</p>
                                         </div>
                                         <div className="col-md-10 form-group editor">
                                             <div ref={ref => ref && (this.description = $(ref)).summernote({ minHeight: 350, disableResizeEditor: true }).summernote('code', description)} />
@@ -329,17 +343,19 @@ var EditFundingPool = React.createClass({
                                     <div className="row">
                                         <div className="col-md-12">
                                             <h3>Documents</h3>
+                                            <p className="small">useful to enrich the description of the business model</p>
                                         </div>
                                     </div>
                                     <br />
                                     <div className="row">
-                                        <div className="col-md-2">
-                                        </div>
                                         <div className="col-md-4">
                                             <input className="form-control form-control-last" type="text" placeholder="Name" ref={ref => this.documentName = ref} />
                                         </div>
                                         <div className="col-md-4">
                                             <input className="form-control form-control-last" type="text" placeholder="Link" ref={ref => this.documentLink = ref} />
+                                        </div>
+                                        <div className="col-md-2">
+                                            <button type="button" className="btn btn-secondary btn-pill tiny" onClick={this.browseLocalDocument}>Browse from your pc</button>
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill tiny" onClick={this.addDocument}>Add</button>
@@ -355,7 +371,8 @@ var EditFundingPool = React.createClass({
                                                 <span>{it.name}</span>
                                             </div>
                                             <div className="col-md-4">
-                                                <span>{it.link}</span>
+                                                {it.link.indexOf('http') !== 0 && <span>{it.link}</span>}
+                                                {it.link.indexOf('http') === 0 && <a href={it.link} target="_blank">{it.link}</a>}
                                             </div>
                                             <div className="col-md-2">
                                                 <h3>
@@ -366,25 +383,20 @@ var EditFundingPool = React.createClass({
                                     )}
                                     <br />
                                     <br />
-                                    {!this.props.parent && <div className="row">
-                                        <div className="col-md-2">
-                                            <h4>Tags</h4>
-                                        </div>
-                                        <div className="col-md-10 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.tags = ref) && product.tags && product.tags.length > 0 && (this.tags.value = product.tags.join(' '))} />
-                                        </div>
-                                    </div>}
                                     <div className="row">
                                         <div className="col-md-2">
                                             <h4>URL</h4>
+                                            <p className="small">The website of the {this.props.parent ? "Startup" : "Incubator"}</p>
                                         </div>
                                         <div className="col-md-10 form-group">
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.url = ref) && (this.url.value = product.url)} />
                                         </div>
                                     </div>
+                                    <br/>
                                     <div className="row">
                                         <div className="col-md-2">
                                             <h4>Logo</h4>
+                                            <p className="small">of the {this.props.parent ? "Startup" : "Incubator"}</p>
                                         </div>
                                         <div className="col-md-10 form-group">
                                             <a href="javascript:;" onClick={this.loadImage}>
@@ -392,7 +404,17 @@ var EditFundingPool = React.createClass({
                                             </a>
                                         </div>
                                     </div>
-                                    {!this.props.parent && <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>Update</button>}
+                                    {!this.props.parent && <br/>}
+                                    {!this.props.parent && <div className="row">
+                                        <div className="col-md-2">
+                                            <h4>Tags</h4>
+                                            <p className="small">useful for searches by the investor</p>
+                                        </div>
+                                        <div className="col-md-10 form-group">
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.tags = ref) && product.tags && product.tags.length > 0 && (this.tags.value = product.tags.join(' '))} />
+                                        </div>
+                                    </div>}
+                                    <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>Update</button>
                                 </form>
                             </div>
                             {!this.props.parent && <div className="tab-pane" id="administration" role="tabpanel">

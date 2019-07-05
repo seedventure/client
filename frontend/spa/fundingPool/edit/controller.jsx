@@ -15,8 +15,27 @@ var EditFundingPoolController = function (view) {
         return context.sendTransactionTo(context.view.getProduct().fundingPanelAddress, data);
     }
 
-    context.saveDoc = async function saveDoc(document) {
+    context.saveDoc = async function saveDoc(data, isStartup) {
         context.view.emit('loader/show', 'Uploading to IPFS...');
+        var documents = data && data.documents;
+        if(documents && documents.length > 0) {
+            for(var i = 0; i < documents.length; i++) {
+                var document = documents[i];
+                if(document.link.indexOf('http') === 0) {
+                    continue;
+                }
+                var hash = await client.ipfsManager.uploadFile(document.link);
+                documents[i].link = ecosystemData.ipfsUrlTemplate + hash;
+            }
+        }
+        var document = {
+            name : data.name,
+            description : data.description,
+            url : data.url,
+            image : data.image,
+            documents,
+            tags: data.tags
+        };
         var hash = await client.ipfsManager.uploadDocument(document);
         var url = ecosystemData.ipfsUrlTemplate + hash;
         var contract = new web3.eth.Contract(contracts.FundingPanel);
@@ -24,6 +43,13 @@ var EditFundingPoolController = function (view) {
             url,
             web3.utils.soliditySha3(JSON.stringify(document))
         );
+        if(isStartup === true) {
+            method = contract.methods.changeMemberData(
+                context.view.getProduct().address,
+                url,
+                web3.utils.soliditySha3(JSON.stringify(document))
+            );
+        }
         await context.sendTransactionToFundingPanel(method.encodeABI());
     };
 

@@ -41,8 +41,8 @@ var Products = React.createClass({
                 }
             });
         }
-        this.props.view === 'mine' && (products = Enumerable.From(products).Where(it => parseInt(it.totalSupply) > 0).OrderByDescending(it => parseInt(it.position)).ToArray());
-        this.props.view !== 'mine' && (products = Enumerable.From(products).OrderByDescending(it => parseInt(it.totalSupply)).ToArray());
+        this.props.view !== 'mine' && (products = Enumerable.From(products).Where(it => parseInt(it.totalSupply) > 0).OrderByDescending(it => parseInt(it.position)).ToArray());
+        this.props.view === 'mine' && (products = Enumerable.From(products).OrderByDescending(it => parseInt(it.totalSupply)).ToArray());
         var search = this.state && this.state.search;
         search && (search = search.toLowerCase());
         search && all !== true && (products = Enumerable.From(products).Where(product => {

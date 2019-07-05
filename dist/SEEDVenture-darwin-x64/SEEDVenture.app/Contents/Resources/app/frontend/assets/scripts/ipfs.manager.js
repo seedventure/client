@@ -1,9 +1,13 @@
 function IPFSManager() {
     var context = this;
 
-    context.uploadDocument = async function uploadDocument(document) {
-        return await context.provider.uploadDocument(Buffer.from(JSON.stringify(document, null, 4)));
+    context.uploadDocument = function uploadDocument(document) {
+        return context.provider.uploadBuffer(Buffer.from(JSON.stringify(document, null, 4)));
     }
+
+    context.uploadFile = function uploadFile(path) {
+        return context.provider.uploadFile(path);
+    };
 
     context.newProvider = function newProvider() {
         return new Promise(function(ok, ko) {
