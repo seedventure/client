@@ -43,9 +43,12 @@ var Unlock = React.createClass({
                     <div className="welcome-page kt-grid__item kt-grid__item--fluid kt-grid__item--center kt-grid kt-grid--ver kt-login__content">
                         <div className="kt-login__section">
                             <div className="kt-login__block">
-                                <h3 className="kt-login__title">Welcome</h3>
+                                <h3 className="kt-login__title">Welcome to SEEDVenture</h3>
+                                <br/>
+                                <img src="./assets/favicon.png" width="100" height="100"></img>
+                                <br/>
                                 <div className="kt-login__desc">
-                                    To the first decentralized
+                                    The first decentralized
                                     <br/>
                                     venture capital investment platform
                                 </div>

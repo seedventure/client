@@ -58,6 +58,10 @@ var EditFundingPool = React.createClass({
             this.image.attr('src', file);
         }
     },
+    deleteImage(e) {
+        e && e.preventDefault();
+        this.image.attr('src', '');
+    },
     saveDoc(e) {
         e && e.preventDefault();
         var name = ''
@@ -355,7 +359,7 @@ var EditFundingPool = React.createClass({
                                             <input className="form-control form-control-last" type="text" placeholder="Link" ref={ref => this.documentLink = ref} />
                                         </div>
                                         <div className="col-md-2">
-                                            <button type="button" className="btn btn-secondary btn-pill tiny" onClick={this.browseLocalDocument}>Browse from your pc</button>
+                                            <button type="button" className="btn btn-secondary btn-pill tiny" onClick={this.browseLocalDocument}>Browse from PC</button>
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill tiny" onClick={this.addDocument}>Add</button>
@@ -371,8 +375,8 @@ var EditFundingPool = React.createClass({
                                                 <span>{it.name}</span>
                                             </div>
                                             <div className="col-md-4">
-                                                {it.link.indexOf('http') !== 0 && <span>{it.link}</span>}
-                                                {it.link.indexOf('http') === 0 && <a href={it.link} target="_blank">{it.link}</a>}
+                                                {it.link.indexOf('http') !== 0 && <span>{it.link.length > 30 ? it.link.substring(0, 30) + '...' : it.link}</span>}
+                                                {it.link.indexOf('http') === 0 && <a href={it.link} target="_blank">{it.link.length > 30 ? it.link.substring(0, 30) + '...' : it.link}</a>}
                                             </div>
                                             <div className="col-md-2">
                                                 <h3>
@@ -402,6 +406,8 @@ var EditFundingPool = React.createClass({
                                             <a href="javascript:;" onClick={this.loadImage}>
                                                 <img width="100" height="100" ref={ref => this.image = $(ref)} src={product.image ? ("data:image/png;base64, " + product.image) : ''} />
                                             </a>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <a href="javascript:;" onClick={this.deleteImage}><i className="fas fa-remove"></i></a>
                                         </div>
                                     </div>
                                     {!this.props.parent && <br/>}
@@ -499,7 +505,7 @@ var EditFundingPool = React.createClass({
                                             <h4>Total Supply</h4>
                                         </div>
                                         <div className="col-md-8 form-group">
-                                            <input className="form-control form-control-last" type="number" ref={ref => (this.totalSupply = ref) && (this.totalSupply.value = product.totalSupply && parseFloat(web3.utils.fromWei(product.totalSupply + ''), 'ether') || '')} />
+                                            <input className="form-control form-control-last" type="number" ref={ref => (this.totalSupply = ref) && (this.totalSupply.value = product.totalSupply && parseFloat(Utils.roundWei(product.totalSupply)) || '')} />
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateTotalSupply}>OK</button>

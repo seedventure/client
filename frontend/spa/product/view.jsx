@@ -51,7 +51,7 @@ var Product = React.createClass({
                         <dd><a href={product.url} target="_blank">{product.url}</a></dd>
                         <br />
                         <dt>Latest Quotation:</dt>
-                        <dd className="text-cta">{Utils.roundWei(product.value)} SEED</dd>
+                        <dd className="text-cta">{Utils.roundWei(product.value || product.seedRate)} SEED</dd>
                         {this.props.view === 'mine' && [<br />,
                         <dt>Total Supply:</dt>,
                         <dd className="text-cta">{Utils.roundWei(product.totalSupply)} SEED</dd>,

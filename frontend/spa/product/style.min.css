@@ -1,1 +1,1 @@
-.product .text-cta{margin-left:10px}
+.product{cursor:pointer}.product .text-cta{margin-left:10px}.product:hover{border:0.5px solid lightblue}

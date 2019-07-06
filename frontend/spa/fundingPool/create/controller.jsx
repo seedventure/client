@@ -45,10 +45,10 @@ var CreateFundingPoolController = function(view) {
 
     context.deployMember = async function deploy(data, product) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
-        var method = contract.methods.isFundingOperator(address);
+        var method = contract.methods.isFundingOperator(client.userManager.user.wallet);
         var result = await client.blockchainManager.call(product.adminsToolsAddress, method.encodeABI());
         try {
-            result = web3.eth.abi.decodeParameters(['bool'], result);
+            result = web3.eth.abi.decodeParameters(['bool'], result)[0];
         } catch (e) {
             result = false;
         }

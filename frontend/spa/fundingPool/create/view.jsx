@@ -146,7 +146,7 @@ var CreateFundingPool = React.createClass({
             totalSupply,
             walletAddress
         };
-        var type = this.props.parent ? 'Startup' : 'Basket';
+        var type = this.props.parent ? 'Member' : 'Basket';
         this.controller['deploy' + type](data, this.props.parent);
     },
     loadImage(e) {
@@ -165,6 +165,10 @@ var CreateFundingPool = React.createClass({
             file = "data:image/png;base64, " + file;
             this.image.attr('src', file);
         }
+    },
+    deleteImage(e) {
+        e && e.preventDefault();
+        this.image.attr('src', '');
     },
     addDocument(e) {
         e && e.preventDefault();
@@ -249,7 +253,7 @@ var CreateFundingPool = React.createClass({
                         <input className="form-control form-control-last" type="text" placeholder="Link" ref={ref => this.documentLink = ref} />
                     </div>
                     <div className="col-md-2">
-                        <button type="button" className="btn btn-secondary btn-pill tiny" onClick={this.browseLocalDocument}>Browse from your pc</button>
+                        <button type="button" className="btn btn-secondary btn-pill tiny" onClick={this.browseLocalDocument}>Browse from PC</button>
                     </div>
                     <div className="col-md-2">
                         <button type="button" className="btn btn-brand btn-pill tiny" onClick={this.addDocument}>Add</button>
@@ -265,8 +269,8 @@ var CreateFundingPool = React.createClass({
                             <span>{it.name}</span>
                         </div>
                         <div className="col-md-4">
-                            {it.link.indexOf('http') !== 0 && <span>{it.link}</span>}
-                            {it.link.indexOf('http') === 0 && <a href={it.link} target="_blank">{it.link}</a>}
+                            {it.link.indexOf('http') !== 0 && <span>{it.link.length > 30 ? it.link.substring(0, 30) + '...' : it.link}</span>}
+                            {it.link.indexOf('http') === 0 && <a href={it.link} target="_blank">{it.link.length > 30 ? it.link.substring(0, 30) + '...' : it.link}</a>}
                         </div>
                         <div className="col-md-2">
                             <h3>
@@ -296,6 +300,8 @@ var CreateFundingPool = React.createClass({
                         <a href="javascript:;" onClick={this.loadImage}>
                             <img width="100" height="100" ref={ref => this.image = $(ref)} />
                         </a>
+                         {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                        <a href="javascript:;" onClick={this.deleteImage}><i className="fas fa-remove"></i></a>
                     </div>
                 </div>
                 {!this.props.parent && <br/>}
@@ -374,6 +380,8 @@ var CreateFundingPool = React.createClass({
                         <button type="button" className="btn btn-brand btn-pill" onClick={this.deploy}>DEPLOY</button>
                     </div>
                 </div>
+                <br />
+                <br />
             </form>
         );
     }

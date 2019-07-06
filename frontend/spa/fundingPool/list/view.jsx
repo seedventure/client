@@ -77,16 +77,16 @@ var ListFundingPool = React.createClass({
                             <a href="javascript:;" onClick={() => this.changeSection(CreateFundingPool)} className="kt-subheader__breadcrumbs-home"><i className="fas fa-plus"></i></a>
                         </div>
                     </div>
-                    <div className="kt-subheader__main">
+                    {(!this.state || !this.state.element || this.state.element === Products) && <div className="kt-subheader__main">
                         <input type="text" placeholder="Search..." onChange={this.search} ref={ref => this.searchBar = ref}/>
                         {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
                         <span className="kt-subheader__separator"></span>
                         <div className="kt-subheader__breadcrumbs">
                             <a href="#" className="kt-subheader__breadcrumbs-home" onClick={this.clearSearch}><i className="fas fa-remove"></i></a>
                         </div>
-                    </div>
+                    </div>}
                 </div>
-                {React.createElement(this.state && this.state.element ? this.state.element : Products, props)}
+                {React.createElement((this.state && this.state.element) || Products, props)}
             </span>
         );
     }
