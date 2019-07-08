@@ -358,6 +358,7 @@ var ScriptLoader = function() {
         
         context.removePreloaded = function(scripts) {
           if((typeof(window.preloadedScripts)).toLowerCase() === 'undefined') {
+            window.preloadedScripts = [];
             return scripts;
           }
           if(scripts === undefined || scripts === null || scripts.length === 0) {
@@ -366,15 +367,17 @@ var ScriptLoader = function() {
           var scpts = [];
           for(var i in scripts) {
             var script = scripts[i];
+            var scriptToSearch = script.indexOf('?') !== -1 ? script.split('?')[0].trim() : script;
             var found = false;
             for(var j in window.preloadedScripts) {
-              if(script === window.preloadedScripts[j]) {
+              if(scriptToSearch === window.preloadedScripts[j]) {
                   found = true;
                   break;
               }
             }
             if(found === false) {
-              scpts.push(script);
+                window.preloadedScripts.push(scriptToSearch);
+                scpts.push(script);
             }
           }
           return scpts;

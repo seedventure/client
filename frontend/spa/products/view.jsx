@@ -36,13 +36,11 @@ var Products = React.createClass({
                     return;
                 }
                 var prod = prods[key];
-                if (availableOnly !== true || prod.unavailable !== true) {
-                    products.push(prod);
-                }
+                products.push(prod);
             });
         }
-        this.props.view !== 'mine' && (products = Enumerable.From(products).Where(it => parseInt(it.totalSupply) > 0).OrderByDescending(it => parseInt(it.position)).ToArray());
-        this.props.view === 'mine' && (products = Enumerable.From(products).OrderByDescending(it => parseInt(it.totalSupply)).ToArray());
+        this.props.view !== 'mine' && (products = Enumerable.From(products).Where(it => it.totalSupply === undefined || parseInt(it.totalSupply) > 0).OrderByDescending(it => parseInt(it.position)).ToArray());
+        this.props.view === 'mine' && (products = Enumerable.From(products).OrderByDescending(it => parseInt(it.position)).ToArray());
         var search = this.state && this.state.search;
         search && (search = search.toLowerCase());
         search && all !== true && (products = Enumerable.From(products).Where(product => {
