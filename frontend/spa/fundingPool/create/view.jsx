@@ -4,14 +4,11 @@ var CreateFundingPool = React.createClass({
         "assets/plugins/summernote/summernote.css"
     ],
     getTitle() {
-        if (!this.props.parent) {
-            return "Create new Basket";
-        }
         return (
-            <div key={this.props.parent.name} className="kt-subheader__breadcrumbs">
+            <div key={(this.props.parent && this.props.parent.name) || 'createBasket'} className="kt-subheader__breadcrumbs">
                 <h3 className="kt-subheader__title"><a href="javascript:;" className="kt-subheader__breadcrumbs-home" onClick={this.back}><i className="fas fa-arrow-left"></i></a></h3>
                 <span className="kt-subheader__separator"></span>
-                <h3 className="kt-subheader__title">Create new Startup for the Basket <strong>{this.props.parent.name}</strong></h3>
+                <h3 className="kt-subheader__title">{this.props.parent ? <span>Create new Startup for the Basket <strong>{this.props.parent.name}</strong></span> : "Create Basket"}</h3>
             </div>
         );
     },
@@ -19,7 +16,7 @@ var CreateFundingPool = React.createClass({
         e && e.preventDefault();
         var _this = this;
         var parent = _this.props.parent;
-        this.emit((this.props.type || 'page') + '/change', this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack: true, type: this.props.type, view: this.props.view }, () => _this.setProduct(parent));
+        this.emit((parent ? (this.props.type || 'page') : 'section') + '/change', !parent ? Products : this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack: true, type: this.props.type, view: this.props.view }, () => parent && _this.setProduct(parent));
     },
     setProduct(product) {
         var _this = this;
@@ -85,7 +82,7 @@ var CreateFundingPool = React.createClass({
 
         var seedRate = 0;
         try {
-            seedRate = parseInt(this.seedRate.value.split(' ').join(''));
+            seedRate = parseFloat(this.cleanNumber(this.seedRate));
         } catch (error) {
         }
         if (!this.props.parent && (isNaN(seedRate) || seedRate < 0)) {
@@ -95,7 +92,7 @@ var CreateFundingPool = React.createClass({
 
         var exangeRate = 0;
         try {
-            exangeRate = parseInt(this.exangeRate.value.split(' ').join(''));
+            exangeRate = parseFloat(this.cleanNumber(this.exangeRate));
         } catch (error) {
         }
         if (!this.props.parent && (isNaN(exangeRate) || exangeRate < 0)) {
@@ -103,19 +100,19 @@ var CreateFundingPool = React.createClass({
             return;
         }
 
-        var exchangeRateDecimals = 0;
+        var whiteListThreshold = 0;
         try {
-            exchangeRateDecimals = parseInt(this.exchangeRateDecimals.value.split(' ').join(''));
+            whiteListThreshold = parseInt(this.cleanNumber(this.whiteListThreshold));
         } catch (error) {
         }
-        if (!this.props.parent && (isNaN(exchangeRateDecimals) || exangeRate < 0)) {
-            alert('Exchange Rate decimals is a mandatory positive number or zero');
+        if (!this.props.parent && (isNaN(whiteListThreshold) || exangeRate < 0)) {
+            alert('WhiteList Threshold Balance is a mandatory positive number or zero');
             return;
         }
 
         var totalSupply = 0;
         try {
-            totalSupply = parseInt(this.totalSupply.value.split(' ').join(''));
+            totalSupply = parseInt(this.cleanNumber(this.totalSupply));
         } catch (error) {
         }
         if (!this.props.parent && (isNaN(totalSupply) || totalSupply < 0)) {
@@ -142,7 +139,7 @@ var CreateFundingPool = React.createClass({
             symbol,
             seedRate,
             exangeRate,
-            exchangeRateDecimals,
+            whiteListThreshold,
             totalSupply,
             walletAddress
         };
@@ -213,6 +210,34 @@ var CreateFundingPool = React.createClass({
             _this.documentName.value = doc.name;
             _this.documentLink.value = doc.link;
         });
+    },
+    cleanNumber(target) {
+        var value = target.value.split(' ').join('').split(',').join('');
+        if(value.indexOf('.') !== -1) {
+            var s = value.split('.');
+            var last = s.pop();
+            value = s.join('') + '.' + last;
+        }
+        return value;
+    },
+    parseNumber(e) {
+        e && e.preventDefault();
+        var _this = this;
+        var target = e.target;
+        this.localeTimeout && clearTimeout(this.localeTimeout);
+        this.localeTimeout = setTimeout(function() {
+            try {
+                var value = _this.cleanNumber(target);
+                value = parseFloat(value);
+                if(isNaN(value)) {
+                    target.value = '';
+                }
+                value = value.toLocaleString(value);
+                target.value = value;
+            } catch(e) {
+                console.error(e);
+            }
+        }, 450);
     },
     render() {
         return (
@@ -331,27 +356,17 @@ var CreateFundingPool = React.createClass({
                         <p className="small">the value in SEED of every single Token</p>
                     </div>
                     <div className="col-md-10 form-group">
-                        <input className="form-control form-control-last" type="number" ref={ref => this.seedRate = ref} />
+                        <input className="form-control form-control-last" type="text" ref={ref => this.seedRate = ref} onChange={this.parseNumber}/>
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}
                 {!this.props.parent && <div className="row">
                     <div className="col-md-2">
-                        <h4>Exchange Rate</h4>
+                        <h4>Exchange Rate on top</h4>
                         <p className="small">the amount hold by the incubator from each donation</p>
                     </div>
                     <div className="col-md-10 form-group">
-                        <input className="form-control form-control-last" type="number" ref={ref => this.exangeRate = ref} />
-                    </div>
-                </div>}
-                {!this.props.parent && <br/>}
-                {!this.props.parent && <div className="row">
-                    <div className="col-md-2">
-                        <h4>Exchange Rate Decimals</h4>
-                        <p className="small">the amount hold by the incubator from each donation</p>
-                    </div>
-                    <div className="col-md-10 form-group">
-                        <input className="form-control form-control-last" type="number" ref={ref => this.exchangeRateDecimals = ref} />
+                        <input className="form-control form-control-last" type="text" ref={ref => this.exangeRate = ref} onChange={this.parseNumber}/>
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}
@@ -361,7 +376,17 @@ var CreateFundingPool = React.createClass({
                         <p className="small">The amount to raise in this campaign</p>
                     </div>
                     <div className="col-md-10 form-group">
-                        <input className="form-control form-control-last" type="number" ref={ref => this.totalSupply = ref} />
+                        <input className="form-control form-control-last" type="text" ref={ref => this.totalSupply = ref} onChange={this.parseNumber}/>
+                    </div>
+                </div>}
+                {!this.props.parent && <br/>}
+                {!this.props.parent && <div className="row">
+                    <div className="col-md-2">
+                        <h4>Whitelist Threshold Balance</h4>
+                        <p className="small">the maximum amount of investment that does not require whitelisting</p>
+                    </div>
+                    <div className="col-md-10 form-group">
+                        <input className="form-control form-control-last" type="text" ref={ref => this.whiteListThreshold = ref} />
                     </div>
                 </div>}
                 {this.props.parent && <br/>}

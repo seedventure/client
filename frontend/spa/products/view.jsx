@@ -5,7 +5,6 @@ var Products = React.createClass({
     getDefaultSubscriptions() {
         return {
             'list/updated': this.controller.loadProducts,
-            'fundingPanel/updated': this.productUpdated,
             'products/search' : search => this.search(undefined, search)
         };
     },
@@ -17,25 +16,20 @@ var Products = React.createClass({
         this.controller.loadProducts();
     },
     componentDidUpdate() {
-        this.controller.retryUnavailableProducts();
         this.state && this.state.search && this.searchBar && (this.searchBar.value = this.state.search);
     },
     getProductsArray(availableOnly, all) {
-        var favorites = undefined;
-        if (all !== true) {
-            try {
-                favorites = this.props.view !== 'mine' ? favorites : Enumerable.From(client.userManager.user.list);
-            } catch (e) {
-            }
-        }
         var products = [];
         if (this.state && this.state.products) {
             var prods = this.state.products;
             Object.keys(prods).map((key) => {
-                if (favorites && !favorites.Contains(key)) {
-                    return;
-                }
                 var prod = prods[key];
+                try {
+                    if (this.props.view === 'mine' && prod.owner.toLowerCase() !== client.userManager.user.wallet.toLowerCase()) {
+                        return;
+                    }
+                } catch(e) {
+                }
                 products.push(prod);
             });
         }

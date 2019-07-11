@@ -1,5 +1,3 @@
-import { runInThisContext } from "vm";
-
 var ListFundingPool = React.createClass({
     requiredModules: [
         'spa/fundingPool/create',

@@ -7,14 +7,11 @@ var EditFundingPool = React.createClass({
         "assets/plugins/summernote/summernote.css"
     ],
     getTitle() {
-        if (!this.props.parent) {
-            return "Edit Basket";
-        }
         return (
-            <div key={this.props.parent.name} className="kt-subheader__breadcrumbs">
+            <div key={(this.props.parent && this.props.parent.name) || 'editBasket'} className="kt-subheader__breadcrumbs">
                 <h3 className="kt-subheader__title"><a href="javascript:;" className="kt-subheader__breadcrumbs-home" onClick={this.back}><i className="fas fa-arrow-left"></i></a></h3>
                 <span className="kt-subheader__separator"></span>
-                <h3 className="kt-subheader__title">Edit Startup of <strong>{this.props.parent.name}</strong></h3>
+                <h3 className="kt-subheader__title">{this.props.parent ? <span>Edit Startup of <strong>{this.props.parent.name}</strong></span> : "Edit Basket"}</h3>
             </div>
         );
     },
@@ -39,7 +36,7 @@ var EditFundingPool = React.createClass({
         e && e.preventDefault();
         var _this = this;
         var parent = _this.props.parent;
-        this.emit((this.props.type || 'page') + '/change', this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack: true, type: this.props.type, view: this.props.view }, () => _this.setProduct(parent));
+        this.emit((parent ? (this.props.type || 'page') : 'section') + '/change', !parent ? Products : this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack: true, type: this.props.type, view: this.props.view }, () => parent && _this.setProduct(parent));
     },
     loadImage(e) {
         e && e.preventDefault();
@@ -137,7 +134,7 @@ var EditFundingPool = React.createClass({
         e && e.preventDefault();
         var seedRate = 0;
         try {
-            seedRate = parseInt(this.seedRate.value.split(' ').join(''));
+            seedRate = web3.utils.toWei(this.cleanNumber(this.seedRate));
         } catch (error) {
         }
         if (isNaN(seedRate) || seedRate < 0) {
@@ -153,7 +150,7 @@ var EditFundingPool = React.createClass({
         e && e.preventDefault();
         var exangeRate = 0;
         try {
-            exangeRate = parseInt(this.exangeRate.value.split(' ').join(''));
+            exangeRate = web3.utils.toWei(this.cleanNumber(this.exangeRate));
         } catch (error) {
         }
         if (isNaN(exangeRate) || exangeRate < 0) {
@@ -165,27 +162,28 @@ var EditFundingPool = React.createClass({
         }
         this.controller.updateExchangeRate(exangeRate);
     },
-    updateExchangeRateDecimals(e) {
+    updateWhiteListThreshold(e) {
         e && e.preventDefault();
-        var exchangeRateDecimals = 0;
+        var whiteListThreshold = 0;
         try {
-            exchangeRateDecimals = parseInt(this.exchangeRateDecimals.value.split(' ').join(''));
+            whiteListThreshold = web3.utils.toWei(this.cleanNumber(this.whiteListThreshold));
+
         } catch (error) {
         }
-        if (isNaN(exchangeRateDecimals) || exangeRate < 0) {
-            alert('Exchange Rate decimals is a mandatory positive number or zero');
+        if (isNaN(whiteListThreshold) || whiteListThreshold < 0) {
+            alert('Whilte List Threshold is a mandatory positive number or zero');
             return;
         }
-        if (this.getProduct().exchangeRateDecimals === exchangeRateDecimals) {
+        if (this.getProduct().whiteListThreshold === whiteListThreshold) {
             return;
         }
-        this.controller.updateExchangeRateDecimals(exchangeRateDecimals);
+        this.controller.updateWhiteListThreshold(whiteListThreshold);
     },
     updateTotalSupply(e) {
         e && e.preventDefault();
         var totalSupply = 0;
         try {
-            totalSupply = parseInt(this.totalSupply.value.split(' ').join(''));
+            totalSupply = parseInt(this.cleanNumber(this.totalSupply));
         } catch (error) {
         }
         if (isNaN(totalSupply) || totalSupply < 0) {
@@ -218,9 +216,9 @@ var EditFundingPool = React.createClass({
             return;
         }
         var product = this.getProduct();
-        var totalSupply = parseInt(product.totalSupply);
+        var totalSupply = parseInt(Utils.numberToString(product.totalSupply));
         isNaN(totalSupply) && (totalSupply = 0);
-        var totalRaised = parseInt(product.totalRaised);
+        var totalRaised = parseInt(Utils.numberToString(product.totalRaised));
         isNaN(totalRaised) && (totalRaised = 0);
         var percentage = parseFloat(((totalRaised / totalSupply) * 100).toFixed(2));
         totalRaised = Utils.roundWei(totalRaised);
@@ -230,7 +228,6 @@ var EditFundingPool = React.createClass({
     componentDidMount() {
         this.updateGui();
         this.setState({ documents: this.getProduct().documents });
-        client.contractsManager.getFundingPanelData(this.getProduct(), true);
     },
     administrationSubmit(e) {
         e.preventDefault();
@@ -291,6 +288,34 @@ var EditFundingPool = React.createClass({
             _this.documentName.value = doc.name;
             _this.documentLink.value = doc.link;
         });
+    },
+    cleanNumber(target) {
+        var value = target.value.split(' ').join('').split(',').join('');
+        if(value.indexOf('.') !== -1) {
+            var s = value.split('.');
+            var last = s.pop();
+            value = s.join('') + '.' + last;
+        }
+        return value;
+    },
+    parseNumber(e) {
+        e && e.preventDefault();
+        var _this = this;
+        var target = e.target;
+        this.localeTimeout && clearTimeout(this.localeTimeout);
+        this.localeTimeout = setTimeout(function() {
+            try {
+                var value = _this.cleanNumber(target);
+                value = parseFloat(value);
+                if(isNaN(value)) {
+                    target.value = '';
+                }
+                value = value.toLocaleString(value);
+                target.value = value;
+            } catch(e) {
+                console.error(e);
+            }
+        }, 450);
     },
     render() {
         var product = this.getProduct();
@@ -467,9 +492,10 @@ var EditFundingPool = React.createClass({
                                     <div className="row">
                                         <div className="col-md-2">
                                             <h4>SEED Rate</h4>
+                                            <p className="small">the value in SEED of every single Token</p>
                                         </div>
                                         <div className="col-md-8 form-group">
-                                            <input className="form-control form-control-last" type="number" ref={ref => (this.seedRate = ref) && (this.seedRate.value = product.seedRate)} />
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.seedRate = ref) && (this.seedRate.value = Utils.roundWei(product.seedRate))} onChange={this.parseNumber}/>
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateSeedRate}>OK</button>
@@ -478,10 +504,11 @@ var EditFundingPool = React.createClass({
                                     <br />
                                     <div className="row">
                                         <div className="col-md-2">
-                                            <h4>Exchange Rate</h4>
+                                            <h4>Exchange Rate On Top</h4>
+                                            <p className="small">the amount hold by the incubator from each donation</p>
                                         </div>
                                         <div className="col-md-8 form-group">
-                                            <input className="form-control form-control-last" type="number" ref={ref => (this.exangeRate = ref) && (this.exangeRate.value = product.exangeRate)} />
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.exangeRate = ref) && (this.exangeRate.value = Utils.roundWei(product.exangeRate))} onChange={this.parseNumber}/>
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateExchangeRate}>OK</button>
@@ -490,25 +517,27 @@ var EditFundingPool = React.createClass({
                                     <br />
                                     <div className="row">
                                         <div className="col-md-2">
-                                            <h4>Exchange Rate Decimals</h4>
+                                            <h4>Total Supply</h4>
+                                            <p className="small">The amount to raise in this campaign</p>
                                         </div>
                                         <div className="col-md-8 form-group">
-                                            <input className="form-control form-control-last" type="number" ref={ref => (this.exchangeRateDecimals = ref) && (this.exchangeRateDecimals.value = product.seedRate)} />
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.totalSupply = ref) && (this.totalSupply.value = product.totalSupply && parseFloat(Utils.roundWei(product.totalSupply)) || '')} onChange={this.parseNumber}/>
                                         </div>
                                         <div className="col-md-2">
-                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateExchangeRateDecimals}>OK</button>
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateTotalSupply}>OK</button>
                                         </div>
                                     </div>
                                     <br />
                                     <div className="row">
                                         <div className="col-md-2">
-                                            <h4>Total Supply</h4>
+                                            <h4>White List Threshold Balance</h4>
+                                            <p className="small">the maximum amount of investment that does not require whitelisting</p>
                                         </div>
                                         <div className="col-md-8 form-group">
-                                            <input className="form-control form-control-last" type="number" ref={ref => (this.totalSupply = ref) && (this.totalSupply.value = product.totalSupply && parseFloat(Utils.roundWei(product.totalSupply)) || '')} />
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.whiteListThreshold = ref) && (this.whiteListThreshold.value = product.whiteListThreshold && parseFloat(Utils.roundWei(product.whiteListThreshold)) || '')} onChange={this.parseNumber}/>
                                         </div>
                                         <div className="col-md-2">
-                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateTotalSupply}>OK</button>
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateWhiteListThreshold}>OK</button>
                                         </div>
                                     </div>
                                 </form>

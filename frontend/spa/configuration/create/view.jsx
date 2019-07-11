@@ -138,6 +138,8 @@ var CreateConfiguration = React.createClass({
     render() {
         return (
             <span>
+                <p>{'\u00A0'}</p>
+                <p>{'\u00A0'}</p>
                 <div className="steps kt-grid__item align-center justify-center text-center">
                     <ul className="list-unstyled list-inline">
                         <li className="list-inline-item current" aria-disabled="false" aria-selected="true">

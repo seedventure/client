@@ -33,10 +33,10 @@ var CreateFundingPoolController = function(view) {
             data.symbol,
             url, 
             web3.utils.soliditySha3(JSON.stringify(document)),
-            parseInt(data.seedRate),
-            parseInt(data.exangeRate),
-            parseInt(data.exchangeRateDecimals),
-            parseInt(data.totalSupply));
+            web3.utils.toWei('' + data.seedRate, 'ether'),
+            web3.utils.toWei('' + data.exangeRate, 'ether'),
+            parseInt(data.totalSupply),
+            parseInt(data.whiteListThreshold));
         method = method.encodeABI();
         context.view.emit('loader/hide');
         var tx = await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(ecosystemData.factoryAddress, method), "Create new Funding Panel", true);

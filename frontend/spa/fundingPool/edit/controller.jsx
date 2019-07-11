@@ -65,9 +65,9 @@ var EditFundingPoolController = function (view) {
         await context.sendTransactionToFundingPanel(method.encodeABI());
     };
 
-    context.updateExchangeRateDecimals = async function updateExchangeRateDecimals(exchangeRateDecimals) {
-        var contract = new web3.eth.Contract(contracts.FundingPanel);
-        var method = contract.methods.changeTokenExchangeDecimals(exchangeRateDecimals);
+    context.updateWhiteListThreshold = async function updateWhiteListThreshold(whiteListThreshold) {
+        var contract = new web3.eth.Contract(contracts.AdminTools);
+        var method = contract.methods.setNewThreshold(whiteListThreshold);
         await context.sendTransactionToFundingPanel(method.encodeABI());
     };
 

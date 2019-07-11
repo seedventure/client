@@ -97,7 +97,19 @@ var Utils = function () {
       return '0';
     }
     (typeof wei !== 'string') && (wei = Utils.numberToString(wei));
-    return parseFloat(web3.utils.fromWei(wei, 'ether')).toFixed(2)
+    var str = web3.utils.fromWei(wei, 'ether');
+    var fixed = 2;
+    if(str.indexOf('.') !== -1) {
+      var n = str.split('.')[1]
+      fixed = parseInt(n) === 0 ? 2 : n.length;
+    }
+    str = parseFloat(str).toFixed(fixed);
+    fixed = 2;
+    if(str.indexOf('.') !== -1) {
+      var n = str.split('.')[1]
+      fixed = parseInt(n) === 0 ? 2 : n.length;
+    }
+    return parseFloat(str).toFixed(fixed);
   }
 
   isEthereumAddress = function (ad) {

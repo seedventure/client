@@ -3,7 +3,7 @@ function ContractsManager() {
 
     context.SEEDTokenAddress = ecosystemData.seedTokenAddress;
     context.factoryAddress = ecosystemData.factoryAddress;
-    context.dexAddress = ecosystemData.factoryAddress;
+    context.dexAddress = ecosystemData.dexAddress;
 
     context.seedOf = async function seedOf(address) {
         var contract = new web3.eth.Contract(contracts.ERC20Seed);
@@ -111,11 +111,6 @@ function ContractsManager() {
         product.documentUrl = result['0'];
         product.documentHash = result['1'];
 
-        data = contract.methods.exchRateDecimals().encodeABI();
-        result = await client.blockchainManager.call(product.fundingPanelAddress, data);
-        result = web3.eth.abi.decodeParameters(['uint256'], result);
-        product.exchangeRateDecimals = parseInt(result['0']);
-
         data = contract.methods.exchangeRateOnTop().encodeABI();
         result = await client.blockchainManager.call(product.fundingPanelAddress, data);
         result = web3.eth.abi.decodeParameters(['uint256'], result);
@@ -135,6 +130,12 @@ function ContractsManager() {
         result = await client.blockchainManager.call(product.fundingPanelAddress, data);
         result = web3.eth.abi.decodeParameters(['uint256'], result);
         product.totalRaised = parseInt(result['0']);
+
+        contract = new web3.eth.Contract(contracts.AdminTools);
+        data = contract.methods.getWLThresholdBalance().encodeABI();
+        result = await client.blockchainManager.call(product.adminsToolsAddress, data);
+        result = web3.eth.abi.decodeParameters(['uint256'], result);
+        product.whiteListThreshold = parseInt(result['0']);
 
         contract = new web3.eth.Contract(contracts.Token);
         data = contract.methods.symbol().encodeABI();
@@ -179,34 +180,35 @@ function ContractsManager() {
 
             product.members.push(member);
         }
-        for (var i in product.members) {
-            await context.refreshMember(product.members[i]);
-        }
-        await new Promise(async function (ok, ko) {
-            var deleteTimeout = setTimeout(function () {
-                product.unavailable = true;
-                try {
-                    Enumerable.From(client.userManager.user.list).Contains(product.position) && setTimeout(function () {
+        var call = false;
+        try {
+            await new Promise(async function (ok, ko) {
+                var deleteTimeout = setTimeout(function () {
+                    product.unavailable = true;
+                    setTimeout(function() {
                         context.getFundingPanelData(product);
-                    });
-                } catch (error) {
-                }
-                ok();
-            }, 7000);
-            $.get({
-                url: product.documentUrl,
-                dataType: 'json',
-                cache: false,
-                success: data => {
-                    clearTimeout(deleteTimeout);
-                    delete product.unavailable;
-                    Object.keys(data).map(key => product[key] = data[key]);
-                    ok();
-                }
+                    }, 45000);
+                    ko();
+                }, 7000);
+                $.get({
+                    url: product.documentUrl,
+                    dataType: 'json',
+                    cache: false,
+                    success: data => {
+                        clearTimeout(deleteTimeout);
+                        call = product.unavailable !== undefined && product.unavailable !== null;
+                        delete product.unavailable;
+                        Object.keys(data).map(key => product[key] = data[key]);
+                        ok();
+                    }
+                });
             });
-        });
-        $.publish('fundingPanel/updated', product);
-        $.publish('fundingPanel/' + product.position + '/updated', product);
+            for (var i in product.members) {
+                await context.refreshMember(product.members[i]);
+            }
+            call && $.publish('fundingPanel/' + product.position + '/updated', product);
+        } catch(e) {
+        }
         return product;
     };
 
@@ -287,8 +289,8 @@ function ContractsManager() {
     };
 
     context['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'] = async function allowanceIncreased(event, element) {
-        $.publish('allowance/increased');
-        element.position !== undefined && $.publish('fundingPanel/' + element.position + '/updated');
+        $.publish('allowance/increased', element);
+        element.position !== undefined && $.publish('fundingPanel/' + element.position + '/updated', element);
     };
 
     context['0x28e958703d566ea9825155c28c95c3d92a2da219b51404343e4653bccd47525a'] = async function newFundingPanel(event, element) {

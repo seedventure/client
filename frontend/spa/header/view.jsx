@@ -130,6 +130,7 @@ var Header = React.createClass({
                         </div>
                     </div>
                 </div>}
+                {!client.userManager.user && <p>{'\u00A0'}</p>}
             </header>
         );
     }

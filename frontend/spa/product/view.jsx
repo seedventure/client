@@ -29,10 +29,15 @@ var Product = React.createClass({
         return this.state && this.state.product ? this.state.product : this.props.element;
     },
     componentDidMount() {
-        var product = this.getProduct();
-        if (!product.name) {
-            client.contractsManager.getFundingPanelData(product);
-        }
+        this.tryUpdateProduct();
+    },
+    componentDidUpdate() {
+        this.tryUpdateProduct();
+    },
+    tryUpdateProduct() {
+        var _this = this;
+        var product = _this.getProduct();
+        (!product.name || product.unavailable) && client.contractsManager.getFundingPanelData(product).then(p => p && p.name && !p.unavailable && _this.setState({product : p}));
     },
     makeUnsuitable(e) {
         e && e.preventDefault();
