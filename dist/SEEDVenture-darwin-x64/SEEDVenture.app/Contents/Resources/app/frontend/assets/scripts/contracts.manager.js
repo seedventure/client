@@ -327,7 +327,6 @@ function ContractsManager() {
 
     context.checkBaskets = async function checkBaskets() {
         if(client.persistenceManager.get('factoryAddress') !== context.factoryAddress) {
-            client.persistenceManager.set('factoryAddress', context.factoryAddress);
             client.persistenceManager.set('list', []);
         }
         var contract = new web3.eth.Contract(contracts.Factory);

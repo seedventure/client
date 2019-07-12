@@ -69,6 +69,9 @@ var Utils = function () {
   }
 
   numberToString = function numberToString(num) {
+    if(num === undefined || num === null) {
+      num = 0;
+    }
     let numStr = String(num);
 
     if (Math.abs(num) < 1.0) {

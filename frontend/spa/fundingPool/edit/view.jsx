@@ -445,7 +445,11 @@ var EditFundingPool = React.createClass({
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.tags = ref) && product.tags && product.tags.length > 0 && (this.tags.value = product.tags.join(' '))} />
                                         </div>
                                     </div>}
+                                    <br/>
+                                    <br/>
                                     <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>Update</button>
+                                    <br/>
+                                    <br/>
                                 </form>
                             </div>
                             {!this.props.parent && <div className="tab-pane" id="administration" role="tabpanel">
