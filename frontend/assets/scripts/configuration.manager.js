@@ -147,16 +147,11 @@ function ConfigurationManager() {
   };
 
   context.getDefaultConfiguration = function getDefaultConfiguration() {
-    return {
-      web3Provider : ecosystemData.web3Provider,
-      web3URL : ecosystemData.web3URL,
-      ipfsProvider : ecosystemData.ipfsProvider,
-      ipfsHost : ecosystemData.ipfsHost,
-      ipfsPort : ecosystemData.ipfsPort,
-      ipfsProtocol : ecosystemData.ipfsProtocol,
-      gasLimit : ecosystemData.gasLimit,
-      gasPrice : ecosystemData.gasPrice
-    };
+    var defaultConfig = {};
+    Object.keys(ecosystemData).map(function(key) {
+        defaultConfig[key] = ecosystemData[key];
+    });
+    return defaultConfig;
   };
 
   (context.load = function load() {

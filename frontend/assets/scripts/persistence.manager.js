@@ -5,17 +5,11 @@ function PersistenceManager() {
   context.PERSISTENCE_PROPERTIES = [
     'locale',
     'user',
-    'list',
-    'lastCheckedBlockNumber',
-    'web3Provider',
-    'web3URL',
-    'ipfsProvider',
-    'ipfsHost',
-    'ipfsPort',
-    'ipfsProtocol',
-    'gasLimit',
-    'gasPrice'
+    'list'
   ];
+  Object.keys(ecosystemData).map(function(key) {
+      context.PERSISTENCE_PROPERTIES.push(key);
+  });
 
   var persistenceProperties = {};
   for(var i in context.PERSISTENCE_PROPERTIES) {
