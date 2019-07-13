@@ -43,8 +43,14 @@ var ReactModuleManager = function() {
                     var loader = true;
                     if(requireCalled !== false) {
                         loader = false;
-                        rendered = this.oldRender.apply(this);
-                    } else {
+                        try {
+                            rendered = this.oldRender.apply(this);
+                        } catch(e) {
+                            loader = true;
+                            requireCalled = false;
+                        }
+                    } 
+                    if(requireCalled === false) {
                         if(this.getCustomLoader) {
                             rendered = this.getCustomLoader();
                         } else if(React.globalLoader) {
@@ -57,10 +63,12 @@ var ReactModuleManager = function() {
                             scripts: this.requiredScripts,
                             callback: function() {
                               requireCalled = 'true';
-                              this.forceUpdate();
-                              requireCalled = true;
-                              this.extensionsLoaded && this.extensionsLoaded.apply(this);
-                              this.componentDidMount && this.componentDidMount.apply(this);
+                              var _this = this;
+                              this.forceUpdate(function() {
+                                requireCalled = true;
+                                _this.extensionsLoaded && _this.extensionsLoaded.apply(_this);
+                                _this.componentDidMount && _this.componentDidMount.apply(_this);
+                              });
                             }.bind(this)
                         });
                     }

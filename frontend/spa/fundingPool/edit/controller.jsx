@@ -59,9 +59,9 @@ var EditFundingPoolController = function (view) {
         await context.sendTransactionToFundingPanel(method.encodeABI());
     };
 
-    context.updateExchangeRate = async function updateExchangeRate(exchangeRate) {
+    context.updateExchangeRate = async function updateExchangeRate(exchangeRateOnTop) {
         var contract = new web3.eth.Contract(contracts.FundingPanel);
-        var method = contract.methods.changeTokenExchangeOnTopRate(exchangeRate);
+        var method = contract.methods.changeTokenExchangeOnTopRate(exchangeRateOnTop);
         await context.sendTransactionToFundingPanel(method.encodeABI());
     };
 

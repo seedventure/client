@@ -7,13 +7,13 @@ var EditFundingPool = React.createClass({
         "assets/plugins/summernote/summernote.css"
     ],
     getTitle() {
-        return (
-            <div key={(this.props.parent && this.props.parent.name) || 'editBasket'} className="kt-subheader__breadcrumbs">
-                <h3 className="kt-subheader__title"><a href="javascript:;" className="kt-subheader__breadcrumbs-home" onClick={this.back}><i className="fas fa-arrow-left"></i></a></h3>
-                <span className="kt-subheader__separator"></span>
-                <h3 className="kt-subheader__title">{this.props.parent ? <span>Edit Startup of <strong>{this.props.parent.name}</strong></span> : "Edit Basket"}</h3>
-            </div>
-        );
+        return (this.props.parent ? <span>Edit Startup of <strong>{this.props.parent.name}</strong></span> : "Edit Basket");
+    },
+    back(e) {
+        e && e.preventDefault();
+        var _this = this;
+        var parent = _this.props.parent;
+        this.emit('page/change', parent ? EditFundingPool : Products, { element: parent, parent: null, fromBack: true, view: this.props.view }, () => parent && _this.setProduct(parent));
     },
     getProduct() {
         return this.state && this.state.product ? this.state.product : this.props.element;
@@ -31,12 +31,6 @@ var EditFundingPool = React.createClass({
             _this.forceUpdate();
             setTimeout(() => _this.setState({ product }, () => _this.updateGui()));
         });
-    },
-    back(e) {
-        e && e.preventDefault();
-        var _this = this;
-        var parent = _this.props.parent;
-        this.emit((parent ? (this.props.type || 'page') : 'section') + '/change', !parent ? Products : this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack: true, type: this.props.type, view: this.props.view }, () => parent && _this.setProduct(parent));
     },
     loadImage(e) {
         e && e.preventDefault();
@@ -148,19 +142,19 @@ var EditFundingPool = React.createClass({
     },
     updateExchangeRate(e) {
         e && e.preventDefault();
-        var exangeRate = 0;
+        var exchangeRateOnTop = 0;
         try {
-            exangeRate = web3.utils.toWei(this.cleanNumber(this.exangeRate));
+            exchangeRateOnTop = web3.utils.toWei(this.cleanNumber(this.exchangeRateOnTop));
         } catch (error) {
         }
-        if (isNaN(exangeRate) || exangeRate < 0) {
+        if (isNaN(exchangeRateOnTop) || exchangeRateOnTop < 0) {
             alert('Exchange Rate is a mandatory positive number or zero');
             return;
         }
-        if (this.getProduct().exangeRate === exangeRate) {
+        if (this.getProduct().exchangeRateOnTop === exchangeRateOnTop) {
             return;
         }
-        this.controller.updateExchangeRate(exangeRate);
+        this.controller.updateExchangeRate(exchangeRateOnTop);
     },
     updateWhiteListThreshold(e) {
         e && e.preventDefault();
@@ -309,6 +303,7 @@ var EditFundingPool = React.createClass({
                 value = parseFloat(value);
                 if(isNaN(value)) {
                     target.value = '';
+                    return;
                 }
                 value = value.toLocaleString(value);
                 target.value = value;
@@ -512,7 +507,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">the amount hold by the incubator from each donation</p>
                                         </div>
                                         <div className="col-md-8 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.exangeRate = ref) && (this.exangeRate.value = Utils.roundWei(product.exangeRate))} onChange={this.parseNumber}/>
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.exchangeRateOnTop = ref) && (this.exchangeRateOnTop.value = Utils.roundWei(product.exchangeRateOnTop))} onChange={this.parseNumber}/>
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateExchangeRate}>OK</button>
@@ -547,10 +542,10 @@ var EditFundingPool = React.createClass({
                                 </form>
                             </div>}
                             {!this.props.parent && <div className="tab-pane" id="members" role="tabpanel">
-                                <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={() => this.emit('section/change', CreateFundingPool, { parent: product, type: 'section', view: 'mine' })}>Add new Startup</button>
+                                <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={() => this.emit('page/change', CreateFundingPool, { parent: product, view: 'mine' })}>Add new Startup</button>
                                 <br />
                                 <br />
-                                <Members element={product} view={this.props.view} type={this.props.type} />
+                                <Members element={product} view={this.props.view} />
                             </div>}
                         </div>
                     </div>

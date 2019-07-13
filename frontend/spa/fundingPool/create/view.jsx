@@ -4,19 +4,13 @@ var CreateFundingPool = React.createClass({
         "assets/plugins/summernote/summernote.css"
     ],
     getTitle() {
-        return (
-            <div key={(this.props.parent && this.props.parent.name) || 'createBasket'} className="kt-subheader__breadcrumbs">
-                <h3 className="kt-subheader__title"><a href="javascript:;" className="kt-subheader__breadcrumbs-home" onClick={this.back}><i className="fas fa-arrow-left"></i></a></h3>
-                <span className="kt-subheader__separator"></span>
-                <h3 className="kt-subheader__title">{this.props.parent ? <span>Create new Startup for the Basket <strong>{this.props.parent.name}</strong></span> : "Create Basket"}</h3>
-            </div>
-        );
+        return (this.props.parent ? <span>Create new Startup for the Basket <strong>{this.props.parent.name}</strong></span> : "Create Basket");
     },
     back(e) {
         e && e.preventDefault();
         var _this = this;
         var parent = _this.props.parent;
-        this.emit((parent ? (this.props.type || 'page') : 'section') + '/change', !parent ? Products : this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack: true, type: this.props.type, view: this.props.view }, () => parent && _this.setProduct(parent));
+        this.emit('page/change', !parent ? Products : this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack: true, view: this.props.view }, () => parent && _this.setProduct(parent));
     },
     setProduct(product) {
         var _this = this;
@@ -90,12 +84,12 @@ var CreateFundingPool = React.createClass({
             return;
         }
 
-        var exangeRate = 0;
+        var exchangeRateOnTop = 0;
         try {
-            exangeRate = parseFloat(this.cleanNumber(this.exangeRate));
+            exchangeRateOnTop = parseFloat(this.cleanNumber(this.exchangeRateOnTop));
         } catch (error) {
         }
-        if (!this.props.parent && (isNaN(exangeRate) || exangeRate < 0)) {
+        if (!this.props.parent && (isNaN(exchangeRateOnTop) || exchangeRateOnTop < 0)) {
             alert('Exchange Rate is a mandatory positive number or zero');
             return;
         }
@@ -105,7 +99,7 @@ var CreateFundingPool = React.createClass({
             whiteListThreshold = parseInt(this.cleanNumber(this.whiteListThreshold));
         } catch (error) {
         }
-        if (!this.props.parent && (isNaN(whiteListThreshold) || exangeRate < 0)) {
+        if (!this.props.parent && (isNaN(whiteListThreshold) || exchangeRateOnTop < 0)) {
             alert('WhiteList Threshold Balance is a mandatory positive number or zero');
             return;
         }
@@ -138,7 +132,7 @@ var CreateFundingPool = React.createClass({
             documents: (this.state && this.state.documents) || [],
             symbol,
             seedRate,
-            exangeRate,
+            exchangeRateOnTop,
             whiteListThreshold,
             totalSupply,
             walletAddress
@@ -231,6 +225,7 @@ var CreateFundingPool = React.createClass({
                 value = parseFloat(value);
                 if(isNaN(value)) {
                     target.value = '';
+                    return;
                 }
                 value = value.toLocaleString(value);
                 target.value = value;
@@ -366,7 +361,7 @@ var CreateFundingPool = React.createClass({
                         <p className="small">the amount hold by the incubator from each donation</p>
                     </div>
                     <div className="col-md-10 form-group">
-                        <input className="form-control form-control-last" type="text" ref={ref => this.exangeRate = ref} onChange={this.parseNumber}/>
+                        <input className="form-control form-control-last" type="text" ref={ref => this.exchangeRateOnTop = ref} onChange={this.parseNumber}/>
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}

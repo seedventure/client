@@ -13,12 +13,68 @@ function ContractsManager() {
         return result['0'];
     };
 
+    context.call = async function call() {
+        var contractType = arguments[0];
+        var address = arguments[1];
+        var methodName = arguments[2];
+        var args = [];
+        if(arguments.length > 3) {
+            for(var i = 3; i < arguments.length; i++) {
+                args.push(arguments[i]);
+            }
+        }
+
+        var outputs = undefined;
+
+        try {
+            outputs = Enumerable.From(Enumerable.From(contractType).Where(it => it.type === 'function' && it.name === methodName && ((!it.inputs && args.length === 0) || it.inputs.length === args.length)).First().outputs).Select(it => it.type).ToArray();
+        } catch(e) {
+            console.error(e);
+        }
+
+        var contract = new web3.eth.Contract(contractType);
+        var method = contract.methods[methodName].apply(contract, args);
+        var result = await client.blockchainManager.call(address, method.encodeABI());
+        if(!outputs || outputs.length === 0) {
+            return;
+        }
+        result = web3.eth.abi.decodeParameters(outputs, result);
+        return ((result.__length__ || Object.keys(result).length) > 1 ? result : result['0']);
+    };
+
+    context.submit = async function submit() {
+        var title = arguments[0];
+        var lock = arguments[1];
+        var contractType = arguments[2];
+        var address = arguments[3];
+        var methodName = arguments[4];
+        var args = [];
+        if(arguments.length > 5) {
+            for(var i = 5; i < arguments.length; i++) {
+                args.push(arguments[i]);
+            }
+        }
+        var contract = new web3.eth.Contract(contractType);
+        var method = contract.methods[methodName].apply(contract, args);
+        var signedTransaction = await client.userManager.signTransaction(address, method.encodeABI());
+        client.blockchainManager.sendSignedTransaction(signedTransaction, title, lock);
+    };
+
     context.getList = function getList() {
         var list = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.list);
         if (list === undefined || list === null) {
             list = {};
         }
         return list;
+    };
+
+    context.getArray = function getArray() {
+        var array = [];
+        var list = context.getList();
+        Object.keys(list).map(function(key) {
+            array.push(list[key]);
+        });
+        return array;
     };
 
     context.getDictionary = function getDictionary() {
@@ -114,7 +170,7 @@ function ContractsManager() {
         data = contract.methods.exchangeRateOnTop().encodeABI();
         result = await client.blockchainManager.call(product.fundingPanelAddress, data);
         result = web3.eth.abi.decodeParameters(['uint256'], result);
-        product.exangeRate = parseInt(result['0']);
+        product.exchangeRateOnTop = parseInt(result['0']);
 
         data = contract.methods.exchangeRateSeed().encodeABI();
         result = await client.blockchainManager.call(product.fundingPanelAddress, data);
@@ -266,6 +322,23 @@ function ContractsManager() {
 
     context['0x94d9b0a056867efca93631b338c7fde3befc3f54db36b90b8456b069385c30be'] = async function (event, element) {
         context.getFundingPanelData(element.element || element, true);
+    };
+
+    context['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] = async function erc20Transfer(event, element) {
+        if(element.type !== 'SEEDToken') {
+            return;
+        }
+        var product = web3.eth.abi.decodeParameters(['address'], event.topics[2])[0];
+        product = Enumerable.From(context.getArray()).Where(it => it.fundingPanelAddress.toLowerCase() === product).FirstOrDefault();
+        if(!product) {
+            return;
+        }
+        var investor = web3.eth.abi.decodeParameters(['address'], event.topics[1])[0];
+        var amount = web3.eth.abi.decodeParameters(['uint256'], event.data)[0];
+        !product.investors && (product.investors = {});
+        !product.investors[investor] && (product.investors[investor] = 0);
+        product.investors[investor] += parseInt(amount);
+        $.publish('fundingPanel/' + product.position + '/updated', product);
     };
 
     context['0xb4630f894cab42818aa587f8d4fc219b8472578638e808b23df12161ad730af6'] = async function fundingPanelDataChanged(event, element) {

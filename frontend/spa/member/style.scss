@@ -2,4 +2,8 @@
     .text-cta {
         margin-left: 10px;
     }
+    &.selectable:hover {
+        border: 0.5px solid lightblue;
+        cursor: pointer;
+    }
 }

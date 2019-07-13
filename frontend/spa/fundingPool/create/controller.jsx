@@ -34,7 +34,7 @@ var CreateFundingPoolController = function(view) {
             url, 
             web3.utils.soliditySha3(JSON.stringify(document)),
             web3.utils.toWei('' + data.seedRate, 'ether'),
-            web3.utils.toWei('' + data.exangeRate, 'ether'),
+            web3.utils.toWei('' + data.exchangeRateOnTop, 'ether'),
             parseInt(data.totalSupply),
             parseInt(data.whiteListThreshold));
         method = method.encodeABI();

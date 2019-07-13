@@ -3,7 +3,7 @@ var Index = React.createClass({
         'spa/unlock',
         'spa/header',
         'spa/products',
-        'spa/fundingPool/list'
+        'spa/fundingPool/create'
     ],
     requiredScripts: [
         'spa/modal.jsx'
@@ -34,21 +34,11 @@ var Index = React.createClass({
     },
     copyAddress(e) {
         e && e.preventDefault();
-        const el = document.createElement('textarea');
-        el.value = client.userManager.user.wallet;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
+        Utils.copyToClipboard(client.userManager.user.wallet);
     },
     copyPrivateKey(e) {
         e && e.preventDefault();
-        const el = document.createElement('textarea');
-        el.value = client.userManager.user.privateKey;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
+        Utils.copyToClipboard(client.userManager.user.privateKey);
     },
     togglePrivateKey(e) {
         e && e.preventDefault();
@@ -78,7 +68,7 @@ var Index = React.createClass({
     },
     showTransactionLockModal(transaction) {
         var title = '<span>Sealing transaction into Blockchain. This can take more than 30 seconds...</span><br/><br/>';
-        title += '<a href=" ' + (transaction ? ecosystemData.etherscanURL + 'tx/' + transaction : '#') + '" target="_blank">Follow on Etherscan</a>';
+        title += '<a href="' + (transaction ? ecosystemData.etherscanURL + 'tx/' + transaction : '#') + '" target="_blank">Follow on Etherscan</a>';
         this.showLoaderModal(title);
     },
     showTransactionModal(txHash, title, error, tx) {
@@ -95,40 +85,54 @@ var Index = React.createClass({
         this.transactionBody.html(body);
         this.transactionModal.isHidden() && this.transactionModal.show();
     },
-    changePage(element, props) {
+    changePage(element, props, callback) {
         !element && (element = null);
         !props && (props = null);
         if (!element) {
-            this.setState({ title: null, element: null, props: null });
+            this.setState({element: null, props: null});
         } else {
             var _this = this;
             ReactModuleLoader.load({
                 modules: element.prototype.requiredModules || [],
                 scripts: element.prototype.requiredScripts || [],
                 callback: function () {
-                    _this.setState({ title: element.prototype.title, element, props });
+                    _this.setState({element, props}, callback);
                 }
             });
         }
     },
     getDefaultRenderer() {
-        return !client.configurationManager.hasUser() ? Products : client.configurationManager.hasUnlockedUser() ? Products : Unlock;
+        return !client.configurationManager.hasUser() || client.configurationManager.hasUnlockedUser() ? Products : Unlock;
     },
     onElementRef(ref) {
-        if(ref === undefined || ref === null) {
+        if(!ref) {
             return;
         }
+        var title = null;
         if(ref.getTitle) {
-            var title = ref.getTitle();
+            title = ref.getTitle();
             if(!this.state || !this.state.title || this.state.title !== title) {
                 if(title && this.state.title && typeof title !== 'string' && typeof this.state.title !== 'string') {
                     if(title.key === this.state.title.key) {
-                        return;
+                        title = null;
                     }
                 }
-                this.setState({title});
             }
         }
+        var newState = {
+            back : ref.back
+        };
+        if(newState.back === undefined || newState.back === null || this.state.back === newState.back) {
+            delete newState.back;
+        }
+        title && this.state.title !== title && (newState.title = title);
+        !ref.getTitle && this.state && this.state.title !== null && (newState.title = null);
+        Object.keys(newState).length > 0 && this.setState(newState);
+    },
+    clearSearch(e) {
+        e && e.preventDefault();
+        this.searchBar.value = '';
+        this.emit('products/search');
     },
     render() {
         var rendered = this.state && this.state.element ? this.state.element : this.getDefaultRenderer();
@@ -146,7 +150,24 @@ var Index = React.createClass({
             <div className="kt-grid kt-grid--hor kt-grid--root">
                 <div className="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--ver kt-page">
                     <div className={"kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor kt-wrapper" + (client.userManager.user ? "" : " guest")} id="kt_wrapper">
-                        <Header title={this.state && this.state.title ? this.state.title : ''} element={rendered}/>
+                        <Header title={this.state && this.state.title ? this.state.title : ''} element={rendered} view={props.view} back={this.state && this.state.back}/>
+                        {!client.configurationManager.hasUnlockedUser() && [<br/>,<br/>]}
+                        <div className="kt-subheader kt-grid__item" id="kt_subheader">
+                            <div className="kt-subheader__main">
+                                <div className="kt-subheader__breadcrumbs">
+                                </div>
+                            </div>
+                            {(!this.state || !this.state.element || this.state.element === Products) && <div className="kt-subheader__main">
+                                <input type="text" placeholder="Search..." onChange={e => this.emit('products/search', e)} ref={ref => this.searchBar = ref}/>
+                                {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                <span className="kt-subheader__separator"></span>
+                                <div className="kt-subheader__breadcrumbs">
+                                    <a href="#" className="kt-subheader__breadcrumbs-home" onClick={this.clearSearch}><i className="fas fa-remove"></i></a>
+                                </div>
+                            </div>}
+                        </div>
+                        <br/>
+                        <br/>
                         {React.createElement(rendered, props)}
                     </div>
                 </div>

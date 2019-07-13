@@ -1,0 +1,25 @@
+.detail {
+    .editor {
+        min-height: 200px;
+        .btn {
+            height: auto;
+            font-size: 13px;
+        }
+        .note-toolbar {
+            z-index: 1;
+        }
+    }
+
+    .progress-bar {
+        font-size: 20px;
+    }
+
+    .small {
+        font-size: 85%;
+        font-weight: bold;
+    }
+
+    .investments {
+        float: right;
+    }
+}

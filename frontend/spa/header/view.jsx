@@ -14,36 +14,26 @@ var Header = React.createClass({
     },
     copyAddress(e) {
         e && e.preventDefault();
-        const el = document.createElement('textarea');
-        el.value = client.userManager.user.wallet;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
+        Utils.copyToClipboard(client.userManager.user.wallet);
     },
     copyPrivateKey(e) {
         e && e.preventDefault();
-        const el = document.createElement('textarea');
-        el.value = client.userManager.user.privateKey;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
+        Utils.copyToClipboard(client.userManager.user.privateKey);
     },
     importConfiguration(e) {
-        e.preventDefault();
+        e && e.preventDefault();
         this.emit('page/change', ImportConfiguration);
     },
     createConfiguration(e) {
-        e.preventDefault();
+        e && e.preventDefault();
         this.emit('page/change', CreateConfiguration);
     },
     backupConfiguration(e) {
-        e.preventDefault();
+        e && e.preventDefault();
         this.emit('page/change', BackupConfiguration);
     },
     moveConfiguration(e) {
-        e.preventDefault();
+        e && e.preventDefault();
         this.emit('page/change', MoveConfiguration);
     },
     componentDidUpdate() {
@@ -60,9 +50,6 @@ var Header = React.createClass({
             ref.children().find('li.kt-menu__item').removeClass('kt-menu__item--open').removeClass('kt-menu__item--here');
             $(this).addClass('kt-menu__item--open').addClass('kt-menu__item--here');
         })[0]).click();
-        /*setTimeout(function() {
-            firstSection.click().children().find('a').click();
-        }, 700);*/
     },
     componentDidMount() {
         if(!client.userManager.user) {
@@ -71,16 +58,27 @@ var Header = React.createClass({
         this.lastBalanceCheck = new Date().getTime();
         client.userManager.getBalances();
     },
+    renderTitle() {
+        if(!this.props.title || typeof this.props.title === 'string') {
+            return (<span className="mr-4">
+                <strong>{this.props.title || ((this.props.view === 'mine' ? 'My ' : '') + 'Baskets')}</strong>
+            </span>);
+        }
+        return this.props.title;
+    },
     render() {
         return (
             <header id="kt_header" className="kt-header kt-grid__item kt-header--fixed row mx-0" data-ktheader-minimize="on">
                 <div className="kt-header__top col-12 py-3 bg-primary">
                     <div className="kt-container">
                         <div className="kt-header__topbar header-left back-title">
-                            {this.props.title && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Back" className="back" onClick={() => this.emit('page/change')}>
+                            {this.props.title && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Back" className="back" onClick={e => this.props.back ? this.props.back(e) : this.emit('page/change', Products, {view : this.props.view})}>
                                 <i className="fas fa-arrow-left"></i>
                             </a>}
-                            <span className="mr-4"><strong>{this.props.title}</strong></span>
+                            <span>{'\u00A0'}{'\u00A0'}</span>
+                            {this.renderTitle()}
+                            {'\u00A0'}
+                            {this.props.view === 'mine' && <a href="javascript:;" onClick={() => this.emit('page/change', CreateFundingPool, {view : 'mine'})} className="kt-subheader__breadcrumbs-home"><i className="fas fa-plus"></i></a>}
                         </div>
                         <div className="kt-header__topbar justify-content-end header-right">
                             <span className="mr-4">Welcome <strong>{client.userManager.user ? (client.userManager.user.wallet.substring(0,9) + "...") : client.configurationManager.hasUser() ? "" : "Guest"}</strong></span>
@@ -104,13 +102,13 @@ var Header = React.createClass({
                             {false && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Settings">
                                 <i className="fas fa-cog"></i>
                             </a>}
-                            {client.userManager.user && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Forget Me" onClick={() => this.emit('user/askForget')}>
+                            {client.configurationManager.hasUnlockedUser() && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Forget Me" onClick={() => this.emit('user/askForget')}>
                                 <i className="fas fa-sign-out-alt"></i>
                             </a>}
                         </div>
                     </div>
                 </div>
-                {client.userManager.user && <div className="kt-header__bottom col-12 py-3 bg-secondary">
+                {client.configurationManager.hasUnlockedUser() && <div className="kt-header__bottom col-12 py-3 bg-secondary">
                     <div className="kt-container" ref={this.setupChooseSection}>
                         <div className="kt-header-menu-wrapper" id="kt_header_menu_wrapper">
                             <div id="kt_header_menu" className="kt-header-menu">
@@ -121,7 +119,7 @@ var Header = React.createClass({
                                         </a>
                                     </li>
                                     <li className="kt-menu__item">
-                                        <a href="javascript:;" onClick={() => this.emit('page/change', ListFundingPool)}>
+                                        <a href="javascript:;" onClick={() => this.emit('page/change', Products, {view : 'mine'})}>
                                             Incubator
                                         </a>
                                     </li>
@@ -130,7 +128,7 @@ var Header = React.createClass({
                         </div>
                     </div>
                 </div>}
-                {!client.userManager.user && <p>{'\u00A0'}</p>}
+                {!client.configurationManager.hasUnlockedUser() && <p>{'\u00A0'}</p>}
             </header>
         );
     }

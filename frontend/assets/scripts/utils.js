@@ -4,6 +4,15 @@ var Utils = function () {
 
   pageTitlePreamble = 'SEEDVenture - Platform';
 
+  copyToClipboard = function copyToClipboard(str) {
+      const el = document.createElement('textarea');
+      el.value = str === undefined || str === null ? '' : str.toString && str.toString() || ('' + str);
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+  };
+
   getJQueryElement = function (element, defaultElementName) {
     if (defaultElementName === undefined || defaultElementName === null
       || defaultElementName === '') {
