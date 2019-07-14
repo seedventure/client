@@ -1,5 +1,5 @@
 var MoveConfiguration = React.createClass({
-    title : "Move your data",
+    title: "Move your data",
     ok(e) {
         e && e.preventDefault();
         var pass = this.password.value;

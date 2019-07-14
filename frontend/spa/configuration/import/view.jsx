@@ -1,7 +1,5 @@
 var ImportConfiguration = React.createClass({
-    getTitle() {
-        return 'Import Configuration or Wallet';
-    },
+    title: 'Import Configuration or Wallet',
     importMnemonic(e) {
         e && e.preventDefault();
         if(this.mnemonic.value === '') {

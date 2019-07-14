@@ -172,6 +172,7 @@ var Utils = function () {
     roundWei: roundWei,
     isEthereumAddress: isEthereumAddress,
     toEthereumChecksumAddress,
-    numberToString
+    numberToString,
+    copyToClipboard
   };
 }();

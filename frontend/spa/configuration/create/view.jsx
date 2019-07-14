@@ -1,7 +1,5 @@
 var CreateConfiguration = React.createClass({
-    getTitle() {
-        return 'Create New Wallet';
-    },
+    title: 'Create New Wallet',
     getInitialState() {
         return { words: ethers.utils.HDNode.entropyToMnemonic(ethers.utils.randomBytes(16)).split(' ') };
     },

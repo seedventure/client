@@ -13,6 +13,13 @@
         margin-bottom: 20px;
     }
 
+    &.modal.wallet {
+        width: 515px;
+        i.copy {
+            margin-left: 5px;
+        }
+    }
+
     &.modal.loader {
         .modal-header {
             border-bottom: none;
@@ -32,5 +39,27 @@
 
     .kt-wrapper.guest {
         padding-top: 65px !important;
+    }
+
+    .ownedTokens {
+        min-height: 200px;
+        max-height: 200px;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        .token-container {
+            padding: 3%;
+            .token {
+                &:hover {
+                    border: 0.5px solid lightblue;
+                    cursor: pointer;   
+                }
+                .amount {
+                    text-align: right;
+                }
+                h3 {
+                    margin-top: 3%;
+                }
+            }
+        }
     }
 }

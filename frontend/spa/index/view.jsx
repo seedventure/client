@@ -29,6 +29,7 @@ var Index = React.createClass({
             _this.addressLink.attr('href', ecosystemData.etherscanURL + 'address/' + client.userManager.user.wallet);
             _this.addressLink.html(client.userManager.user.wallet);
             _this.privateKeyLabel.html('***************************************************************************'.substring(0, 50));
+            _this.renderOwnedTokens();
             _this.walletModal.isHidden() && this.walletModal.show();
         });
     },
@@ -43,14 +44,14 @@ var Index = React.createClass({
     togglePrivateKey(e) {
         e && e.preventDefault();
         var x = client.userManager.user.privateKey.substring(0, 50) + '...';
-        if(this.privateKeyLabel.html().indexOf("*") !== 0) {
+        if (this.privateKeyLabel.html().indexOf("*") !== 0) {
             x = '***************************************************************************'.substring(0, 50);
         }
         this.privateKeyLabel.html(x);
     },
     askForget(e) {
         e && e.preventDefault && e.preventDefault();
-        if(confirm('All your data will be lost, do you want to continue?')) {
+        if (confirm('All your data will be lost, do you want to continue?')) {
             this.controller.forgetUser();
             this.emit('page/change');
         }
@@ -60,7 +61,7 @@ var Index = React.createClass({
         this.genericLoadingModal.isHidden() && this.genericLoadingModal.show();
     },
     showAskTransactionModal(txHash, title) {
-        if(!title) {
+        if (!title) {
             title = '';
         }
         this.askTransactionModal.setTitle(title);
@@ -75,7 +76,7 @@ var Index = React.createClass({
         this.transactionModal.setTitle(title);
         this.transactionBody.html('');
         var body = '';
-        if(error) {
+        if (error) {
             body += '<h3 class="error">Transaction error:</h3><br/><br/>';
             body += '<p>' + error.message || error + '</p>';
         } else {
@@ -89,14 +90,14 @@ var Index = React.createClass({
         !element && (element = null);
         !props && (props = null);
         if (!element) {
-            this.setState({element: null, props: null});
+            this.setState({ title: null, element: null, props: null });
         } else {
             var _this = this;
             ReactModuleLoader.load({
                 modules: element.prototype.requiredModules || [],
                 scripts: element.prototype.requiredScripts || [],
                 callback: function () {
-                    _this.setState({element, props}, callback);
+                    _this.setState({ title : element.prototype.title, element, props }, callback);
                 }
             });
         }
@@ -105,28 +106,29 @@ var Index = React.createClass({
         return !client.configurationManager.hasUser() || client.configurationManager.hasUnlockedUser() ? Products : Unlock;
     },
     onElementRef(ref) {
-        if(!ref) {
+        if (!ref) {
             return;
         }
         var title = null;
-        if(ref.getTitle) {
+        if (ref.getTitle) {
             title = ref.getTitle();
-            if(!this.state || !this.state.title || this.state.title !== title) {
-                if(title && this.state.title && typeof title !== 'string' && typeof this.state.title !== 'string') {
-                    if(title.key === this.state.title.key) {
+            if (!this.state || !this.state.title || this.state.title !== title) {
+                if (title && this.state.title && typeof title !== 'string' && typeof this.state.title !== 'string') {
+                    if (title.key === this.state.title.key) {
                         title = null;
                     }
                 }
             }
         }
         var newState = {
-            back : ref.back
+            back: ref.back
         };
-        if(newState.back === undefined || newState.back === null || this.state.back === newState.back) {
+        if (newState.back === undefined || newState.back === null || this.state.back === newState.back) {
             delete newState.back;
         }
         title && this.state.title !== title && (newState.title = title);
         !ref.getTitle && this.state && this.state.title !== null && (newState.title = null);
+        ref.title && delete newState.title;
         Object.keys(newState).length > 0 && this.setState(newState);
     },
     clearSearch(e) {
@@ -134,12 +136,48 @@ var Index = React.createClass({
         this.searchBar.value = '';
         this.emit('products/search');
     },
+    renderOwnedToken(product, consume) {
+        if(!product || !product.name) {
+            typeof consume === 'function' && setTimeout(consume);
+            return;
+        }
+        var _this = this;
+        client.contractsManager.tokenBalanceOf(product.tokenAddress, client.userManager.user.wallet).then(result => {
+            result = web3.utils.toWei('50', 'ether');
+            result = Utils.roundWei(result);
+            var element = _this.ownedTokens.children('[data-position="' + product.position + '"]');
+            element.length === 0 && (element = $(`
+            <div class="row token-container" data-position="${product.position}">
+                <div class="col-md-12">
+                    <div class="row token">
+                        <div class="col-md-2">${product.image ? `<img width="40" height="40" src="data:image/png;base64, ${product.image}" />` : '&nbsp;'}</div>
+                        <div class="col-md-3"><h3>${product.name}</h3></div>
+                        <div class="col-md-7 amount"><h3>${result} ${product.symbol}</h3></div>
+                    </div>
+                </div>
+            </div>`).click(e => {
+                e && e.preventDefault();
+                _this.walletModal.hide();
+                _this.emit('page/change', Detail, {element : product});
+            }).appendTo(_this.ownedTokens));
+            element.children().find('.amount').html('<h3>' + result + ' ' + product.symbol + '</h3>');
+            typeof consume === 'function' && setTimeout(consume);
+        });
+    },
+    renderOwnedTokens() {
+        var array = client.contractsManager.getArray();
+        var i = -1;
+        var _this = this;
+        _this.ownedTokens.html('');
+        var consume = () => i++ < array.length && _this.renderOwnedToken(array[i], consume);
+        setTimeout(consume);
+    },
     render() {
         var rendered = this.state && this.state.element ? this.state.element : this.getDefaultRenderer();
         var props = this.state && this.state.props;
         !props && (props = {});
         props.ref = this.onElementRef.bind(this)
-        if(rendered === Unlock) {
+        if (rendered === Unlock) {
             return (
                 <div className="kt-grid kt-grid--hor kt-grid--root">
                     {React.createElement(rendered, props)}
@@ -150,15 +188,15 @@ var Index = React.createClass({
             <div className="kt-grid kt-grid--hor kt-grid--root">
                 <div className="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--ver kt-page">
                     <div className={"kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor kt-wrapper" + (client.userManager.user ? "" : " guest")} id="kt_wrapper">
-                        <Header title={this.state && this.state.title ? this.state.title : ''} element={rendered} view={props.view} back={this.state && this.state.back}/>
-                        {!client.configurationManager.hasUnlockedUser() && [<br/>,<br/>]}
+                        <Header title={this.state && this.state.title ? this.state.title : ''} element={rendered} view={props.view} back={this.state && this.state.back} />
+                        {!client.configurationManager.hasUnlockedUser() && [<br />, <br />]}
                         <div className="kt-subheader kt-grid__item" id="kt_subheader">
                             <div className="kt-subheader__main">
                                 <div className="kt-subheader__breadcrumbs">
                                 </div>
                             </div>
                             {(!this.state || !this.state.element || this.state.element === Products) && <div className="kt-subheader__main">
-                                <input type="text" placeholder="Search..." onChange={e => this.emit('products/search', e)} ref={ref => this.searchBar = ref}/>
+                                <input type="text" placeholder="Search..." onChange={e => this.emit('products/search', e)} ref={ref => this.searchBar = ref} />
                                 {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
                                 <span className="kt-subheader__separator"></span>
                                 <div className="kt-subheader__breadcrumbs">
@@ -166,8 +204,8 @@ var Index = React.createClass({
                                 </div>
                             </div>}
                         </div>
-                        <br/>
-                        <br/>
+                        <br />
+                        <br />
                         {React.createElement(rendered, props)}
                     </div>
                 </div>
@@ -178,8 +216,8 @@ var Index = React.createClass({
                     keyboard="false"
                     className="index loader">
                     <Loader size='x2' />
-                    <br/>
-                    <br/>
+                    <br />
+                    <br />
                     <h4 ref={ref => this.genericLoadingText = $(ref)}></h4>
                 </Modal>
                 <Modal
@@ -212,14 +250,14 @@ var Index = React.createClass({
                 <Modal
                     title="Welcome!"
                     ref={ref => this.walletModal = ref}
-                    className="header wallet">
+                    className="index wallet">
                     <h4>Your Address:</h4>
                     <div>
                         <a target="_blank" ref={ref => this.addressLink = $(ref)}></a>
                         {'\u00A0'}
                         <a href="#" onClick={this.copyAddress}><i className="copy fa fa-file"></i></a>
                     </div>
-                    <br/>
+                    <br />
                     <h4>Your Private Key:</h4>
                     <div>
                         <span ref={ref => this.privateKeyLabel = $(ref)}></span>
@@ -228,10 +266,15 @@ var Index = React.createClass({
                         {'\u00A0'}
                         <a href="#" onClick={this.copyPrivateKey}><i className="copy fa fa-file"></i></a>
                     </div>
-                    <br/>
-                    <br/>
+                    <br />
+                    <br />
                     <h4>Your wallet contains <strong><span ref={ref => this.walletEth = ref}></span> eth</strong> and <strong><span ref={ref => this.walletSeed = ref}></span> SEED</strong></h4>
                     <p>You can purchase them on <a href="https://www.therocktrading.com" target="_blank">TheRock Trading</a></p>
+                    <br />
+                    <h2>Owned Basket Tokens</h2>
+                    <br />
+                    <div ref={ref => this.ownedTokens = $(ref)} className="ownedTokens">
+                    </div>
                 </Modal>
             </div>
         );

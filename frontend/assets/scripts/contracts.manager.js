@@ -6,11 +6,11 @@ function ContractsManager() {
     context.dexAddress = ecosystemData.dexAddress;
 
     context.seedOf = async function seedOf(address) {
-        var contract = new web3.eth.Contract(contracts.ERC20Seed);
-        var data = contract.methods.balanceOf(address).encodeABI();
-        var result = await client.blockchainManager.call(context.SEEDTokenAddress, data);
-        result = web3.eth.abi.decodeParameters(['uint256'], result);
-        return result['0'];
+        return await context.tokenBalanceOf(context.SEEDTokenAddress, address);
+    };
+
+    context.tokenBalanceOf = async function tokenBalanceOf(contract, address) {
+        return await context.call(contracts.Token, contract, 'balanceOf', address);
     };
 
     context.call = async function call() {
@@ -333,12 +333,22 @@ function ContractsManager() {
         if(!product) {
             return;
         }
-        var investor = web3.eth.abi.decodeParameters(['address'], event.topics[1])[0];
-        var amount = web3.eth.abi.decodeParameters(['uint256'], event.data)[0];
+
+        var result = await context.call(contracts.FundingPanel, product.fundingPanelAddress, "getTotalRaised");
+        product.totalRaised = parseInt(result);
+
+        var investor = web3.eth.abi.decodeParameters(['address'], event.topics[1])[0].toLowerCase();
+        var amount = parseInt(web3.eth.abi.decodeParameters(['uint256'], event.data)[0]);
         !product.investors && (product.investors = {});
         !product.investors[investor] && (product.investors[investor] = 0);
-        product.investors[investor] += parseInt(amount);
+        product.investors[investor] += amount;
         $.publish('fundingPanel/' + product.position + '/updated', product);
+        try {
+            if(client.userManager.user.wallet.toLowerCase() === investor.toLowerCase()) {
+                $('investment/mine', product);
+            }
+        } catch(e) {
+        } 
     };
 
     context['0xb4630f894cab42818aa587f8d4fc219b8472578638e808b23df12161ad730af6'] = async function fundingPanelDataChanged(event, element) {
