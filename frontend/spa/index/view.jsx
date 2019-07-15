@@ -172,6 +172,14 @@ var Index = React.createClass({
         var consume = () => i++ < array.length && _this.renderOwnedToken(array[i], consume);
         setTimeout(consume);
     },
+    checkDistDate() {
+        var distDate = window.distDate;
+        delete window.distDate;
+        distDate && distDate > ecosystemData.distDate && this.newVersionAvailableModal.show()
+    },
+    componentDidMount() {
+        this.checkDistDate();
+    },
     render() {
         var rendered = this.state && this.state.element ? this.state.element : this.getDefaultRenderer();
         var props = this.state && this.state.props;
@@ -275,6 +283,12 @@ var Index = React.createClass({
                     <br />
                     <div ref={ref => this.ownedTokens = $(ref)} className="ownedTokens">
                     </div>
+                </Modal>
+                <Modal
+                    title="New Version of the SEEDVenture Client is available!"
+                    ref={ref => this.newVersionAvailableModal = ref}
+                    className="index newVersionAvailableModel">
+                    <h3>You can download it from <a href="https://github.com/seedventure/client/tree/master/dist" target="_blank">here</a>.</h3>
                 </Modal>
             </div>
         );
