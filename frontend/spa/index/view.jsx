@@ -19,7 +19,8 @@ var Index = React.createClass({
             'transaction/lock': this.showTransactionLockModal,
             'transaction/unlock': () => this.genericLoadingModal.hide(),
             'transaction/submitted': this.showTransactionModal,
-            'investment/mine': this.renderOwnedToken
+            'investment/mine': this.renderOwnedToken,
+            'configuration/forgotten' : this.refreshTokenList
         };
     },
     showWalletModal() {
@@ -167,6 +168,10 @@ var Index = React.createClass({
             element.children().find('.amount').html('<h3>' + result + ' ' + product.symbol + '</h3>');
             typeof consume === 'function' && setTimeout(consume);
         });
+    },
+    refreshTokenList() {
+        this.ownedTokens.html('');
+        this.renderOwnedTokens();
     },
     renderOwnedTokens() {
         var array = client.contractsManager.getArray();

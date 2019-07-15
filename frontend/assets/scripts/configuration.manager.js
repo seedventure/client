@@ -138,9 +138,14 @@ function ConfigurationManager() {
 
   context.forget = function forget() {
     privateContext.fs.unlinkSync(privateContext.configuration);
+    try {
+      privateContext.fs.unlinkSync(window.userDataPath + 'data.json');
+    } catch(e) {
+    }
     context.load();
     $.publish('list/updated');
     client.contractsManager.checkBaskets();
+    $.publish('configuration/forgotten');
   }
 
   context.hasUser = function hasUser() {
