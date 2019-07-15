@@ -18,7 +18,7 @@ var Detail = React.createClass({
         var position = this.getProduct().position;
         var subscriptions = {};
         subscriptions['product/set'] = this.setProduct;
-        subscriptions['fundingPanel/' + position + '/updated'] = element => this.setState({ product: element });
+        subscriptions['fundingPanel/' + position + '/updated'] = element => this.setState({ product: element }, this.controller.updateInvestments);
         return subscriptions;
     },
     setProduct(product) {
@@ -61,14 +61,12 @@ var Detail = React.createClass({
     componentDidMount() {
         this.updateGui();
         var _this = this;
-        this.setState({ documents: this.getProduct().documents }, function() {
-            _this.controller.updateInvestments();
-        });
+        this.setState({ documents: this.getProduct().documents }, this.controller.updateInvestments);
     },
     cleanNumber(target) {
-        var value = target.value.split(' ').join('').split(',').join('');
+        var value = target.value.split(' ').join('').split(Utils.dozensSeparator).join('');
         if(value.indexOf('.') !== -1) {
-            var s = value.split('.');
+            var s = value.split(Utils.decimalsSeparator);
             var last = s.pop();
             value = s.join('') + '.' + last;
         }
@@ -118,7 +116,7 @@ var Detail = React.createClass({
         }
         var full = false;
         try {
-            full = parseInt(product.totalRaised) >= parseInt(product.totalSupply);
+            full = product.totalRaised >= product.totalSupply;
         } catch(e) {
         }
         return (

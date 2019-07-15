@@ -7,7 +7,7 @@ function BlockchainManager() {
     context.addressesSplit = 500;
 
     context.sendSignedTransaction = function sendSignedTransaction(signedTransaction, title, lock) {
-        return new Promise(async function(ok, ko) {
+        return new Promise(function(ok, ko) {
             var txHash = web3.utils.sha3(signedTransaction);
             var submit = async function(event, result) {
                 $.unsubscribe('transaction/submit', submit);

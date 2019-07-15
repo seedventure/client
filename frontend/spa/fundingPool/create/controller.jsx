@@ -40,7 +40,7 @@ var CreateFundingPoolController = function(view) {
         method = method.encodeABI();
         context.view.emit('loader/hide');
         var tx = await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(ecosystemData.factoryAddress, method), "Create new Funding Panel", true);
-        tx && setTimeout(() => context.view.emit('section/change'), 700);
+        tx && setTimeout(() => context.view.emit('page/change'), 700);
     };
 
     context.deployMember = async function deploy(data, product) {
@@ -75,6 +75,5 @@ var CreateFundingPoolController = function(view) {
         method = method.encodeABI();
         context.view.emit('loader/hide');
         var tx = await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(product.fundingPanelAddress, method), "Create new Funding Panel");
-        tx && setTimeout(() => context.view.emit('section/change'), 700);
     };
 };

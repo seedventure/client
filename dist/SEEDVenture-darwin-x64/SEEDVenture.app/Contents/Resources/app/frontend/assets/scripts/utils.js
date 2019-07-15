@@ -173,6 +173,8 @@ var Utils = function () {
     isEthereumAddress: isEthereumAddress,
     toEthereumChecksumAddress,
     numberToString,
-    copyToClipboard
+    copyToClipboard,
+    dozensSeparator : (1000.02).toLocaleString().charAt(1),
+    decimalsSeparator : (1000.02).toLocaleString().charAt(5)
   };
 }();

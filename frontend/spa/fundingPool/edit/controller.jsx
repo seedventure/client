@@ -220,4 +220,22 @@ var EditFundingPoolController = function (view) {
         }
         return result['0'] === true ? 'YES' : 'NO';
     };
+
+    context.changeWalletOnTop = async function changeWalletOnTop(address) {
+        var product = context.view.getProduct();
+        var oldAddress = await client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'getWalletOnTopAddress');
+        if(address === oldAddress) {
+            return;
+        }
+        await client.contractsManager.submit('Change Wallet on top', false, contracts.AdminTools, product.adminsToolsAddress, 'setWalletOnTopAddress', address);
+    };
+
+    context.setSingleWhitelist = async function setSingleWhitelist(address, whitelistAmount) {
+        var product = context.view.getProduct();
+        var rate = parseInt(product.exchangeRateOnTop);
+        var amount = whitelistAmount * rate;
+        amount = Utils.numberToString(amount);
+        var isWhitelisted = await client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'isWhitelisted', client.userManager.user.wallet);
+        await client.contractsManager.submit('Set whitelist', false, contracts.AdminTools, product.adminsToolsAddress, isWhitelisted ? 'changeMaxWLAmount' : 'addToWhitelist', address, amount);
+    };
 };

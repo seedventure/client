@@ -206,9 +206,9 @@ var CreateFundingPool = React.createClass({
         });
     },
     cleanNumber(target) {
-        var value = target.value.split(' ').join('').split(',').join('');
+        var value = target.value.split(' ').join('').split(Utils.dozensSeparator).join('');
         if(value.indexOf('.') !== -1) {
-            var s = value.split('.');
+            var s = value.split(Utils.decimalsSeparator);
             var last = s.pop();
             value = s.join('') + '.' + last;
         }
@@ -381,7 +381,7 @@ var CreateFundingPool = React.createClass({
                         <p className="small">the maximum amount of investment that does not require whitelisting</p>
                     </div>
                     <div className="col-md-10 form-group">
-                        <input className="form-control form-control-last" type="text" ref={ref => this.whiteListThreshold = ref} />
+                        <input className="form-control form-control-last" type="text" ref={ref => this.whiteListThreshold = ref} onChange={this.parseNumber}/>
                     </div>
                 </div>}
                 {this.props.parent && <br/>}

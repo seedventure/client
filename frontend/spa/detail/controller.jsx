@@ -8,14 +8,18 @@ var DetailController = function (view) {
         }
         var basket = context.view.props.parent || context.view.getProduct();
 
-        var result = await client.contractsManager.call(contracts.AdminTools, basket.adminsToolsAddress, 'isWhitelisted', client.userManager.user.wallet);
-        context.view.whiteList.style.display = result ? 'none' : 'block';
+        if(context.view.whiteList) {
+            var result = await client.contractsManager.call(contracts.AdminTools, basket.adminsToolsAddress, 'isWhitelisted', client.userManager.user.wallet);
+            context.view.whiteList.style.display = result ? 'none' : 'block';
+        }
 
-        result = await client.contractsManager.call(contracts.Token, basket.tokenAddress, 'balanceOf', client.userManager.user.wallet);
-        context.view.tokens.innerHTML = Utils.roundWei(result);
+        if(context.view.tokens) {
+            result = await client.contractsManager.call(contracts.Token, basket.tokenAddress, 'balanceOf', client.userManager.user.wallet);
+            context.view.tokens.innerHTML = Utils.roundWei(result);
+        }
 
         try {
-            context.view.seeds.innerHTML = Utils.roundWei(basket.investors[client.userManager.user.wallet.toLowerCase()].amount);
+            context.view.seeds.innerHTML = Utils.roundWei(basket.investors[client.userManager.user.wallet.toLowerCase()]);
         } catch(e) {
         }
     };
@@ -40,17 +44,21 @@ var DetailController = function (view) {
 
         var allowance = parseInt(await client.contractsManager.call(contracts.ERC20Seed, client.contractsManager.SEEDTokenAddress, 'allowance', client.userManager.user.wallet, basket.fundingPanelAddress));
 
-        if(investmentWei > allowance) {
+        var second = false;
+        if((second = investmentWei > allowance)) {
             var toAllow = investmentWei - allowance;
             try {
-                await client.contractsManager.submit('Allow this Basket to spend ' + Utils.roundWei(toAllow) + ' SEEDs for you', true, contracts.ERC20Seed, client.contractsManager.SEEDTokenAddress, 'approve', basket.fundingPanelAddress, Utils.numberToString(toAllow));
+                if(!await client.contractsManager.submit('Step 1 of 2 - Allow this Basket to spend ' + Utils.roundWei(toAllow) + ' SEEDs for you', true, contracts.ERC20Seed, client.contractsManager.SEEDTokenAddress, 'approve', basket.fundingPanelAddress, Utils.numberToString(toAllow))) {
+                    return;
+                }
             } catch(e) {
                 console.error(e);
                 return;
             }
         }
         try {
-            await client.contractsManager.submit('Invest ' + Utils.roundWei(investmentWei) + ' SEEDs in this basket', true, contracts.FundingPanel, basket.fundingPanelAddress, 'holderSendSeeds', Utils.numberToString(investmentWei));
+            await client.contractsManager.submit((second ? 'Step 2 of 2 - ' : '') + 'Invest ' + Utils.roundWei(investmentWei) + ' SEEDs in this basket', true, contracts.FundingPanel, basket.fundingPanelAddress, 'holderSendSeeds', Utils.numberToString(investmentWei));
+            context.view.setState({ product : await client.contractsManager.getFundingPanelData(basket) }, context.updateInvestments);
         } catch(e) {
             console.error(e);
         }

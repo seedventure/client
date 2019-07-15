@@ -161,7 +161,6 @@ var EditFundingPool = React.createClass({
         var whiteListThreshold = 0;
         try {
             whiteListThreshold = web3.utils.toWei(this.cleanNumber(this.whiteListThreshold));
-
         } catch (error) {
         }
         if (isNaN(whiteListThreshold) || whiteListThreshold < 0) {
@@ -222,6 +221,25 @@ var EditFundingPool = React.createClass({
     componentDidMount() {
         this.updateGui();
         this.setState({ documents: this.getProduct().documents });
+    },
+    retrieveWalletOnTop(ref) {
+        this.walletOnTop = ref;
+        if(!this.walletOnTop) {
+            return;
+        }
+        $(this.walletOnTop).focus((e) => $(e.target).select());
+        var product = this.getProduct();
+        var _this = this;
+        client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'getWalletOnTopAddress').then(result => _this.walletOnTop.value = result);
+    },
+    changeWalletOnTop(e) {
+        e && e.preventDefault();
+        var address = this.walletOnTop.value.split(' ').join('');
+        if (!Utils.isEthereumAddress(address)) {
+            alert('You must provide a valid ethereum address');
+            return;
+        }
+        this.controller.changeWalletOnTop(address);
     },
     administrationSubmit(e) {
         e.preventDefault();
@@ -284,9 +302,9 @@ var EditFundingPool = React.createClass({
         });
     },
     cleanNumber(target) {
-        var value = target.value.split(' ').join('').split(',').join('');
+        var value = target.value.split(' ').join('').split(Utils.dozensSeparator).join('');
         if(value.indexOf('.') !== -1) {
-            var s = value.split('.');
+            var s = value.split(Utils.decimalsSeparator);
             var last = s.pop();
             value = s.join('') + '.' + last;
         }
@@ -312,6 +330,24 @@ var EditFundingPool = React.createClass({
             }
         }, 450);
     },
+    setSingleWhitelist(e) {
+        e && e.preventDefault();
+        var address = this.whiteListWallet.value.split(' ').join('');
+        if (!Utils.isEthereumAddress(address)) {
+            alert('You must provide a valid ethereum address');
+            return;
+        }
+        var whiteListAmount = 0;
+        try {
+            whiteListAmount = parseInt(web3.utils.toWei(this.cleanNumber(this.whiteListAmount)));
+        } catch (error) {
+        }
+        if (isNaN(whiteListAmount) || whiteListAmount < 0) {
+            alert('Whiltelist Amount is a mandatory positive number or zero');
+            return;
+        }
+        this.controller.setSingleWhitelist(address, whiteListAmount);
+    },
     render() {
         var product = this.getProduct();
         var description = '';
@@ -332,6 +368,9 @@ var EditFundingPool = React.createClass({
                             </li>
                             {!this.props.parent && <li className="nav-item">
                                 <a className="nav-link" data-toggle="tab" href="#administration" role="tab"><i className="fas fa-user mr-2"></i>Administration</a>
+                            </li>}
+                            {!this.props.parent && <li className="nav-item">
+                                <a className="nav-link" data-toggle="tab" href="#whiteList" role="tab"><i className="fas fa-check mr-2"></i>Whitelisting</a>
                             </li>}
                             {!this.props.parent && <li className="nav-item">
                                 <a className="nav-link" data-toggle="tab" href="#economic-data" role="tab"><i className="fas fa-coins mr-2"></i>Economic Info</a>
@@ -449,6 +488,21 @@ var EditFundingPool = React.createClass({
                             </div>
                             {!this.props.parent && <div className="tab-pane" id="administration" role="tabpanel">
                                 <form className="kt-form" action="">
+                                    <h4>Wallet on top</h4>
+                                    <p className="small">the wallet that will receive the exchange rate on top</p>
+                                    <div className="form-group">
+                                        <input className="form-control" type="text" placeholder="Address" ref={this.retrieveWalletOnTop} />
+                                    </div>
+                                    <div className="kt-form__actions">
+                                        <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.changeWalletOnTop}>Change</button>
+                                    </div>
+                                </form>
+                                <br/>
+                                <br/>
+                                <br/>
+                                <form className="kt-form" action="">
+                                    <h4>Permissions</h4>
+                                    <p className="small">manage the users that can operate with this basket</p>
                                     <div className="form-group">
                                         <br />
                                         <ul className="nav nav-tabs nav-tabs-line nav-tabs-bold nav-tabs-line-3x mb-5" role="tablist">
@@ -482,6 +536,31 @@ var EditFundingPool = React.createClass({
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.administrationSubmit}>VERIFY</button>
                                             {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
                                             <span class="response"></span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>}
+                            {!this.props.parent && <div className="tab-pane" id="whiteList" role="tabpanel">
+                                <form className="kt-form" action="">
+                                    <div className="row">
+                                        <div className="col-md-6">
+                                            <h4>Wallet</h4>
+                                            <p className="small">of the investor you want to whitelist</p>
+                                            <div className="form-group">
+                                                <input className="form-control" type="text" placeholder="Address" ref={ref => this.whiteListWallet = ref} />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-4">
+                                            <h4>Amount</h4>
+                                            <p className="small">the max amount of tokens that this investor can hold (expressed in SEED)</p>
+                                            <div className="form-group">
+                                                <input className="form-control" type="text" placeholder="Amount" ref={ref => this.whiteListAmount = ref} onChange={this.parseNumber}/>
+                                            </div>
+                                        </div>
+                                        <div className="col-md-2">
+                                            <div className="kt-form__actions">
+                                                <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.setSingleWhitelist}>Set</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </form>

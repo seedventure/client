@@ -57,7 +57,7 @@ function ContractsManager() {
         var contract = new web3.eth.Contract(contractType);
         var method = contract.methods[methodName].apply(contract, args);
         var signedTransaction = await client.userManager.signTransaction(address, method.encodeABI());
-        client.blockchainManager.sendSignedTransaction(signedTransaction, title, lock);
+        return await client.blockchainManager.sendSignedTransaction(signedTransaction, title, lock);
     };
 
     context.getList = function getList() {
@@ -199,11 +199,6 @@ function ContractsManager() {
         result = web3.eth.abi.decodeParameters(['string'], result);
         product.symbol = result['0'];
 
-        data = contract.methods.balanceOf(product.fundingPanelAddress).encodeABI();
-        result = await client.blockchainManager.call(context.SEEDTokenAddress, data);
-        result = web3.eth.abi.decodeParameters(['uint256'], result);
-        product.totalRaised = result['0'];
-
         product.members = [];
         contract = new web3.eth.Contract(contracts.FundingPanel);
         data = contract.methods.getMembersNumber().encodeABI();
@@ -328,7 +323,7 @@ function ContractsManager() {
         if(element.type !== 'SEEDToken') {
             return;
         }
-        var product = web3.eth.abi.decodeParameters(['address'], event.topics[2])[0];
+        var product = web3.eth.abi.decodeParameters(['address'], event.topics[2])[0].toLowerCase();
         product = Enumerable.From(context.getArray()).Where(it => it.fundingPanelAddress.toLowerCase() === product).FirstOrDefault();
         if(!product) {
             return;

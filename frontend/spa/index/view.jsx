@@ -18,7 +18,8 @@ var Index = React.createClass({
             'transaction/ask': this.showAskTransactionModal,
             'transaction/lock': this.showTransactionLockModal,
             'transaction/unlock': () => this.genericLoadingModal.hide(),
-            'transaction/submitted': this.showTransactionModal
+            'transaction/submitted': this.showTransactionModal,
+            'investment/mine': this.renderOwnedToken
         };
     },
     showWalletModal() {
@@ -143,7 +144,10 @@ var Index = React.createClass({
         }
         var _this = this;
         client.contractsManager.tokenBalanceOf(product.tokenAddress, client.userManager.user.wallet).then(result => {
-            result = web3.utils.toWei('50', 'ether');
+            if(parseInt(result) <= 0) {
+                typeof consume === 'function' && setTimeout(consume);
+                return;
+            }
             result = Utils.roundWei(result);
             var element = _this.ownedTokens.children('[data-position="' + product.position + '"]');
             element.length === 0 && (element = $(`
@@ -168,17 +172,16 @@ var Index = React.createClass({
         var array = client.contractsManager.getArray();
         var i = -1;
         var _this = this;
-        _this.ownedTokens.html('');
         var consume = () => i++ < array.length && _this.renderOwnedToken(array[i], consume);
         setTimeout(consume);
     },
-    checkDistDate() {
+    checkDistDate(newVersionAvailableModal) {
+        if(!newVersionAvailableModal) {
+            return;
+        }
         var distDate = window.distDate;
         delete window.distDate;
-        distDate && distDate > ecosystemData.distDate && this.newVersionAvailableModal.show()
-    },
-    componentDidMount() {
-        this.checkDistDate();
+        distDate && distDate > ecosystemData.distDate && setTimeout(() => newVersionAvailableModal.show(), 1200);
     },
     render() {
         var rendered = this.state && this.state.element ? this.state.element : this.getDefaultRenderer();
@@ -286,7 +289,7 @@ var Index = React.createClass({
                 </Modal>
                 <Modal
                     title="New Version of the SEEDVenture Client is available!"
-                    ref={ref => this.newVersionAvailableModal = ref}
+                    ref={this.checkDistDate}
                     className="index newVersionAvailableModel">
                     <h3>You can download it from <a href="https://github.com/seedventure/client/tree/master/dist" target="_blank">here</a>.</h3>
                 </Modal>
