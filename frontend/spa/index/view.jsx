@@ -170,8 +170,8 @@ var Index = React.createClass({
         });
     },
     refreshTokenList() {
-        this.ownedTokens.html('');
-        this.renderOwnedTokens();
+        this.ownedTokens && this.ownedTokens.html('');
+        this.ownedTokens && this.renderOwnedTokens();
     },
     renderOwnedTokens() {
         var array = client.contractsManager.getArray();
@@ -206,20 +206,20 @@ var Index = React.createClass({
                     <div className={"kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor kt-wrapper" + (client.userManager.user ? "" : " guest")} id="kt_wrapper">
                         <Header title={this.state && this.state.title ? this.state.title : ''} element={rendered} view={props.view} back={this.state && this.state.back} />
                         {!client.configurationManager.hasUnlockedUser() && [<br />, <br />]}
-                        <div className="kt-subheader kt-grid__item" id="kt_subheader">
+                        {(!this.state || !this.state.element || this.state.element === Products) && <div className="kt-subheader kt-grid__item" id="kt_subheader">
                             <div className="kt-subheader__main">
                                 <div className="kt-subheader__breadcrumbs">
                                 </div>
                             </div>
-                            {(!this.state || !this.state.element || this.state.element === Products) && <div className="kt-subheader__main">
+                            <div className="kt-subheader__main">
                                 <input type="text" placeholder="Search..." onChange={e => this.emit('products/search', e)} ref={ref => this.searchBar = ref} />
                                 {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
                                 <span className="kt-subheader__separator"></span>
                                 <div className="kt-subheader__breadcrumbs">
                                     <a href="#" className="kt-subheader__breadcrumbs-home" onClick={this.clearSearch}><i className="fas fa-remove"></i></a>
                                 </div>
-                            </div>}
-                        </div>
+                            </div>
+                        </div>}
                         <br />
                         <br />
                         {React.createElement(rendered, props)}

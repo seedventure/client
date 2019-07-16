@@ -121,7 +121,7 @@ var Utils = function () {
       var n = str.split('.')[1]
       fixed = parseInt(n) === 0 ? 2 : n.length;
     }
-    return parseFloat(str).toFixed(fixed);
+    return parseFloat(parseFloat(str).toFixed(fixed)).toLocaleString();
   }
 
   isEthereumAddress = function (ad) {

@@ -27,16 +27,25 @@ var DetailController = function (view) {
     context.invest = async function invest(investment) {
         var investmentWei = parseInt(web3.utils.toWei(investment, 'ether'));
         var basket = context.view.props.parent || context.view.getProduct();
+        var totalRaised = parseInt(Utils.numberToString(basket.totalRaised));
+        var totalSupply = parseInt(Utils.numberToString(basket.totalSupply));
+        if((totalRaised + investmentWei) > totalSupply) {
+            alert("Your investment exceedes the basket requirement");
+            return;
+        }
+
         var actualBalance = parseInt(await client.contractsManager.seedOf(client.userManager.user.wallet));
         if(investmentWei > actualBalance) {
             alert("You don't have enough SEEDs to invest");
             return;
         }
+
+        var actualInvestment = parseInt(await client.contractsManager.call(contracts.Token, basket.tokenAddress, 'balanceOf', client.userManager.user.wallet));
+        var newInvestment = parseFloat(web3.utils.fromWei(Utils.numberToString(basket.seedRate), 'ether')) * parseFloat(investment);
+        newInvestment = parseFloat(web3.utils.toWei(Utils.numberToString(newInvestment), 'ether'));
         var whiteListThreshold = parseInt(basket.whiteListThreshold);
-        var actualInvestment = parseInt('0');
-        if(actualInvestment + investmentWei > whiteListThreshold) {
-            var isWhiteListed = await client.contractsManager.call(contracts.AdminTools, basket.adminsToolsAddress, 'isWhitelisted', client.userManager.user.wallet);
-            if(!isWhiteListed) {
+        if(actualInvestment + newInvestment > whiteListThreshold) {
+            if(!await client.contractsManager.call(contracts.AdminTools, basket.adminsToolsAddress, 'isWhitelisted', client.userManager.user.wallet)) {
                 alert("Your total investment amount exceeds the WhiteList threshold. You must be whitelisted to do this investment");
                 return;
             }
@@ -58,7 +67,6 @@ var DetailController = function (view) {
         }
         try {
             await client.contractsManager.submit((second ? 'Step 2 of 2 - ' : '') + 'Invest ' + Utils.roundWei(investmentWei) + ' SEEDs in this basket', true, contracts.FundingPanel, basket.fundingPanelAddress, 'holderSendSeeds', Utils.numberToString(investmentWei));
-            context.view.setState({ product : await client.contractsManager.getFundingPanelData(basket) }, context.updateInvestments);
         } catch(e) {
             console.error(e);
         }

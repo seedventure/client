@@ -232,7 +232,7 @@ var CreateFundingPool = React.createClass({
             } catch(e) {
                 console.error(e);
             }
-        }, 450);
+        }, 900);
     },
     render() {
         return (
@@ -302,21 +302,21 @@ var CreateFundingPool = React.createClass({
                 <br />
                 <br />
                 <div className="row">
-                    <div className="col-md-2">
+                    <div className="col-md-4">
                         <h4>URL</h4>
                         <p className="small">The website of the {this.props.parent ? "Startup" : "Incubator"}</p>
                     </div>
-                    <div className="col-md-10 form-group">
+                    <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.url = ref} />
                     </div>
                 </div>
                 <br/>
                 <div className="row">
-                    <div className="col-md-2">
+                    <div className="col-md-4">
                         <h4>Logo</h4>
                         <p className="small">of the {this.props.parent ? "Startup" : "Incubator"}</p>
                     </div>
-                    <div className="col-md-10 form-group">
+                    <div className="col-md-8 form-group">
                         <a href="javascript:;" onClick={this.loadImage}>
                             <img width="100" height="100" ref={ref => this.image = $(ref)} />
                         </a>
@@ -326,71 +326,71 @@ var CreateFundingPool = React.createClass({
                 </div>
                 {!this.props.parent && <br/>}
                 {!this.props.parent && <div className="row">
-                    <div className="col-md-2">
+                    <div className="col-md-4">
                         <h4>Tags</h4>
                         <p className="small">useful for searches by the investor</p>
                     </div>
-                    <div className="col-md-10 form-group">
+                    <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.tags = ref} />
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}
                 {!this.props.parent && <div className="row">
-                    <div className="col-md-2">
+                    <div className="col-md-4">
                         <h4>Symbol</h4>
                         <p className="small">of the new token you will mint</p>
                     </div>
-                    <div className="col-md-10 form-group">
+                    <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="TEXT" ref={ref => this.symbol = ref} />
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}
                 {!this.props.parent && <div className="row">
-                    <div className="col-md-2">
-                        <h4>SEED Rate</h4>
-                        <p className="small">the value in SEED of every single Token</p>
+                    <div className="col-md-4">
+                        <h4>Exchange Rate</h4>
+                        <p className="small">the amount of basket tokens the investor will receive for every invested SEED</p>
                     </div>
-                    <div className="col-md-10 form-group">
+                    <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.seedRate = ref} onChange={this.parseNumber}/>
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}
                 {!this.props.parent && <div className="row">
-                    <div className="col-md-2">
+                    <div className="col-md-4">
                         <h4>Exchange Rate on top</h4>
-                        <p className="small">the amount hold by the incubator from each donation</p>
+                        <p className="small">the amount of basket tokens the incubator will receive for every invested SEED</p>
                     </div>
-                    <div className="col-md-10 form-group">
+                    <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.exchangeRateOnTop = ref} onChange={this.parseNumber}/>
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}
                 {!this.props.parent && <div className="row">
-                    <div className="col-md-2">
+                    <div className="col-md-4">
                         <h4>Total Supply</h4>
-                        <p className="small">The amount to raise in this campaign</p>
+                        <p className="small">The amount of SEED tokens this basket needs to raise</p>
                     </div>
-                    <div className="col-md-10 form-group">
+                    <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.totalSupply = ref} onChange={this.parseNumber}/>
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}
                 {!this.props.parent && <div className="row">
-                    <div className="col-md-2">
+                    <div className="col-md-4">
                         <h4>Whitelist Threshold Balance</h4>
-                        <p className="small">the maximum amount of investment that does not require whitelisting</p>
+                        <p className="small">the maximum amount of basket tokens that each investor can accumulate without the need of whitelisting</p>
                     </div>
-                    <div className="col-md-10 form-group">
+                    <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.whiteListThreshold = ref} onChange={this.parseNumber}/>
                     </div>
                 </div>}
                 {this.props.parent && <br/>}
                 {this.props.parent && <div className="row">
-                    <div className="col-md-2">
+                    <div className="col-md-4">
                         <h4>Wallet Address</h4>
                         <p className="small">The one used by the Startup to raise the unlocked funds</p>
                     </div>
-                    <div className="col-md-10 form-group">
+                    <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="address" ref={ref => this.walletAddress = ref} />
                     </div>
                 </div>}

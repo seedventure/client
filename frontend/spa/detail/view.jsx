@@ -65,32 +65,42 @@ var Detail = React.createClass({
     },
     cleanNumber(target) {
         var value = target.value.split(' ').join('').split(Utils.dozensSeparator).join('');
-        if(value.indexOf('.') !== -1) {
+        if (value.indexOf('.') !== -1) {
             var s = value.split(Utils.decimalsSeparator);
             var last = s.pop();
             value = s.join('') + '.' + last;
         }
         return value;
     },
-    parseNumber(e) {
+    parseNumber(e, callback) {
         e && e.preventDefault();
         var _this = this;
         var target = e.target;
         this.localeTimeout && clearTimeout(this.localeTimeout);
-        this.localeTimeout = setTimeout(function() {
+        this.localeTimeout = setTimeout(function () {
             try {
                 var value = _this.cleanNumber(target);
                 value = parseFloat(value);
-                if(isNaN(value)) {
+                if (isNaN(value)) {
                     target.value = '';
                     return;
                 }
                 value = value.toLocaleString(value);
                 target.value = value;
-            } catch(e) {
+                callback && callback();
+            } catch (e) {
                 console.error(e);
             }
-        }, 450);
+        }, 900);
+    },
+    onInvestChange(e) {
+        this.parseNumber(e, this.investChanged);
+    },
+    investChanged() {
+        var investment = parseFloat(this.cleanNumber(this.investment));
+        var product = this.getProduct();
+        var forYou = parseFloat(web3.utils.fromWei(Utils.numberToString(product.seedRate)), 'ether') * investment;
+        this.forYou.innerHTML = Utils.roundWei(web3.utils.toWei(Utils.numberToString(forYou), 'ether'));
     },
     ok(e) {
         e && e.preventDefault();
@@ -99,9 +109,9 @@ var Detail = React.createClass({
         try {
             investment = this.cleanNumber(this.investment);
             investmentFloat = parseFloat(investment);
-        } catch(e) {
+        } catch (e) {
         }
-        if(isNaN(investmentFloat) || investmentFloat <= 0) {
+        if (isNaN(investmentFloat) || investmentFloat <= 0) {
             alert('Investment must be a number greater than zero');
             return;
         }
@@ -117,64 +127,48 @@ var Detail = React.createClass({
         var full = false;
         try {
             full = product.totalRaised >= product.totalSupply;
-        } catch(e) {
+        } catch (e) {
         }
         return (
             <div className="kt-content kt-grid__item kt-grid__item--fluid">
-                <div className="row">
-                    <div className="col-md-2">
-                        <h4>Name</h4>
-                        <p className="small">of the {(this.props.parent && "Startup") || "Incubator"}</p>
-                    </div>
-                    <div className="col-md-2">
-                        <h2>{product.name}</h2>
-                    </div>
-                    <div className="col-md-8">
-                        {client.configurationManager.hasUnlockedUser() && <div className="investments">
-                            <div className="row">
-                                <div className="col-md-12"><h3>You already invested <strong><span ref={ref => this.seeds = ref}>0.00</span> SEEDS</strong> in this Basket</h3></div>
-                            </div>
-                            <div className="row">
-                                <div className="col-md-12">
-                                    <br />
-                                    <h3>You have <strong><span ref={ref => this.tokens = ref}>0.00</span> tokens</strong> of this Basket</h3>
-                                </div>
-                            </div>
-                            {full !== true && <div className="row" ref={ref => this.whiteList = ref}>
-                                <div className="col-md-12">
-                                    <br />
-                                    <h3>You are NOT whitelisted. Start the procedure <a href="http://seedventure.io">here</a></h3>
-                                </div>
-                            </div>}
-                            {full !== true && <div className="row">
-                                <div className="col-md-12">
-                                    <br />
-                                    <form className="kt-form" action="">
-                                        <div className="row">
-                                            <div className="col-md-8">
-                                                <div className="form-group">
-                                                    <input className="form-control form-control-last" type="text" onChange={this.parseNumber} placeholder="Invest" name="invest" ref={ref => this.investment = ref}/>
-                                                </div>
-                                            </div>
-                                            <div className="col-md-4">
-                                                <button className="btn btn-brand btn-pill btn-elevate" onClick={this.ok}>Invest</button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>}
-                            {full === true && <h2>This Basked has reached its goal!</h2>}
-                        </div>}
-                        {full !== true && !client.configurationManager.hasUnlockedUser() && <div className="investments">
-                            <h3>To invest in this Basket you need to <a href="#" onClick={() => this.emit('page/change', CreateConfiguration)}>create a new wallet</a> or <a href="#" onClick={() => this.emit('page/change', ImportConfiguration)}>import an existing one</a></h3>
-                        </div>}
-                    </div>
-                </div>
-                <br />
-                <br />
+                {full === true && <h2>This Basked has reached its goal!</h2>}
                 {!this.props.parent && <div className="progress">
                     <div className="progress-bar" role="progressbar" ref={ref => this.progressBar = $(ref)} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
                 </div>}
+                {full !== true && !client.configurationManager.hasUnlockedUser() && <div className="investments">
+                    <h3>To invest in this Basket you need to <a href="#" onClick={() => this.emit('page/change', CreateConfiguration)}>create a new wallet</a> or <a href="#" onClick={() => this.emit('page/change', ImportConfiguration)}>import an existing one</a></h3>
+                </div>}
+                {client.configurationManager.hasUnlockedUser() && <div className="row">
+                    <div className="col-md-12">
+                        <h3>You already invested <strong><span ref={ref => this.seeds = ref}>0.00</span> SEEDS</strong> in this Basket and actually hold <strong><span ref={ref => this.tokens = ref}>0.00</span> {product.symbol}</strong> tokens.</h3>
+                    </div>
+                </div>}
+                {full !== true && <div className="row" ref={ref => this.whiteList = ref}>
+                    <div className="col-md-12">
+                        <br />
+                        <h3>You are NOT whitelisted. Start the procedure <a href="http://seedventure.io">here</a></h3>
+                    </div>
+                </div>}
+                {!this.props.parent && client.configurationManager.hasUnlockedUser() && full !== true && <form className="kt-form" action="">
+                    <br />
+                    <br />
+                    <div className="row">
+                        <div className="col-md-1">
+                            <h3>Invest</h3>
+                        </div>
+                        <div className='col-md-3'>
+                            <div className="form-group">
+                                <input className="form-control form-control-last" type="text" onChange={this.onInvestChange} placeholder="0.00" ref={ref => this.investment = ref} />
+                            </div>
+                        </div>
+                        <div className="col-md-6">
+                            <h3>SEEDS and will receive <strong ref={ref => this.forYou = ref}>0.00</strong> {product.symbol} tokens.</h3>
+                        </div>
+                        <div className="col-md-1">
+                            <button className="btn btn-brand btn-pill" onClick={this.ok}>Invest</button>
+                        </div>
+                    </div>
+                </form>}
                 <br />
                 <br />
                 <div className="row">
@@ -193,6 +187,28 @@ var Detail = React.createClass({
                         <div className="tab-content">
                             <div className="tab-pane" id="main-data" role="tabpanel">
                                 <form className="kt-form" action="">
+                                    <div className="row">
+                                        <div className="col-md-2">
+                                            <h4>Name</h4>
+                                            <p className="small">of the {(this.props.parent && "Startup") || "Incubator"}</p>
+                                        </div>
+                                        <div className="col-md-10">
+                                            <h2>{product.name}</h2>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <br />
+                                    {!this.props.parent && <div className="row">
+                                        <div className="col-md-2">
+                                            <h4>Symbol</h4>
+                                            <p className="small">of the token</p>
+                                        </div>
+                                        <div className="col-md-10">
+                                            <h2>{product.symbol}</h2>
+                                        </div>
+                                    </div>}
+                                    <br />
+                                    <br />
                                     {this.state && this.state.documents && this.state.documents.length > 0 && [<div className="row">
                                         <div className="col-md-12">
                                             <h3>Documents</h3>
@@ -255,42 +271,42 @@ var Detail = React.createClass({
                             {!this.props.parent && <div className="tab-pane" id="economic-data" role="tabpanel">
                                 <form className="kt-form" action="">
                                     <div className="row">
-                                        <div className="col-md-2">
-                                            <h4>SEED Rate</h4>
-                                            <p className="small">the value in SEED of every single Token</p>
+                                        <div className="col-md-4">
+                                            <h4>Exchange Rate</h4>
+                                            <p className="small">the amount of {product.symbol} tokens the investor will receive for every invested SEED</p>
                                         </div>
-                                        <div className="col-md-10">
-                                            <h2>{Utils.roundWei(product.seedRate)} SEED</h2>
+                                        <div className="col-md-8">
+                                            <h2>{Utils.roundWei(product.seedRate)} {product.symbol}</h2>
                                         </div>
                                     </div>
                                     <br />
                                     <div className="row">
-                                        <div className="col-md-2">
+                                        <div className="col-md-4">
                                             <h4>Exchange Rate On Top</h4>
-                                            <p className="small">the amount hold by the incubator from each donation</p>
+                                            <p className="small">the amount of {product.symbol} tokens the incubator will receive for every invested SEED</p>
                                         </div>
-                                        <div className="col-md-10">
-                                            <h2>{Utils.roundWei(product.exchangeRateOnTop)} SEED</h2>
+                                        <div className="col-md-8">
+                                            <h2>{Utils.roundWei(product.exchangeRateOnTop)} {product.symbol}</h2>
                                         </div>
                                     </div>
                                     <br />
                                     <div className="row">
-                                        <div className="col-md-2">
+                                        <div className="col-md-4">
                                             <h4>Total Supply</h4>
-                                            <p className="small">The amount to raise in this campaign</p>
+                                            <p className="small">The amount of SEED tokens this basket needs to raise</p>
                                         </div>
-                                        <div className="col-md-10">
+                                        <div className="col-md-8">
                                             <h2>{Utils.roundWei(product.totalSupply)} SEED</h2>
                                         </div>
                                     </div>
                                     <br />
                                     <div className="row">
-                                        <div className="col-md-2">
+                                        <div className="col-md-4">
                                             <h4>White List Threshold Balance</h4>
-                                            <p className="small">the maximum amount of investment that does not require whitelisting</p>
+                                            <p className="small">the maximum amount of {product.symbol} tokens that each investor can accumulate without the need of whitelisting</p>
                                         </div>
-                                        <div className="col-md-10">
-                                            <h2>{Utils.roundWei(product.whiteListThreshold)} SEED</h2>
+                                        <div className="col-md-8">
+                                            <h2>{Utils.roundWei(product.whiteListThreshold)} {product.symbol}</h2>
                                         </div>
                                     </div>
                                 </form>

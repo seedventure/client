@@ -62,11 +62,11 @@ var Product = React.createClass({
                         <dd><h4>{product.url}</h4></dd>,
                         <br />]}
                         <dt>Latest Quotation:</dt>
-                        <dd className="text-cta">{Utils.roundWei(product.value || product.seedRate)} SEED</dd>
-                        {this.props.view === 'mine' && [<br />,
-                        <dt>Total Supply:</dt>,
-                        <dd className="text-cta">{Utils.roundWei(product.totalSupply)} SEED</dd>,
-                        <span>{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}</span>,
+                        <dd className="text-cta">{product.value ? Utils.roundWei(product.value) : parseFloat((1/parseFloat(web3.utils.fromWei(Utils.numberToString(product.seedRate), 'ether'))).toFixed(2)).toLocaleString()} SEED</dd>
+                        <br/>
+                        <dt>Total Raised:</dt>
+                        <dd className="text-cta">{Utils.roundWei(product.totalRaised)} SEED</dd>
+                        {this.props.view === 'mine' && [<span>{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}</span>,
                         <dd><button className="btn btn-pill micro btn-brand" onClick={this.makeUnsuitable}>Make Unsuitable</button></dd>]}
                     </dl>
                 </div>

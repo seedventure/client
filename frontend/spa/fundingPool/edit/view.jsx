@@ -315,20 +315,20 @@ var EditFundingPool = React.createClass({
         var _this = this;
         var target = e.target;
         this.localeTimeout && clearTimeout(this.localeTimeout);
-        this.localeTimeout = setTimeout(function() {
+        this.localeTimeout = setTimeout(function () {
             try {
                 var value = _this.cleanNumber(target);
                 value = parseFloat(value);
-                if(isNaN(value)) {
+                if (isNaN(value)) {
                     target.value = '';
                     return;
                 }
                 value = value.toLocaleString(value);
                 target.value = value;
-            } catch(e) {
+            } catch (e) {
                 console.error(e);
             }
-        }, 450);
+        }, 900);
     },
     setSingleWhitelist(e) {
         e && e.preventDefault();
@@ -568,11 +568,11 @@ var EditFundingPool = React.createClass({
                             {!this.props.parent && <div className="tab-pane" id="economic-data" role="tabpanel">
                                 <form className="kt-form" action="">
                                     <div className="row">
-                                        <div className="col-md-2">
-                                            <h4>SEED Rate</h4>
-                                            <p className="small">the value in SEED of every single Token</p>
+                                        <div className="col-md-4">
+                                            <h4>Exchange Rate</h4>
+                                            <p className="small">the amount of {product.symbol} tokens the investor will receive for every invested SEED</p>
                                         </div>
-                                        <div className="col-md-8 form-group">
+                                        <div className="col-md-6 form-group">
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.seedRate = ref) && (this.seedRate.value = Utils.roundWei(product.seedRate))} onChange={this.parseNumber}/>
                                         </div>
                                         <div className="col-md-2">
@@ -581,11 +581,11 @@ var EditFundingPool = React.createClass({
                                     </div>
                                     <br />
                                     <div className="row">
-                                        <div className="col-md-2">
+                                        <div className="col-md-4">
                                             <h4>Exchange Rate On Top</h4>
-                                            <p className="small">the amount hold by the incubator from each donation</p>
+                                            <p className="small">the amount of {product.symbol} tokens the incubator will receive for every invested SEED</p>
                                         </div>
-                                        <div className="col-md-8 form-group">
+                                        <div className="col-md-6 form-group">
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.exchangeRateOnTop = ref) && (this.exchangeRateOnTop.value = Utils.roundWei(product.exchangeRateOnTop))} onChange={this.parseNumber}/>
                                         </div>
                                         <div className="col-md-2">
@@ -594,11 +594,11 @@ var EditFundingPool = React.createClass({
                                     </div>
                                     <br />
                                     <div className="row">
-                                        <div className="col-md-2">
+                                        <div className="col-md-4">
                                             <h4>Total Supply</h4>
-                                            <p className="small">The amount to raise in this campaign</p>
+                                            <p className="small">The amount of SEED tokens this basket needs to raise</p>
                                         </div>
-                                        <div className="col-md-8 form-group">
+                                        <div className="col-md-6 form-group">
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.totalSupply = ref) && (this.totalSupply.value = product.totalSupply && parseFloat(Utils.roundWei(product.totalSupply)) || '')} onChange={this.parseNumber}/>
                                         </div>
                                         <div className="col-md-2">
@@ -607,11 +607,11 @@ var EditFundingPool = React.createClass({
                                     </div>
                                     <br />
                                     <div className="row">
-                                        <div className="col-md-2">
+                                        <div className="col-md-4">
                                             <h4>White List Threshold Balance</h4>
-                                            <p className="small">the maximum amount of investment that does not require whitelisting</p>
+                                            <p className="small">the maximum amount of {product.symbol} tokens that each investor can accumulate without the need of whitelisting</p>
                                         </div>
-                                        <div className="col-md-8 form-group">
+                                        <div className="col-md-6 form-group">
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.whiteListThreshold = ref) && (this.whiteListThreshold.value = product.whiteListThreshold && parseFloat(Utils.roundWei(product.whiteListThreshold)) || '')} onChange={this.parseNumber}/>
                                         </div>
                                         <div className="col-md-2">
