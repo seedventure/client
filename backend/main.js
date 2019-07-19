@@ -25,6 +25,26 @@ if (!userDataPath.endsWith('/')) {
     userDataPath += '/';
 }
 
+const deleteFolderRecursive = async function (path) {
+    if (fs.existsSync(path)) {
+        for (let entry of fs.readdirSync(path)) {
+            const curPath = path + "/" + entry;
+            if ((fs.lstatSync(curPath)).isDirectory()) {
+                await deleteFolderRecursive(curPath);
+            } else {
+                try {
+                    fs.unlinkSync(curPath);
+                } catch (e) {
+                }
+            }
+        }
+        try {
+            fs.rmdirSync(path);
+        } catch (e) {
+        }
+    }
+};
+
 var loadURLOptions = {
     baseURLForDataURL: `file://${root}`
 };
@@ -36,22 +56,32 @@ var distURL = (debug || test) ? '' : 'https://cdn.jsdelivr.net/gh/seedventure/cl
 var lazyLoad = fs.readFileSync(__dirname + '/productionURL.js', 'UTF-8').split('\n').join('');
 
 function loadData() {
-    var contracts = fs.readFileSync(__dirname + '/contracts.json', 'UTF-8');
-    var replace = '\n    <script type="text/javascript" id="toDelete">window.userDataPath="' + userDataPath + '";window.contracts=' + contracts + ';window.distURL="' + distURL + '";window.ecosystemData=' + ecosystemData + ';var element=document.getElementById("toDelete");element.parentNode.removeChild(element);';
-    replace += (debug && !test) ? '' : lazyLoad;
-    replace += '</script>';
-    electronWindow.loadURL('data:text/html;charset=UTF-8,' + encodeURIComponent(fs.readFileSync(root + 'index.html', 'UTF-8').split('${REPLACE}').join(replace)), loadURLOptions);
+    if(!focus) {
+        return;
+    }
+    electronWindow.webContents.session.clearCache(function () {
+        var contracts = fs.readFileSync(__dirname + '/contracts.json', 'UTF-8');
+        var replace = '\n    <script type="text/javascript" id="toDelete">window.userDataPath="' + userDataPath + '";window.contracts=' + contracts + ';window.distURL="' + distURL + '";window.ecosystemData=' + ecosystemData + ';var element=document.getElementById("toDelete");element.parentNode.removeChild(element);';
+        replace += (debug && !test) ? '' : lazyLoad;
+        replace += '</script>';
+        electronWindow.loadURL('data:text/html;charset=UTF-8,' + encodeURIComponent(fs.readFileSync(root + 'index.html', 'UTF-8').split('${REPLACE}').join(replace)), loadURLOptions);
+    });
 };
 
+var focus = true;
+
 app.on('ready', async function () {
+    await deleteFolderRecursive(userDataPath + 'Cache');
     test && (await require('../builder/app').run('frontend', 'spa', 'dist'));
     electronWindow = new BrowserWindow({ width: 800, height: 600, webPreferences: { nodeIntegration: true } });
-    loadData();
-    (debug || test || dist) && electronWindow.webContents.openDevTools();
+    electronWindow.on('focus', () => focus = true);
+    electronWindow.on('blur', () => focus = false);
     electronWindow.setMenu(null);
     electronWindow.maximize();
     globalShortcut.register('f5', loadData);
     globalShortcut.register('CommandOrControl+R', loadData);
+    loadData();
+    (debug || test || dist) && electronWindow.webContents.openDevTools();
 });
 
 app.on('window-all-closed', function () {

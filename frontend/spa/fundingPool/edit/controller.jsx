@@ -235,7 +235,7 @@ var EditFundingPoolController = function (view) {
         var rate = parseInt(product.exchangeRateOnTop);
         var amount = whitelistAmount * rate;
         amount = Utils.numberToString(amount);
-        var isWhitelisted = await client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'isWhitelisted', client.userManager.user.wallet);
+        var isWhitelisted = await client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'isWhitelisted', address);
         await client.contractsManager.submit('Set whitelist', false, contracts.AdminTools, product.adminsToolsAddress, isWhitelisted ? 'changeMaxWLAmount' : 'addToWhitelist', address, amount);
     };
 };
