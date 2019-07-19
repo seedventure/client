@@ -4,7 +4,7 @@ var CreateFundingPoolController = function(view) {
 
     context.urlRegex = new RegExp(/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi);
 
-    context.deployBasket = async function deploy(data) {
+    context.deployBasket = async function deployBasket(data) {
         context.view.emit('loader/show', 'Uploading to IPFS...');
         var documents = data && data.documents;
         if(documents && documents.length > 0) {
@@ -43,7 +43,7 @@ var CreateFundingPoolController = function(view) {
         tx && setTimeout(() => context.view.emit('page/change'), 700);
     };
 
-    context.deployMember = async function deploy(data, product) {
+    context.deployMember = async function deployMember(data, product) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.isFundingOperator(client.userManager.user.wallet);
         var result = await client.blockchainManager.call(product.adminsToolsAddress, method.encodeABI());
@@ -74,6 +74,6 @@ var CreateFundingPoolController = function(view) {
             web3.utils.soliditySha3(JSON.stringify(document)));
         method = method.encodeABI();
         context.view.emit('loader/hide');
-        var tx = await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(product.fundingPanelAddress, method), "Create new Funding Panel");
+        var tx = await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(product.fundingPanelAddress, method), "Create new Startup");
     };
 };

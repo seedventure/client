@@ -237,7 +237,7 @@ function ContractsManager() {
                 var deleteTimeout = setTimeout(function () {
                     product.unavailable = true;
                     setTimeout(function() {
-                        context.getFundingPanelData(product);
+                        context.getFundingPanelData(product, force);
                     }, 45000);
                     ko();
                 }, 7000);
@@ -257,13 +257,13 @@ function ContractsManager() {
             for (var i in product.members) {
                 await context.refreshMember(product.members[i]);
             }
-            call && $.publish('fundingPanel/' + product.position + '/updated', product);
+            (call || force) && $.publish('fundingPanel/' + product.position + '/updated', product);
         } catch(e) {
         }
         return product;
     };
 
-    context.refreshMember = async function refreshMember(product, fundingPanelAddress) {
+    context.refreshMember = async function refreshMember(product, fundingPanelAddress, force) {
         if(!product) {
             return;
         }
@@ -288,10 +288,14 @@ function ContractsManager() {
             result = web3.eth.abi.decodeParameters(['uint256'], result);
             member.totalRaised = result['0'];
         }
+        var call = false;
         await new Promise(async function (ok, ko) {
             var deleteTimeout = setTimeout(function () {
                 product.unavailable = true;
-                ok(product);
+                setTimeout(function() {
+                    context.refreshMember(product, fundingPanelAddress, force);
+                }, 45000);
+                ko();
             }, 7000);
             $.get({
                 url: product.documentUrl,
@@ -299,24 +303,31 @@ function ContractsManager() {
                 cache: false,
                 success: data => {
                     clearTimeout(deleteTimeout);
+                    call = product.unavailable !== undefined && product.unavailable !== null;
                     delete product.unavailable;
-                    Object.keys(data).map(key => product[key] = data[key]);
                     ok(product);
                 }
             });
         });
+        (call || force) && $.publish('fundingPanel/' + product.position + '/updated', product);
     };
 
     context['0xb9f320ca5d6edcd5b5ec403b3a0970d8ff03a3ab365497b976507b20e27c7067'] = async function memberDisabled(event, element) {
-        context.getFundingPanelData(element.element || element, true);
+        var product = element.element || element;
+        await context.getFundingPanelData(product, true);
+        $.publish('fundingPanel/' + product.position + '/updated', product);
     };
 
     context['0x0dcb0d206ae1380b9262e6ac8529c80879595c33706fa1199edd4a7ef72cf3a1'] = async function memberEnabled(event, element) {
-        context.getFundingPanelData(element.element || element, true);
+        var product = element.element || element;
+        await context.getFundingPanelData(product, true);
+        $.publish('fundingPanel/' + product.position + '/updated', product);
     };
 
-    context['0x94d9b0a056867efca93631b338c7fde3befc3f54db36b90b8456b069385c30be'] = async function (event, element) {
-        context.getFundingPanelData(element.element || element, true);
+    context['0x94d9b0a056867efca93631b338c7fde3befc3f54db36b90b8456b069385c30be'] = async function newMemberCreated(event, element) {
+        var product = element.element || element;
+        await context.getFundingPanelData(product, true);
+        $.publish('fundingPanel/' + product.position + '/updated', product);
     };
 
     context['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] = async function erc20Transfer(event, element) {

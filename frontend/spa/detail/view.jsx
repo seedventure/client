@@ -143,7 +143,7 @@ var Detail = React.createClass({
                         <h3>You already invested <strong><span ref={ref => this.seeds = ref}>0.00</span> SEEDS</strong> in this Basket and actually hold <strong><span ref={ref => this.tokens = ref}>0.00</span> {product.symbol}</strong> tokens.</h3>
                     </div>
                 </div>}
-                {full !== true && <div className="row" ref={ref => this.whiteList = ref}>
+                {full !== true && client.configurationManager.hasUnlockedUser() && <div className="row" ref={ref => this.whiteList = ref}>
                     <div className="col-md-12">
                         <br />
                         <h3>You are NOT whitelisted. Start the procedure <a href="http://seedventure.io">here</a></h3>

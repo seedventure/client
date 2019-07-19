@@ -6,6 +6,15 @@ function BlockchainManager() {
     context.blockSequenceToCheck = 45000;
     context.addressesSplit = 500;
 
+    context.getTopics = function getTopics() {
+        if(!context.topics) {
+            context.topics = [];
+            Object.keys(client.contractsManager).map(key => key.indexOf('0x') === 0 && context.topics.push(key));
+            context.topics = [context.topics];
+        }
+        return context.topics;
+    };
+
     context.sendSignedTransaction = function sendSignedTransaction(signedTransaction, title, lock) {
         return new Promise(function(ok, ko) {
             var txHash = web3.utils.sha3(signedTransaction);
@@ -117,7 +126,7 @@ function BlockchainManager() {
         if(toBlock > context.lastFetchedBlockNumber) {
             toBlock = context.lastFetchedBlockNumber;
         }
-        setTimeout(function(){context.provider.retrieveEvents(fromBlock, toBlock, address).then(context.onEvents)});
+        setTimeout(function(){context.provider.retrieveEvents(fromBlock, toBlock, address, context.getTopics()).then(context.onEvents)});
     };
 
     context.call = async function call(to, data) {
