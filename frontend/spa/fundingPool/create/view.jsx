@@ -32,7 +32,7 @@ var CreateFundingPool = React.createClass({
         } catch (error) {
         }
         if (name === '') {
-            alert('Please insert the name of the new basket');
+            alert('Please insert the name of the new ' + this.props.parent ? "Startup" : "Basket");
             return;
         }
 
@@ -234,6 +234,18 @@ var CreateFundingPool = React.createClass({
             }
         }, 900);
     },
+    onSymbolChange(e) {
+        e && e.preventDefault();
+        var _this = this;
+        var target = e.target;
+        this.symbolTimeout && clearTimeout(this.symbolTimeout);
+        this.symbolTimeout = setTimeout(function() {
+            try {
+                _this.domRoot.children().find('.basketName').html(target.value || 'basket');
+            } catch(e) {
+            }
+        }, 450);
+    },
     render() {
         return (
             <form className="kt-form" action="#">
@@ -267,15 +279,17 @@ var CreateFundingPool = React.createClass({
                 <br />
                 <div className="row">
                     <div className="col-md-4">
+                        {'\u00A0'}
+                    </div>
+                    <div className="col-md-2">
                         <input className="form-control form-control-last" type="text" placeholder="Name" ref={ref => this.documentName = ref} />
                     </div>
-                    <div className="col-md-4">
-                        <input className="form-control form-control-last" type="text" placeholder="Link" ref={ref => this.documentLink = ref} />
+                    <div className="col-md-3">
+                        <input className="form-control form-control-last" type="text" placeholder="Link must start with http:// or https://..." ref={ref => this.documentLink = ref} />
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                         <button type="button" className="btn btn-secondary btn-pill tiny" onClick={this.browseLocalDocument}>Browse from PC</button>
-                    </div>
-                    <div className="col-md-2">
+                        {'\u00A0'}{'\u00A0'}{'\u00A0'}
                         <button type="button" className="btn btn-brand btn-pill tiny" onClick={this.addDocument}>Add</button>
                     </div>
                 </div>
@@ -283,16 +297,17 @@ var CreateFundingPool = React.createClass({
                 <br />
                 {this.state && this.state.documents && this.state.documents.map((it, i) =>
                     <div key={'document_' + i} className="row">
-                        <div className="col-md-2">
-                        </div>
                         <div className="col-md-4">
+                            {'\u00A0'}
+                        </div>
+                        <div className="col-md-2">
                             <span>{it.name}</span>
                         </div>
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                             {it.link.indexOf('http') !== 0 && <span>{it.link.length > 30 ? it.link.substring(0, 30) + '...' : it.link}</span>}
                             {it.link.indexOf('http') === 0 && <a href={it.link} target="_blank">{it.link.length > 30 ? it.link.substring(0, 30) + '...' : it.link}</a>}
                         </div>
-                        <div className="col-md-2">
+                        <div className="col-md-3">
                             <h3>
                                 <a href="javascript:;" onClick={e => this.deleteDocument(i, e)}><i className="fas fa-remove"></i></a>
                             </h3>
@@ -307,7 +322,7 @@ var CreateFundingPool = React.createClass({
                         <p className="small">The website of the {this.props.parent ? "Startup" : "Incubator"}</p>
                     </div>
                     <div className="col-md-8 form-group">
-                        <input className="form-control form-control-last" type="text" ref={ref => this.url = ref} />
+                        <input className="form-control form-control-last" type="text" placeholder="Link must start with http:// or https://" ref={ref => this.url = ref} />
                     </div>
                 </div>
                 <br/>
@@ -341,14 +356,14 @@ var CreateFundingPool = React.createClass({
                         <p className="small">of the new token you will mint</p>
                     </div>
                     <div className="col-md-8 form-group">
-                        <input className="form-control form-control-last" type="TEXT" ref={ref => this.symbol = ref} />
+                        <input className="form-control form-control-last" type="text" ref={ref => this.symbol = ref} onChange={this.onSymbolChange}/>
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}
                 {!this.props.parent && <div className="row">
                     <div className="col-md-4">
                         <h4>Exchange Rate</h4>
-                        <p className="small">the amount of basket tokens the investor will receive for every invested SEED</p>
+                        <p className="small">the amount of <strong className="basketName">basket</strong> tokens the investor will receive for every invested SEED</p>
                     </div>
                     <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.seedRate = ref} onChange={this.parseNumber}/>
@@ -358,7 +373,7 @@ var CreateFundingPool = React.createClass({
                 {!this.props.parent && <div className="row">
                     <div className="col-md-4">
                         <h4>Exchange Rate on top</h4>
-                        <p className="small">the amount of basket tokens the incubator will receive for every invested SEED</p>
+                        <p className="small">the amount of <strong className="basketName">basket</strong> tokens the incubator will receive for every invested SEED</p>
                     </div>
                     <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.exchangeRateOnTop = ref} onChange={this.parseNumber}/>
@@ -378,7 +393,7 @@ var CreateFundingPool = React.createClass({
                 {!this.props.parent && <div className="row">
                     <div className="col-md-4">
                         <h4>Whitelist Threshold Balance</h4>
-                        <p className="small">the maximum amount of basket tokens that each investor can accumulate without the need of whitelisting</p>
+                        <p className="small">the maximum amount of <strong className="basketName">basket</strong> tokens that each investor can accumulate without the need of whitelisting</p>
                     </div>
                     <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.whiteListThreshold = ref} onChange={this.parseNumber}/>

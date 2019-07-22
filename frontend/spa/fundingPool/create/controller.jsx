@@ -5,7 +5,7 @@ var CreateFundingPoolController = function(view) {
     context.urlRegex = new RegExp(/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi);
 
     context.deployBasket = async function deployBasket(data) {
-        context.view.emit('loader/show', 'Uploading to IPFS...');
+        context.view.emit('loader/show', '', 'Uploading to IPFS...');
         var documents = data && data.documents;
         if(documents && documents.length > 0) {
             for(var i = 0; i < documents.length; i++) {
@@ -26,21 +26,19 @@ var CreateFundingPoolController = function(view) {
             tags: data.tags
         };
         var hash = await client.ipfsManager.uploadDocument(document);
-        var url = ecosystemData.ipfsUrlTemplate + hash;
-        var contract = new web3.eth.Contract(contracts.Factory);
-        var method = contract.methods.deployPanelContracts(
+        context.view.emit('loader/hide');
+        var tx = await client.contractsManager.Factory.deployPanelContracts(
+            ecosystemData.factoryAddress,
             data.name,
             data.symbol,
-            url, 
+            ecosystemData.ipfsUrlTemplate + hash, 
             web3.utils.soliditySha3(JSON.stringify(document)),
             web3.utils.toWei('' + data.seedRate, 'ether'),
             web3.utils.toWei('' + data.exchangeRateOnTop, 'ether'),
             parseInt(data.totalSupply),
-            parseInt(data.whiteListThreshold));
-        method = method.encodeABI();
-        context.view.emit('loader/hide');
-        var tx = await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(ecosystemData.factoryAddress, method), "Create new Funding Panel", true);
-        tx && setTimeout(() => context.view.emit('page/change'), 700);
+            parseInt(data.whiteListThreshold)
+        );
+        tx && setTimeout(() => context.view.emit('page/change', Products, {view : 'mine'}), 700);
     };
 
     context.deployMember = async function deployMember(data, product) {
@@ -56,7 +54,7 @@ var CreateFundingPoolController = function(view) {
             alert('Your user is not able to do this operation');
             return;
         }
-        context.view.emit('loader/show', 'Uploading to IPFS...');
+        context.view.emit('loader/show', '', 'Uploading to IPFS...');
         var document = {
             name : data.name,
             description : data.description,
@@ -65,15 +63,13 @@ var CreateFundingPoolController = function(view) {
             documents: data.documents
         };
         var hash = await client.ipfsManager.uploadDocument(document);
-        var url = ecosystemData.ipfsUrlTemplate + hash;
-        contract = new web3.eth.Contract(contracts.FundingPanel);
-        method = contract.methods.addMemberToSet(
+        context.view.emit('loader/hide');
+        var tx = await client.contractsManager.FundingPanel.addMemberToSet(
+            product.fundingPanelAddress,
             data.walletAddress,
             0,
-            url, 
+            ecosystemData.ipfsUrlTemplate + hash, 
             web3.utils.soliditySha3(JSON.stringify(document)));
-        method = method.encodeABI();
-        context.view.emit('loader/hide');
-        var tx = await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(product.fundingPanelAddress, method), "Create new Startup");
+        tx && context.view.back();
     };
 };

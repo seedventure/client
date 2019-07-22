@@ -12,7 +12,15 @@ var Detail = React.createClass({
         this.emit('page/change', parent ? Detail : Products, { element: parent, parent: null, fromBack: true, view: this.props.view }, () => parent && _this.setProduct(parent));
     },
     getProduct() {
-        return this.state && this.state.product ? this.state.product : this.props.element;
+        var product = this.state && this.state.product ? this.state.product : this.props.element;
+        product.totalRaised = 0;
+        try {
+            Object.keys(product.investors).map(function(address) {
+                product.totalRaised += product.investors[address];
+            });
+        } catch(e) {
+        }
+        return product;
     },
     getDefaultSubscriptions() {
         var position = this.getProduct().position;
@@ -83,6 +91,7 @@ var Detail = React.createClass({
                 value = parseFloat(value);
                 if (isNaN(value)) {
                     target.value = '';
+                    callback && callback();
                     return;
                 }
                 value = value.toLocaleString(value);
@@ -98,6 +107,10 @@ var Detail = React.createClass({
     },
     investChanged() {
         var investment = parseFloat(this.cleanNumber(this.investment));
+        if(isNaN(investment)) {
+            this.forYou.innerHTML = '0.00';
+            return;
+        }
         var product = this.getProduct();
         var forYou = parseFloat(web3.utils.fromWei(Utils.numberToString(product.seedRate)), 'ether') * investment;
         this.forYou.innerHTML = Utils.roundWei(web3.utils.toWei(Utils.numberToString(forYou), 'ether'));
@@ -143,12 +156,13 @@ var Detail = React.createClass({
                         <h3>You already invested <strong><span ref={ref => this.seeds = ref}>0.00</span> SEEDS</strong> in this Basket and actually hold <strong><span ref={ref => this.tokens = ref}>0.00</span> {product.symbol}</strong> tokens.</h3>
                     </div>
                 </div>}
-                {full !== true && client.configurationManager.hasUnlockedUser() && <div className="row" ref={ref => this.whiteList = ref}>
-                    <div className="col-md-12">
-                        <br />
-                        <h3>You are NOT whitelisted. Start the procedure <a href="http://seedventure.io">here</a></h3>
-                    </div>
-                </div>}
+                {full !== true && client.configurationManager.hasUnlockedUser() && 
+                    <div className="row" ref={ref => this.whiteList = ref}>
+                        <div className="col-md-12">
+                            <br />
+                            <h3></h3>
+                        </div>
+                    </div>}
                 {!this.props.parent && client.configurationManager.hasUnlockedUser() && full !== true && <form className="kt-form" action="">
                     <br />
                     <br />
@@ -221,6 +235,7 @@ var Detail = React.createClass({
                                         {this.state.documents.map((it, i) =>
                                             <div key={'document_' + i} className="row">
                                                 <div className="col-md-2">
+                                                    {'\u00A0'}
                                                 </div>
                                                 <div className="col-md-10">
                                                     <h2>

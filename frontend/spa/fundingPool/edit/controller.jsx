@@ -16,7 +16,7 @@ var EditFundingPoolController = function (view) {
     }
 
     context.saveDoc = async function saveDoc(data, isStartup) {
-        context.view.emit('loader/show', 'Uploading to IPFS...');
+        context.view.emit('loader/show', '', 'Uploading to IPFS...');
         var documents = data && data.documents;
         if(documents && documents.length > 0) {
             for(var i = 0; i < documents.length; i++) {
@@ -227,7 +227,7 @@ var EditFundingPoolController = function (view) {
         if(address === oldAddress) {
             return;
         }
-        await client.contractsManager.submit('Change Wallet on top', false, contracts.AdminTools, product.adminsToolsAddress, 'setWalletOnTopAddress', address);
+        await client.contractsManager.submit('Change Wallet on top', contracts.AdminTools, product.adminsToolsAddress, 'setWalletOnTopAddress', address);
     };
 
     context.setSingleWhitelist = async function setSingleWhitelist(address, whitelistAmount) {
@@ -236,6 +236,6 @@ var EditFundingPoolController = function (view) {
         var amount = whitelistAmount * rate;
         amount = Utils.numberToString(amount);
         var isWhitelisted = await client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'isWhitelisted', address);
-        await client.contractsManager.submit('Set whitelist', false, contracts.AdminTools, product.adminsToolsAddress, isWhitelisted ? 'changeMaxWLAmount' : 'addToWhitelist', address, amount);
+        await client.contractsManager.submit('Set whitelist', contracts.AdminTools, product.adminsToolsAddress, isWhitelisted ? 'changeMaxWLAmount' : 'addToWhitelist', address, amount);
     };
 };

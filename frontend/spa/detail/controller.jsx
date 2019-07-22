@@ -8,19 +8,40 @@ var DetailController = function (view) {
         }
         var basket = context.view.props.parent || context.view.getProduct();
 
-        if(context.view.whiteList) {
-            var result = await client.contractsManager.call(contracts.AdminTools, basket.adminsToolsAddress, 'isWhitelisted', client.userManager.user.wallet);
-            context.view.whiteList.style.display = result ? 'none' : 'block';
-        }
+        var balanceOf = parseInt(await client.contractsManager.Token.balanceOf(basket.tokenAddress, client.userManager.user.wallet));
+        var isWhiteListed = await client.contractsManager.AdminTools.isWhitelisted(basket.adminsToolsAddress, client.userManager.user.wallet);
+        var whiteListAmount = isWhiteListed === false ? undefined : parseInt(await client.contractsManager.AdminTools.getMaxWLAmount(basket.adminsToolsAddress, client.userManager.user.wallet));
 
-        if(context.view.tokens) {
-            result = await client.contractsManager.call(contracts.Token, basket.tokenAddress, 'balanceOf', client.userManager.user.wallet);
-            context.view.tokens.innerHTML = Utils.roundWei(result);
-        }
-
+        context.view.tokens && (context.view.tokens.innerHTML = Utils.roundWei(balanceOf));
         try {
             context.view.seeds.innerHTML = Utils.roundWei(basket.investors[client.userManager.user.wallet.toLowerCase()]);
         } catch(e) {
+        }
+
+        if(context.view.whiteList) {
+            var $h3 = $(context.view.whiteList).children().find('h3');
+            if(isWhiteListed === false) {
+                var html = '<span><i class="fas fa-circle color-yellow"></i>&nbsp;You are NOT whitelisted. Start the procedure <a href="http://seedventure.io" target="_blank">here</a>';
+                var diff = basket.whiteListThreshold - balanceOf;
+                if(diff > 0) {
+                    html += '. You can still accumulate <strong>' + Utils.roundWei(diff) + '</strong> ' + basket.symbol + ' tokens'
+                }
+                $h3.html(html + '.</span>');
+                return;
+            }
+            if(whiteListAmount <= 0) {
+                $h3.html('<span><i class="fas fa-circle color-red"></i>&nbsp;You are BLACKLISTED for this Basket.</span>');
+                return;
+            }
+            var html = '<span><i class="fas fa-circle color-green"></i>&nbsp;You are correctly whitelisted';
+            if(whiteListAmount !== undefined && whiteListAmount !== null) {
+                html += ' for max <strong>' + Utils.roundWei(whiteListAmount) + '</strong> ' + basket.symbol + ' tokens';
+                var diff = whiteListAmount - balanceOf;
+                if(diff > 0) {
+                    html += '. You can still accumulate <strong>' + Utils.roundWei(diff) + '</strong> ' + basket.symbol + ' tokens'
+                }
+            }
+            $h3.html(html + '.</span>');
         }
     };
 
@@ -43,10 +64,15 @@ var DetailController = function (view) {
         var actualInvestment = parseInt(await client.contractsManager.call(contracts.Token, basket.tokenAddress, 'balanceOf', client.userManager.user.wallet));
         var newInvestment = parseFloat(web3.utils.fromWei(Utils.numberToString(basket.seedRate), 'ether')) * parseFloat(investment);
         newInvestment = parseFloat(web3.utils.toWei(Utils.numberToString(newInvestment), 'ether'));
-        var whiteListThreshold = parseInt(basket.whiteListThreshold);
+        var whiteListThreshold = basket.whiteListThreshold;
         if(actualInvestment + newInvestment > whiteListThreshold) {
             if(!await client.contractsManager.call(contracts.AdminTools, basket.adminsToolsAddress, 'isWhitelisted', client.userManager.user.wallet)) {
-                alert("Your total investment amount exceeds the WhiteList threshold. You must be whitelisted to do this investment");
+                alert("Your total investment amount exceeds the Whitelist threshold. You must be whitelisted to do this investment");
+                return;
+            }
+            var whiteListAmount = parseInt(await client.contractsManager.AdminTools.getMaxWLAmount(basket.adminsToolsAddress, client.userManager.user.wallet));
+            if(actualInvestment + newInvestment > whiteListAmount) {
+                alert("Your total investment amount exceeds your Whitelist limit.");
                 return;
             }
         }
@@ -57,7 +83,7 @@ var DetailController = function (view) {
         if((second = investmentWei > allowance)) {
             var toAllow = investmentWei - allowance;
             try {
-                if(!await client.contractsManager.submit('Step 1 of 2 - Allow this Basket to spend ' + Utils.roundWei(toAllow) + ' SEEDs for you', true, contracts.ERC20Seed, client.contractsManager.SEEDTokenAddress, 'approve', basket.fundingPanelAddress, Utils.numberToString(toAllow))) {
+                if(!await client.contractsManager.submit('Step 1 of 2 - Allow this Basket to spend ' + Utils.roundWei(toAllow) + ' SEEDs for you', contracts.ERC20Seed, client.contractsManager.SEEDTokenAddress, 'approve', basket.fundingPanelAddress, Utils.numberToString(toAllow))) {
                     return;
                 }
             } catch(e) {
@@ -66,7 +92,7 @@ var DetailController = function (view) {
             }
         }
         try {
-            await client.contractsManager.submit((second ? 'Step 2 of 2 - ' : '') + 'Invest ' + Utils.roundWei(investmentWei) + ' SEEDs in this basket', true, contracts.FundingPanel, basket.fundingPanelAddress, 'holderSendSeeds', Utils.numberToString(investmentWei));
+            await client.contractsManager.submit((second ? 'Step 2 of 2 - ' : '') + 'Invest ' + Utils.roundWei(investmentWei) + ' SEEDs in this basket', contracts.FundingPanel, basket.fundingPanelAddress, 'holderSendSeeds', Utils.numberToString(investmentWei));
         } catch(e) {
             console.error(e);
         }

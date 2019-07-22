@@ -61,6 +61,15 @@ var Products = React.createClass({
         if (products.length === 0) {
             products = this.getProductsArray(true);
             if (products.length === 0) {
+                if(this.props.view === 'mine') {
+                    return ([
+                        <div className="row">
+                            <div className="col-md-12">
+                                <h2 style={{"text-align" : "center"}}>No baskets right now. You can <a href="javascript:;" onClick={() => this.emit('page/change', CreateFundingPool, {view : 'mine'})}>create a new one</a>.</h2>
+                            </div>
+                        </div>]
+                    );
+                }
                 return ([
                     <div className="row">
                         <div className="col-md-12">

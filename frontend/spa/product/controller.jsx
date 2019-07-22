@@ -6,6 +6,6 @@ var ProductController = function (view) {
         var contract = new web3.eth.Contract(contracts.FundingPanel);
         var method = contract.methods.setNewSeedMaxSupply(0);
         method = method.encodeABI();
-        await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(product.address, method), "Make Basket Unsuitable", true);
+        await client.blockchainManager.sendSignedTransaction(await client.userManager.signTransaction(product.address, method), "Make Basket Unsuitable");
     };
 };

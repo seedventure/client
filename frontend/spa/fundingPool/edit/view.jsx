@@ -16,7 +16,15 @@ var EditFundingPool = React.createClass({
         this.emit('page/change', parent ? EditFundingPool : Products, { element: parent, parent: null, fromBack: true, view: this.props.view }, () => parent && _this.setProduct(parent));
     },
     getProduct() {
-        return this.state && this.state.product ? this.state.product : this.props.element;
+        var product = this.state && this.state.product ? this.state.product : this.props.element;
+        product.totalRaised = 0;
+        try {
+            Object.keys(product.investors).map(function(address) {
+                product.totalRaised += product.investors[address];
+            });
+        } catch(e) {
+        }
+        return product;
     },
     getDefaultSubscriptions() {
         var position = this.getProduct().position;
@@ -61,7 +69,7 @@ var EditFundingPool = React.createClass({
         } catch (error) {
         }
         if (name === '') {
-            alert('Please insert the name of the new basket');
+            alert('Please insert the name of the ' + this.props.parent ? "Startup" : "Basket");
             return;
         }
 
@@ -411,16 +419,18 @@ var EditFundingPool = React.createClass({
                                     </div>
                                     <br />
                                     <div className="row">
-                                        <div className="col-md-4">
+                                        <div className="col-md-2">
+                                            {'\u00A0'}
+                                        </div>
+                                        <div className="col-md-3">
                                             <input className="form-control form-control-last" type="text" placeholder="Name" ref={ref => this.documentName = ref} />
                                         </div>
                                         <div className="col-md-4">
-                                            <input className="form-control form-control-last" type="text" placeholder="Link" ref={ref => this.documentLink = ref} />
+                                            <input className="form-control form-control-last" type="text" placeholder="Link must start with http:// or https://" ref={ref => this.documentLink = ref} />
                                         </div>
-                                        <div className="col-md-2">
+                                        <div className="col-md-3">
                                             <button type="button" className="btn btn-secondary btn-pill tiny" onClick={this.browseLocalDocument}>Browse from PC</button>
-                                        </div>
-                                        <div className="col-md-2">
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}
                                             <button type="button" className="btn btn-brand btn-pill tiny" onClick={this.addDocument}>Add</button>
                                         </div>
                                     </div>
@@ -429,15 +439,16 @@ var EditFundingPool = React.createClass({
                                     {this.state && this.state.documents && this.state.documents.map((it, i) =>
                                         <div key={'document_' + i} className="row">
                                             <div className="col-md-2">
+                                                {'\u00A0'}
                                             </div>
-                                            <div className="col-md-4">
+                                            <div className="col-md-3">
                                                 <span>{it.name}</span>
                                             </div>
                                             <div className="col-md-4">
                                                 {it.link.indexOf('http') !== 0 && <span>{it.link.length > 30 ? it.link.substring(0, 30) + '...' : it.link}</span>}
                                                 {it.link.indexOf('http') === 0 && <a href={it.link} target="_blank">{it.link.length > 30 ? it.link.substring(0, 30) + '...' : it.link}</a>}
                                             </div>
-                                            <div className="col-md-2">
+                                            <div className="col-md-3">
                                                 <h3>
                                                     <a href="javascript:;" onClick={e => this.deleteDocument(i, e)}><i className="fas fa-remove"></i></a>
                                                 </h3>
@@ -452,7 +463,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">The website of the {this.props.parent ? "Startup" : "Incubator"}</p>
                                         </div>
                                         <div className="col-md-10 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.url = ref) && (this.url.value = product.url)} />
+                                            <input className="form-control form-control-last" type="text" placeholder="Link must start with http:// or https://" ref={ref => (this.url = ref) && (this.url.value = product.url)} />
                                         </div>
                                     </div>
                                     <br/>

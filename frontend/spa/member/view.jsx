@@ -5,7 +5,15 @@ var Member = React.createClass({
         this.emit('page/change', this.props.view === 'mine' ? EditFundingPool : Detail, { element: this.getProduct(), parent: this.props.parent, view: this.props.view }, () => _this.emit('product/set', this.getProduct()));
     },
     getProduct() {
-        return this.state && this.state.product ? this.state.product : this.props.element;
+        var product = this.state && this.state.product ? this.state.product : this.props.element;
+        product.totalRaised = 0;
+        try {
+            Object.keys(product.investors).map(function(address) {
+                product.totalRaised += product.investors[address];
+            });
+        } catch(e) {
+        }
+        return product;
     },
     componentDidMount() {
         var _this = this;

@@ -111,17 +111,24 @@ var Utils = function () {
     (typeof wei !== 'string') && (wei = Utils.numberToString(wei));
     var str = web3.utils.fromWei(wei, 'ether');
     var fixed = 2;
-    if(str.indexOf('.') !== -1) {
-      var n = str.split('.')[1]
+    if(str.indexOf(Utils.decimalsSeparator) !== -1) {
+      var n = str.split(Utils.decimalsSeparator)[1]
       fixed = parseInt(n) === 0 ? 2 : n.length;
     }
     str = parseFloat(str).toFixed(fixed);
     fixed = 2;
-    if(str.indexOf('.') !== -1) {
-      var n = str.split('.')[1]
+    if(str.indexOf(Utils.decimalsSeparator) !== -1) {
+      var n = str.split(Utils.decimalsSeparator)[1]
       fixed = parseInt(n) === 0 ? 2 : n.length;
     }
-    return parseFloat(parseFloat(str).toFixed(fixed)).toLocaleString();
+    var s = parseFloat(parseFloat(str).toFixed(fixed)).toLocaleString();
+    if(s.indexOf(Utils.decimalsSeparator) === -1) {
+      s += (Utils.decimalsSeparator + '00');
+    }
+    if(s.indexOf(Utils.decimalsSeparator) < s.length - 3) {
+      s = s.split(Utils.decimalsSeparator)[0] + Utils.decimalsSeparator + s.split(Utils.decimalsSeparator)[1].substring(0, 2);
+    }
+    return s;
   }
 
   isEthereumAddress = function (ad) {
@@ -151,7 +158,6 @@ var Utils = function () {
     var checksumAddress = '0x';
 
     for (var i = 0; i < address.length; i++) {
-      // If ith character is 9 to f then make it uppercase 
       if (parseInt(addressHash[i], 16) > 8) {
         checksumAddress += address[i].toUpperCase();
       } else {
@@ -160,6 +166,19 @@ var Utils = function () {
     }
     return checksumAddress;
   };
+
+  var toTitle = function toTitle(name) {
+    var title = '';
+    for(var i = 0; i < name.length; i++) {
+        var character = name.charAt(i);
+        if (!isNaN(character * 1) || character === character.toUpperCase()) {
+            title += (' ' + character.toUpperCase());
+        } else {
+            title += (title.length === 0 ? character.toUpperCase() : character);
+        }
+    }
+    return title;
+  }
 
   return {
     getJQueryElement: getJQueryElement,
@@ -175,6 +194,7 @@ var Utils = function () {
     numberToString,
     copyToClipboard,
     dozensSeparator : (1000.02).toLocaleString().charAt(1),
-    decimalsSeparator : (1000.02).toLocaleString().charAt(5)
+    decimalsSeparator : (1000.02).toLocaleString().charAt(5),
+    toTitle
   };
 }();

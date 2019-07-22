@@ -5,6 +5,36 @@ function ContractsManager() {
     context.factoryAddress = ecosystemData.factoryAddress;
     context.dexAddress = ecosystemData.dexAddress;
 
+    Object.keys(contracts).map(function(key) {
+        contracts[key].map(function(contractElement) {
+            if (contractElement.type !== "function") {
+                return;
+            }
+            !context[key] && (context[key] = {});
+            context[key][contractElement.name] = function () {
+                var address = arguments[0];
+                var argumentsLength = arguments.length - 1;
+                var view = contractElement.stateMutability === "view";
+                var originalInputLength = contractElement.inputs.length;
+                contractElement.payable == true && originalInputLength++;
+                if (argumentsLength < originalInputLength) {
+                    throw 'Wrong input paramenters length' + contractElement.payable ? ' for payable contract' : '' + ': expected ' + originalInputLength + ', found ' + argumentsLength
+                }
+                var title = view ? undefined : argumentsLength > originalInputLength ? arguments[arguments.length - 1] : Utils.toTitle(contractElement.name);
+                var args = [];
+                title && args.push(title);
+                args.push(contracts[key]);
+                args.push(address);
+                args.push(contractElement.name);
+                originalInputLength++;
+                for(var i = 1; i < originalInputLength; i++) {
+                    args.push(arguments[i]);
+                }
+                return context[view ? "call" : "submit"].apply(context, args);
+            }
+        });
+    });
+
     context.seedOf = async function seedOf(address) {
         return await context.tokenBalanceOf(context.SEEDTokenAddress, address);
     };
@@ -18,8 +48,8 @@ function ContractsManager() {
         var address = arguments[1];
         var methodName = arguments[2];
         var args = [];
-        if(arguments.length > 3) {
-            for(var i = 3; i < arguments.length; i++) {
+        if (arguments.length > 3) {
+            for (var i = 3; i < arguments.length; i++) {
                 args.push(arguments[i]);
             }
         }
@@ -28,14 +58,14 @@ function ContractsManager() {
 
         try {
             outputs = Enumerable.From(Enumerable.From(contractType).Where(it => it.type === 'function' && it.name === methodName && ((!it.inputs && args.length === 0) || it.inputs.length === args.length)).First().outputs).Select(it => it.type).ToArray();
-        } catch(e) {
+        } catch (e) {
             console.error(e);
         }
 
         var contract = new web3.eth.Contract(contractType);
         var method = contract.methods[methodName].apply(contract, args);
         var result = await client.blockchainManager.call(address, method.encodeABI());
-        if(!outputs || outputs.length === 0) {
+        if (!outputs || outputs.length === 0) {
             return;
         }
         result = web3.eth.abi.decodeParameters(outputs, result);
@@ -44,20 +74,26 @@ function ContractsManager() {
 
     context.submit = async function submit() {
         var title = arguments[0];
-        var lock = arguments[1];
-        var contractType = arguments[2];
-        var address = arguments[3];
-        var methodName = arguments[4];
+        var contractType = arguments[1];
+        var address = arguments[2];
+        var methodName = arguments[3];
         var args = [];
-        if(arguments.length > 5) {
-            for(var i = 5; i < arguments.length; i++) {
+        if(arguments.length > 4) {
+            for (var i = 4; i < arguments.length; i++) {
                 args.push(arguments[i]);
             }
         }
         var contract = new web3.eth.Contract(contractType);
-        var method = contract.methods[methodName].apply(contract, args);
-        var signedTransaction = await client.userManager.signTransaction(address, method.encodeABI());
-        return await client.blockchainManager.sendSignedTransaction(signedTransaction, title, lock);
+        var method = undefined;
+        var value = undefined;
+        try {
+            method = contract.methods[methodName].apply(contract, args);
+        } catch(e) {
+            value = args.pop();
+            method = contract.methods[methodName].apply(contract, args);
+        }
+        var signedTransaction = await client.userManager.signTransaction(address, method.encodeABI(), value);
+        return await client.blockchainManager.sendSignedTransaction(signedTransaction, title);
     };
 
     context.getList = function getList() {
@@ -71,7 +107,7 @@ function ContractsManager() {
     context.getArray = function getArray() {
         var array = [];
         var list = context.getList();
-        Object.keys(list).map(function(key) {
+        Object.keys(list).map(function (key) {
             array.push(list[key]);
         });
         return array;
@@ -161,16 +197,14 @@ function ContractsManager() {
 
         var contract = new web3.eth.Contract(contracts.FundingPanel);
 
+        var call = product.name === undefined || product.name === null;
+
         var data = contract.methods.getOwnerData().encodeABI();
-        var result = await client.blockchainManager.call(product.fundingPanelAddress, data);
-        result = web3.eth.abi.decodeParameters(['string', 'bytes32'], result);
+        var result = await context.FundingPanel.getOwnerData(product.fundingPanelAddress);
         product.documentUrl = result['0'];
         product.documentHash = result['1'];
 
-        data = contract.methods.exchangeRateOnTop().encodeABI();
-        result = await client.blockchainManager.call(product.fundingPanelAddress, data);
-        result = web3.eth.abi.decodeParameters(['uint256'], result);
-        product.exchangeRateOnTop = parseInt(result['0']);
+        product.exchangeRateOnTop = parseInt(await context.FundingPanel.exchangeRateOnTop(product.fundingPanelAddress));
 
         data = contract.methods.exchangeRateSeed().encodeABI();
         result = await client.blockchainManager.call(product.fundingPanelAddress, data);
@@ -231,16 +265,19 @@ function ContractsManager() {
 
             product.members.push(member);
         }
-        var call = false;
+
+        call && $.publish('fundingPanel/' + product.position + '/updated', product);
+
+        call = false;
         try {
             await new Promise(async function (ok, ko) {
                 var deleteTimeout = setTimeout(function () {
                     product.unavailable = true;
                     setTimeout(function() {
                         context.getFundingPanelData(product, force);
-                    }, 45000);
+                    }, 15000);
                     ko();
-                }, 7000);
+                }, 5000);
                 $.get({
                     url: product.documentUrl,
                     dataType: 'json',
@@ -255,16 +292,16 @@ function ContractsManager() {
                 });
             });
             for (var i in product.members) {
-                await context.refreshMember(product.members[i]);
+                await context.refreshMember(product.members[i], undefined, force);
             }
             (call || force) && $.publish('fundingPanel/' + product.position + '/updated', product);
-        } catch(e) {
+        } catch (e) {
         }
         return product;
     };
 
     context.refreshMember = async function refreshMember(product, fundingPanelAddress, force) {
-        if(!product) {
+        if (!product) {
             return;
         }
         if (fundingPanelAddress !== undefined && fundingPanelAddress !== null && fundingPanelAddress.split(' ').join('') === '') {
@@ -287,16 +324,18 @@ function ContractsManager() {
             result = await client.blockchainManager.call(context.SEEDTokenAddress, data);
             result = web3.eth.abi.decodeParameters(['uint256'], result);
             member.totalRaised = result['0'];
+
+            $.publish('fundingPanel/' + product.position + '/updated', product);
         }
         var call = false;
         await new Promise(async function (ok, ko) {
             var deleteTimeout = setTimeout(function () {
                 product.unavailable = true;
-                setTimeout(function() {
+                setTimeout(function () {
                     context.refreshMember(product, fundingPanelAddress, force);
-                }, 45000);
+                }, 15000);
                 ko();
-            }, 7000);
+            }, 5000);
             $.get({
                 url: product.documentUrl,
                 dataType: 'json',
@@ -331,12 +370,12 @@ function ContractsManager() {
     };
 
     context['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] = async function erc20Transfer(event, element) {
-        if(element.type !== 'SEEDToken') {
+        if (element.type !== 'SEEDToken') {
             return;
         }
         var product = web3.eth.abi.decodeParameters(['address'], event.topics[2])[0].toLowerCase();
         product = Enumerable.From(context.getArray()).Where(it => it.fundingPanelAddress.toLowerCase() === product).FirstOrDefault();
-        if(!product) {
+        if (!product) {
             return;
         }
 
@@ -350,11 +389,11 @@ function ContractsManager() {
         product.investors[investor] += amount;
         $.publish('fundingPanel/' + product.position + '/updated', product);
         try {
-            if(client.userManager.user.wallet.toLowerCase() === investor.toLowerCase()) {
+            if (client.userManager.user.wallet.toLowerCase() === investor.toLowerCase()) {
                 $('investment/mine', product);
             }
-        } catch(e) {
-        } 
+        } catch (e) {
+        }
     };
 
     context['0xb4630f894cab42818aa587f8d4fc219b8472578638e808b23df12161ad730af6'] = async function fundingPanelDataChanged(event, element) {
@@ -415,7 +454,7 @@ function ContractsManager() {
     };
 
     context.checkBaskets = async function checkBaskets() {
-        if(client.persistenceManager.get('factoryAddress') !== context.factoryAddress) {
+        if (client.persistenceManager.get('factoryAddress') !== context.factoryAddress) {
             client.persistenceManager.set('list', []);
         }
         var contract = new web3.eth.Contract(contracts.Factory);

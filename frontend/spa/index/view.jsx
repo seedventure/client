@@ -58,8 +58,9 @@ var Index = React.createClass({
             this.emit('page/change');
         }
     },
-    showLoaderModal(title) {
-        this.genericLoadingText.html(title ? title : '');
+    showLoaderModal(title, body) {
+        this.genericLoadingModal.setTitle(title || '');
+        this.genericLoadingText.html(body || '');
         this.genericLoadingModal.isHidden() && this.genericLoadingModal.show();
     },
     showAskTransactionModal(txHash, title) {
@@ -69,10 +70,10 @@ var Index = React.createClass({
         this.askTransactionModal.setTitle(title);
         this.askTransactionModal.isHidden() && this.askTransactionModal.show();
     },
-    showTransactionLockModal(transaction) {
-        var title = '<span>Sealing transaction into Blockchain. This can take more than 30 seconds...</span><br/><br/>';
-        title += '<a href="' + (transaction ? ecosystemData.etherscanURL + 'tx/' + transaction : '#') + '" target="_blank">Follow on Etherscan</a>';
-        this.showLoaderModal(title);
+    showTransactionLockModal(title, transaction) {
+        var body = '<span>Sealing transaction into Blockchain. This can take more than 30 seconds...</span><br/><br/>';
+        body += '<a href="' + (transaction ? ecosystemData.etherscanURL + 'tx/' + transaction : '#') + '" target="_blank">Follow on Etherscan</a>';
+        this.showLoaderModal(title, body);
     },
     showTransactionModal(txHash, title, error, tx) {
         this.transactionModal.setTitle(title);

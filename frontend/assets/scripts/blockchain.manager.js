@@ -15,7 +15,7 @@ function BlockchainManager() {
         return context.topics;
     };
 
-    context.sendSignedTransaction = function sendSignedTransaction(signedTransaction, title, lock) {
+    context.sendSignedTransaction = function sendSignedTransaction(signedTransaction, title) {
         return new Promise(function(ok, ko) {
             var txHash = web3.utils.sha3(signedTransaction);
             var submit = async function(event, result) {
@@ -24,7 +24,7 @@ function BlockchainManager() {
                     ok();
                     return;
                 }
-                lock === true && $.publish('transaction/lock', txHash);
+                $.publish('transaction/lock', title, txHash);
                 var tx = undefined;
                 var error = undefined;
                 try {
