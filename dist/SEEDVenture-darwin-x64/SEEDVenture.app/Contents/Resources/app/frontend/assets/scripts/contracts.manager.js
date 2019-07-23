@@ -233,16 +233,17 @@ function ContractsManager() {
         result = web3.eth.abi.decodeParameters(['string'], result);
         product.symbol = result['0'];
 
-        product.members = [];
+        !product.members && (product.members = []);
         contract = new web3.eth.Contract(contracts.FundingPanel);
         data = contract.methods.getMembersNumber().encodeABI();
         result = await client.blockchainManager.call(product.fundingPanelAddress, data);
         result = web3.eth.abi.decodeParameters(['uint256'], result);
         var members = parseInt(result['0']);
         for (var i = 0; i < members; i++) {
-            var member = {
-                position: i
-            };
+
+            var member = product.members[i];
+            !member && (member = {});
+            member.position = i;
             contract = new web3.eth.Contract(contracts.FundingPanel);
             data = contract.methods.getMemberAddressByIndex(i).encodeABI();
             result = await client.blockchainManager.call(product.fundingPanelAddress, data);
@@ -292,7 +293,7 @@ function ContractsManager() {
                 });
             });
             for (var i in product.members) {
-                await context.refreshMember(product.members[i], undefined, force);
+                await context.refreshMember(product.members[i], (call || force) ? product : undefined);
             }
             (call || force) && $.publish('fundingPanel/' + product.position + '/updated', product);
         } catch (e) {
@@ -300,13 +301,14 @@ function ContractsManager() {
         return product;
     };
 
-    context.refreshMember = async function refreshMember(product, fundingPanelAddress, force) {
-        if (!product) {
+    context.refreshMember = async function refreshMember(member, product) {
+        if (!member) {
             return;
         }
-        if (fundingPanelAddress !== undefined && fundingPanelAddress !== null && fundingPanelAddress.split(' ').join('') === '') {
+        if (product) {
+            var fundingPanelAddress = product.fundingPanelAddress;
             var contract = new web3.eth.Contract(contracts.FundingPanel);
-            var data = contract.methods.getMemberAddressByIndex(i).encodeABI();
+            var data = contract.methods.getMemberAddressByIndex(member.position).encodeABI();
             var result = await client.blockchainManager.call(fundingPanelAddress, data);
             result = web3.eth.abi.decodeParameters(['address'], result);
             member.address = result['0'];
@@ -325,48 +327,48 @@ function ContractsManager() {
             result = web3.eth.abi.decodeParameters(['uint256'], result);
             member.totalRaised = result['0'];
 
-            $.publish('fundingPanel/' + product.position + '/updated', product);
+            $.publish('fundingPanel/' + product.position + '/member/' + member.position + '/updated', member);
         }
         var call = false;
         await new Promise(async function (ok, ko) {
             var deleteTimeout = setTimeout(function () {
-                product.unavailable = true;
+                member.unavailable = true;
                 setTimeout(function () {
-                    context.refreshMember(product, fundingPanelAddress, force);
+                    context.refreshMember(member, product);
                 }, 15000);
                 ko();
             }, 5000);
             $.get({
-                url: product.documentUrl,
+                url: member.documentUrl,
                 dataType: 'json',
                 cache: false,
                 success: data => {
                     clearTimeout(deleteTimeout);
-                    call = product.unavailable !== undefined && product.unavailable !== null;
-                    delete product.unavailable;
-                    ok(product);
+                    call = member.unavailable !== undefined && member.unavailable !== null;
+                    delete member.unavailable;
+                    Object.keys(data).map(key => member[key] = data[key]);
+                    ok();
                 }
             });
         });
-        (call || force) && $.publish('fundingPanel/' + product.position + '/updated', product);
+        call && product && $.publish('fundingPanel/' + product.position + '/member/' + member.position + '/updated', member);
+        return member;
     };
 
     context['0xb9f320ca5d6edcd5b5ec403b3a0970d8ff03a3ab365497b976507b20e27c7067'] = async function memberDisabled(event, element) {
-        var product = element.element || element;
-        await context.getFundingPanelData(product, true);
-        $.publish('fundingPanel/' + product.position + '/updated', product);
+        await context.getFundingPanelData(element.element || element, true);
     };
 
     context['0x0dcb0d206ae1380b9262e6ac8529c80879595c33706fa1199edd4a7ef72cf3a1'] = async function memberEnabled(event, element) {
-        var product = element.element || element;
-        await context.getFundingPanelData(product, true);
-        $.publish('fundingPanel/' + product.position + '/updated', product);
+        await context.getFundingPanelData(element.element || element, true);
     };
 
     context['0x94d9b0a056867efca93631b338c7fde3befc3f54db36b90b8456b069385c30be'] = async function newMemberCreated(event, element) {
-        var product = element.element || element;
-        await context.getFundingPanelData(product, true);
-        $.publish('fundingPanel/' + product.position + '/updated', product);
+        await context.getFundingPanelData(element.element || element, true);
+    };
+
+    context['0x4ae00b988cb3b798b8bc44e759790a289c70af1275d958aafd5938e2da3592f9'] = async function memberRefreshed(event, element) {
+        await context.getFundingPanelData(element.element || element, true);
     };
 
     context['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] = async function erc20Transfer(event, element) {

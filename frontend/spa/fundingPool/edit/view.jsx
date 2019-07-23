@@ -231,12 +231,18 @@ var EditFundingPool = React.createClass({
         this.setState({ documents: this.getProduct().documents });
     },
     retrieveWalletOnTop(ref) {
+        if(this.props.parent) {
+            return;
+        }
         this.walletOnTop = ref;
         if(!this.walletOnTop) {
             return;
         }
         $(this.walletOnTop).focus((e) => $(e.target).select());
         var product = this.getProduct();
+        if(!product.adminsToolsAddress) {
+            return;
+        }
         var _this = this;
         client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'getWalletOnTopAddress').then(result => _this.walletOnTop.value = result);
     },

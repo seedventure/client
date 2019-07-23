@@ -1,26 +1,27 @@
 var Member = React.createClass({
+    getDefaultSubscriptions() {
+        var position = this.props.element.position;
+        var subscriptions = {};
+        subscriptions['fundingPanel/' + this.props.parent.position + '/member/' + position + '/updated'] = product => this.setState({ product });
+        return subscriptions;
+    },
     edit(e) {
         e && e.preventDefault();
         var _this = this;
+        var product = _this.getProduct();
+        if(!product.name || product.unavailable) {
+            alert("Please wait until data has been downloaded");
+            return;
+        }
         this.emit('page/change', this.props.view === 'mine' ? EditFundingPool : Detail, { element: this.getProduct(), parent: this.props.parent, view: this.props.view }, () => _this.emit('product/set', this.getProduct()));
     },
     getProduct() {
-        var product = this.state && this.state.product ? this.state.product : this.props.element;
-        product.totalRaised = 0;
-        try {
-            Object.keys(product.investors).map(function(address) {
-                product.totalRaised += product.investors[address];
-            });
-        } catch(e) {
-        }
-        return product;
+        return this.state && this.state.product || this.props.element;
     },
     componentDidMount() {
         var _this = this;
         var product = this.getProduct();
-        if (!product.name) {
-            client.contractsManager.refreshMember(product, this.props.parent.fundingPanelAddress).then(p => _this.setState({product: p}));
-        }
+        (!product.name || product.unavailable) && client.contractsManager.refreshMember(product, this.props.parent).then(p => _this.setState({product: p}));
     },
     enableDisable(e) {
         e && e.preventDefault();

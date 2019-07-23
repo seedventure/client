@@ -7,8 +7,7 @@ var EditFundingPoolController = function (view) {
     context.sendTransactionTo = async function sendTransactionTo(address, data) {
         context.view.emit('loader/hide');
         var signedTransaction = await client.userManager.signTransaction(address, data);
-        client.blockchainManager.sendSignedTransaction(signedTransaction);
-        setTimeout(() => context.view.emit('transaction/show', web3.utils.sha3(signedTransaction)), 700);
+        await client.blockchainManager.sendSignedTransaction(signedTransaction);
     };
 
     context.sendTransactionToFundingPanel = function sendTransactionToFundingPanel(data) {
@@ -43,14 +42,17 @@ var EditFundingPoolController = function (view) {
             url,
             web3.utils.soliditySha3(JSON.stringify(document))
         );
+        var fundingPanelAddress = context.view.getProduct().fundingPanelAddress;
         if(isStartup === true) {
             method = contract.methods.changeMemberData(
                 context.view.getProduct().address,
                 url,
                 web3.utils.soliditySha3(JSON.stringify(document))
             );
+            fundingPanelAddress = context.view.props.parent.fundingPanelAddress;
         }
-        await context.sendTransactionToFundingPanel(method.encodeABI());
+        await context.sendTransactionTo(fundingPanelAddress, method.encodeABI());
+        isStartup && context.view.back();
     };
 
     context.updateSeedRate = async function updateSeedRate(seedRate) {
