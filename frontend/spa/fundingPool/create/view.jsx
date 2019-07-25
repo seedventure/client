@@ -32,7 +32,9 @@ var CreateFundingPool = React.createClass({
         } catch (error) {
         }
         if (name === '') {
-            alert('Please insert the name of the new ' + this.props.parent ? "Startup" : "Basket");
+            var alertMessage = 'Please insert the name of the new ';
+            var element = this.props.parent ? "Startup" : "Basket";
+            alert(alertMessage + element);
             return;
         }
 

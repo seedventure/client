@@ -55,9 +55,17 @@ var Member = React.createClass({
                         {product.image && <img width="50" height="50" ref={ref => this.image = $(ref)} src={product.image ? ("data:image/png;base64, " + product.image) : ''} />}
                         {product.image && '\u00A0\u00A0\u00A0\u00A0'}
                         <h3 className="kt-portlet__head-title">
-                            {product.name || "Loading info..."} {product.url && <span> ({product.url})</span>}
+                            {product.name || 'New Startup'} {product.url && <span> ({product.url})</span>}
                         </h3>
                     </div>
+                    {!product.name && <div className="retrieving">
+                        <div className="retrievingContainer row">
+                            <div className="label col-md-8">Retrieveing data...</div>
+                            <div className="spinner col-md-4">
+                                <Loader/>
+                            </div>
+                        </div>
+                    </div>}
                 </div>
                 <div className="kt-portlet__body">
                     <dl>

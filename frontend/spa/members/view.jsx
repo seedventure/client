@@ -68,6 +68,8 @@ var Members = React.createClass({
                                     </div>
                                 </div>
                             </div>
+                            <br/>
+                            <br/>
                             {members.length === 0 && <h1>No Startups right now</h1>}
                             {members.length > 0 && members.map((member, i) => {
                                 if (i !== 0 && i % 3 !== 0) {

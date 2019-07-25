@@ -42,6 +42,15 @@ var CreateFundingPoolController = function(view) {
     };
 
     context.deployMember = async function deployMember(data, product) {
+        try {
+            for(var i in product.members) {
+                if(data.walletAddress.toLowerCase() === product.members[i].address.toLowerCase()) {
+                    alert("The wallet your are using is already associated to another Startup of this basket");
+                    return;
+                }
+            }
+        } catch(e) {
+        }
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.isFundingOperator(client.userManager.user.wallet);
         var result = await client.blockchainManager.call(product.adminsToolsAddress, method.encodeABI());

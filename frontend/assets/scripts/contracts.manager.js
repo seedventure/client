@@ -5,6 +5,8 @@ function ContractsManager() {
     context.factoryAddress = ecosystemData.factoryAddress;
     context.dexAddress = ecosystemData.dexAddress;
 
+    context.productQueue = {};
+
     Object.keys(contracts).map(function (key) {
         contracts[key].map(function (contractElement) {
             if (contractElement.type !== "function") {
@@ -175,14 +177,17 @@ function ContractsManager() {
         });
     };
 
-    context.getFundingPanelData = async function getFundingPanelData(product, force) {
+    context.getFundingPanelData = async function getFundingPanelData(product) {
         if (!product) {
-            return;
+            return product;
         }
-        var checkDate = force !== true;
-        if (checkDate) {
-            checkDate = product.name !== undefined && product.name !== null;
+
+        if(context.productQueue[product.position]) {
+            return product;
         }
+
+        product.unavailable === true && delete product.lastCheck;
+        var checkDate = product.name !== undefined && product.name !== null;
         if (checkDate) {
             try {
                 checkDate = !Enumerable.From(client.userManager.user.list).Contains(product.position);
@@ -191,8 +196,11 @@ function ContractsManager() {
         }
         var lastCheck = new Date().getTime();
         if (checkDate === true && typeof product.lastCheck !== 'undefined' && lastCheck - product.lastCheck <= 60000) {
-            return;
+            return product;
         }
+
+        context.productQueue[product.position] = true;
+
         product.lastCheck = lastCheck;
 
         var contract = new web3.eth.Contract(contracts.FundingPanel);
@@ -254,17 +262,18 @@ function ContractsManager() {
         call && $.publish('fundingPanel/' + product.position + '/updated', product);
 
         call = false;
+
         try {
-            await new Promise(async function (ok, ko) {
+            await new Promise(function (ok) {
                 var deleteTimeout = setTimeout(function () {
                     product.unavailable = true;
                     setTimeout(function () {
-                        context.getFundingPanelData(product, force);
+                        context.getFundingPanelData(product);
                     }, 15000);
-                    ko();
+                    ok();
                 }, 5000);
                 $.get({
-                    url: product.documentUrl,
+                    url: product.documentUrl + (product.documentUrl.indexOf('?') !== -1 ? '&' : '?') + ('callDate=' + new Date().getTime()),
                     dataType: 'json',
                     cache: false,
                     success: data => {
@@ -277,26 +286,33 @@ function ContractsManager() {
                 });
             });
             for (var i in product.members) {
-                await context.getFundingPanelMemberData(product.members[i], force);
+                await context.getFundingPanelMemberData(product.members[i]);
             }
-            (call || force) && $.publish('fundingPanel/' + product.position + '/updated', product);
+            call && $.publish('fundingPanel/' + product.position + '/updated', product);
         } catch (e) {
         }
+        delete context.productQueue[product.position];
         return product;
     };
 
-    context.getFundingPanelMemberData = async function getFundingPanelMemberData(product, force) {
+    context.getFundingPanelMemberData = async function getFundingPanelMemberData(product) {
         if (!product) {
             return;
         }
-        var checkDate = force !== true;
-        if (checkDate) {
-            checkDate = product.name !== undefined && product.name !== null;
+
+        if(context.productQueue[product.productPosition + '_' + product.position]) {
+            return product;
         }
+
+        product.unavailable === true && delete product.lastCheck;
+        var checkDate = product.name !== undefined && product.name !== null;
         var lastCheck = new Date().getTime();
         if (checkDate === true && typeof product.lastCheck !== 'undefined' && lastCheck - product.lastCheck <= 60000) {
             return;
         }
+
+        context.productQueue[product.productPosition + '_' + product.position] = true;
+
         product.lastCheck = lastCheck;
 
         var call = product.name === undefined || product.name === null;
@@ -324,16 +340,16 @@ function ContractsManager() {
         call && $.publish('fundingPanel/' + product.productPosition + '/member/' + product.position + '/updated', product);
 
         call = false;
-        await new Promise(async function (ok, ko) {
+        await new Promise(function (ok) {
             var deleteTimeout = setTimeout(function () {
                 product.unavailable = true;
                 setTimeout(function () {
-                    context.getProductMemberData(product, force);
+                    context.getFundingPanelMemberData(product);
                 }, 15000);
-                ko();
+                ok();
             }, 5000);
             $.get({
-                url: product.documentUrl,
+                url: product.documentUrl + (product.documentUrl.indexOf('?') !== -1 ? '&' : '?') + ('callDate=' + new Date().getTime()),
                 dataType: 'json',
                 cache: false,
                 success: data => {
@@ -345,24 +361,25 @@ function ContractsManager() {
                 }
             });
         });
-        (call || force) && $.publish('fundingPanel/' + product.productPosition + '/member/' + product.position + '/updated', product);
+        call && $.publish('fundingPanel/' + product.productPosition + '/member/' + product.position + '/updated', product);
+        delete context.productQueue[product.productPosition + '_' + product.position];
         return product;
     };
 
     context['0xb9f320ca5d6edcd5b5ec403b3a0970d8ff03a3ab365497b976507b20e27c7067'] = async function memberDisabled(event, element) {
-        await context.getFundingPanelData(element.element || element, true);
+        await context.getFundingPanelData(element.element || element);
     };
 
     context['0x0dcb0d206ae1380b9262e6ac8529c80879595c33706fa1199edd4a7ef72cf3a1'] = async function memberEnabled(event, element) {
-        await context.getFundingPanelData(element.element || element, true);
+        await context.getFundingPanelData(element.element || element);
     };
 
     context['0x94d9b0a056867efca93631b338c7fde3befc3f54db36b90b8456b069385c30be'] = async function newMemberCreated(event, element) {
-        await context.getFundingPanelData(element.element || element, true);
+        await context.getFundingPanelData(element.element || element);
     };
 
     context['0x4ae00b988cb3b798b8bc44e759790a289c70af1275d958aafd5938e2da3592f9'] = async function memberRefreshed(event, element) {
-        await context.getFundingPanelData(element.element || element, true);
+        await context.getFundingPanelData(element.element || element);
     };
 
     context['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] = async function erc20Transfer(event, element) {

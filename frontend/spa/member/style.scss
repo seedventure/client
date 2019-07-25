@@ -6,4 +6,19 @@
         border: 0.5px solid lightblue;
         cursor: pointer;
     }
+    .retrieving {
+        float: right;
+        padding-top: 4%;
+        .retrievingContainer {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        .label {
+            padding-right: 30%;
+            color: black !important;
+        }
+        .spinner {
+            margin-top: 5%;
+        }
+    }
 }
