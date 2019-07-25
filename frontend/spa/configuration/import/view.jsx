@@ -27,7 +27,7 @@ var ImportConfiguration = React.createClass({
     browseJSONFile(e) {
         e && e.preventDefault();
         var userChosenPath = window.require('electron').remote.dialog.showOpenDialog({ 
-            defaultPath: window.require('electron').remote.app.getPath("desktop"),
+            defaultPath: undefined,
             filters : [
               {
                 name : "JSON File",

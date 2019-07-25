@@ -10,6 +10,11 @@
         }
     }
 
+    p.description {
+        max-height: 250px;
+        overflow: auto;
+    }
+
     .progress-bar {
         font-size: 20px;
     }

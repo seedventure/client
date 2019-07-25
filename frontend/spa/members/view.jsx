@@ -20,7 +20,12 @@ var Members = React.createClass({
         return product;
     },
     getMembers() {
-        var members = Enumerable.From(this.getProduct().members || []).Distinct(it => it.position);
+        var productMembers = this.getProduct().members || {};
+        var members = [];
+        for(var i in productMembers) {
+            members.push(productMembers[i]);
+        }
+        var members = Enumerable.From(members).Distinct(it => it.position);
         if(this.state && this.state.search) {
             var search = this.state.search.toLowerCase();
             members = members.Where(it => it.name.toLowerCase().indexOf(search) === 0);

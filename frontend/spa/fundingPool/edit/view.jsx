@@ -19,10 +19,10 @@ var EditFundingPool = React.createClass({
         var product = this.state && this.state.product ? this.state.product : this.props.element;
         product.totalRaised = 0;
         try {
-            Object.keys(product.investors).map(function(address) {
+            Object.keys(product.investors).map(function (address) {
                 product.totalRaised += product.investors[address];
             });
-        } catch(e) {
+        } catch (e) {
         }
         return product;
     },
@@ -43,7 +43,7 @@ var EditFundingPool = React.createClass({
     loadImage(e) {
         e && e.preventDefault();
         var userChosenPath = require('electron').remote.dialog.showOpenDialog({
-            defaultPath: require('electron').remote.app.getPath("desktop"),
+            defaultPath: undefined,
             filters: [
                 {
                     name: "Image logo",
@@ -213,7 +213,7 @@ var EditFundingPool = React.createClass({
         this.updateProgressBar();
     },
     updateProgressBar() {
-        if(this.props.parent || !this.progressBar) {
+        if (this.props.parent || !this.progressBar) {
             return;
         }
         var product = this.getProduct();
@@ -230,25 +230,12 @@ var EditFundingPool = React.createClass({
         this.updateGui();
         this.setState({ documents: this.getProduct().documents });
     },
-    retrieveWalletOnTop(ref) {
-        if(this.props.parent) {
-            return;
-        }
-        this.walletOnTop = ref;
-        if(!this.walletOnTop) {
-            return;
-        }
-        $(this.walletOnTop).focus((e) => $(e.target).select());
-        var product = this.getProduct();
-        if(!product.adminsToolsAddress) {
-            return;
-        }
-        var _this = this;
-        client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'getWalletOnTopAddress').then(result => _this.walletOnTop.value = result);
+    walletRef(ref) {
+        (this.wallet = ref) && $(this.wallet).focus((e) => $(e.target).select());
     },
-    changeWalletOnTop(e) {
+    changeWallet(e) {
         e && e.preventDefault();
-        var address = this.walletOnTop.value.split(' ').join('');
+        var address = this.wallet.value.split(' ').join('');
         if (!Utils.isEthereumAddress(address)) {
             alert('You must provide a valid ethereum address');
             return;
@@ -296,7 +283,7 @@ var EditFundingPool = React.createClass({
         e && e.preventDefault();
         var userChosenPath = undefined;
         (userChosenPath = window.require('electron').remote.dialog.showOpenDialog({
-            defaultPath: window.require('electron').remote.app.getPath("desktop"),
+            defaultPath: undefined,
             options: {
                 openDirectory: false,
                 multiSelections: false
@@ -317,7 +304,7 @@ var EditFundingPool = React.createClass({
     },
     cleanNumber(target) {
         var value = target.value.split(' ').join('').split(Utils.dozensSeparator).join('');
-        if(value.indexOf('.') !== -1) {
+        if (value.indexOf('.') !== -1) {
             var s = value.split(Utils.decimalsSeparator);
             var last = s.pop();
             value = s.join('') + '.' + last;
@@ -472,7 +459,7 @@ var EditFundingPool = React.createClass({
                                             <input className="form-control form-control-last" type="text" placeholder="Link must start with http:// or https://" ref={ref => (this.url = ref) && (this.url.value = product.url)} />
                                         </div>
                                     </div>
-                                    <br/>
+                                    <br />
                                     <div className="row">
                                         <div className="col-md-2">
                                             <h4>Logo</h4>
@@ -486,7 +473,7 @@ var EditFundingPool = React.createClass({
                                             <a href="javascript:;" onClick={this.deleteImage}><i className="fas fa-remove"></i></a>
                                         </div>
                                     </div>
-                                    {!this.props.parent && <br/>}
+                                    {!this.props.parent && <br />}
                                     {!this.props.parent && <div className="row">
                                         <div className="col-md-2">
                                             <h4>Tags</h4>
@@ -496,11 +483,11 @@ var EditFundingPool = React.createClass({
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.tags = ref) && product.tags && product.tags.length > 0 && (this.tags.value = product.tags.join(' '))} />
                                         </div>
                                     </div>}
-                                    <br/>
-                                    <br/>
+                                    <br />
+                                    <br />
                                     <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>Update</button>
-                                    <br/>
-                                    <br/>
+                                    <br />
+                                    <br />
                                 </form>
                             </div>
                             {!this.props.parent && <div className="tab-pane" id="administration" role="tabpanel">
@@ -508,15 +495,15 @@ var EditFundingPool = React.createClass({
                                     <h4>Wallet on top</h4>
                                     <p className="small">the wallet that will receive the exchange rate on top</p>
                                     <div className="form-group">
-                                        <input className="form-control" type="text" placeholder="Address" ref={this.retrieveWalletOnTop} />
+                                        <input className="form-control" type="text" placeholder={product.walletOnTop} ref={this.walletRef} />
                                     </div>
                                     <div className="kt-form__actions">
-                                        <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.changeWalletOnTop}>Change</button>
+                                        <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.changeWallet}>Change</button>
                                     </div>
                                 </form>
-                                <br/>
-                                <br/>
-                                <br/>
+                                <br />
+                                <br />
+                                <br />
                                 <form className="kt-form" action="">
                                     <h4>Permissions</h4>
                                     <p className="small">manage the users that can operate with this basket</p>
@@ -571,7 +558,7 @@ var EditFundingPool = React.createClass({
                                             <h4>Amount</h4>
                                             <p className="small">the max amount of tokens that this investor can hold (expressed in SEED)</p>
                                             <div className="form-group">
-                                                <input className="form-control" type="text" placeholder="Amount" ref={ref => this.whiteListAmount = ref} onChange={this.parseNumber}/>
+                                                <input className="form-control" type="text" placeholder="Amount" ref={ref => this.whiteListAmount = ref} onChange={this.parseNumber} />
                                             </div>
                                         </div>
                                         <div className="col-md-2">
@@ -590,7 +577,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">the amount of {product.symbol} tokens the investor will receive for every invested SEED</p>
                                         </div>
                                         <div className="col-md-6 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.seedRate = ref) && (this.seedRate.value = Utils.roundWei(product.seedRate))} onChange={this.parseNumber}/>
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.seedRate = ref) && (this.seedRate.value = Utils.roundWei(product.seedRate))} onChange={this.parseNumber} />
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateSeedRate}>OK</button>
@@ -603,7 +590,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">the amount of {product.symbol} tokens the incubator will receive for every invested SEED</p>
                                         </div>
                                         <div className="col-md-6 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.exchangeRateOnTop = ref) && (this.exchangeRateOnTop.value = Utils.roundWei(product.exchangeRateOnTop))} onChange={this.parseNumber}/>
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.exchangeRateOnTop = ref) && (this.exchangeRateOnTop.value = Utils.roundWei(product.exchangeRateOnTop))} onChange={this.parseNumber} />
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateExchangeRate}>OK</button>
@@ -616,7 +603,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">The amount of SEED tokens this basket needs to raise</p>
                                         </div>
                                         <div className="col-md-6 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.totalSupply = ref) && (this.totalSupply.value = product.totalSupply && parseFloat(Utils.roundWei(product.totalSupply)) || '')} onChange={this.parseNumber}/>
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.totalSupply = ref) && (this.totalSupply.value = product.totalSupply && parseFloat(Utils.roundWei(product.totalSupply)) || '')} onChange={this.parseNumber} />
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateTotalSupply}>OK</button>
@@ -629,7 +616,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">the maximum amount of {product.symbol} tokens that each investor can accumulate without the need of whitelisting</p>
                                         </div>
                                         <div className="col-md-6 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.whiteListThreshold = ref) && (this.whiteListThreshold.value = product.whiteListThreshold && parseFloat(Utils.roundWei(product.whiteListThreshold)) || '')} onChange={this.parseNumber}/>
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.whiteListThreshold = ref) && (this.whiteListThreshold.value = product.whiteListThreshold && parseFloat(Utils.roundWei(product.whiteListThreshold)) || '')} onChange={this.parseNumber} />
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateWhiteListThreshold}>OK</button>

@@ -25,7 +25,7 @@ function ConfigurationManager() {
       throw 'password';
     }
     var userChosenPath = privateContext.electron.dialog.showSaveDialog({
-      defaultPath: privateContext.app.getPath("desktop"),
+      defaultPath: undefined,
       filters: [
         {
           name: "JSON File",
@@ -44,7 +44,7 @@ function ConfigurationManager() {
 
   context.import = function (userChosenPath) {
     typeof userChosenPath !== 'string' && (userChosenPath = privateContext.electron.dialog.showOpenDialog({
-      defaultPath: privateContext.app.getPath("desktop"),
+      defaultPath: undefined,
       filters: [
         {
           name: "JSON File",

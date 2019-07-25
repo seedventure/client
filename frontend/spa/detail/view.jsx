@@ -137,6 +137,9 @@ var Detail = React.createClass({
             description = $.base64.decode(product.description);
         } catch (e) {
         }
+        var p = document.createElement('p');
+        p.innerHTML = description;
+        p.innerText.split(' ').join('').trim() === '' && (description = undefined);
         var full = false;
         try {
             full = product.totalRaised >= product.totalSupply;
@@ -212,6 +215,17 @@ var Detail = React.createClass({
                                     </div>
                                     <br />
                                     <br />
+                                    <div className="row">
+                                        <div className="col-md-2">
+                                            <h4>Description</h4>
+                                            <p className="small">of the {(this.props.parent && "Startup") || "Incubator"}</p>
+                                        </div>
+                                        <div className="col-md-10">
+                                            {!description ? 'None' : <p className="description" ref={ref => ref && (ref.innerHTML = description)}></p>}
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <br />
                                     {!this.props.parent && <div className="row">
                                         <div className="col-md-2">
                                             <h4>Symbol</h4>
@@ -221,6 +235,17 @@ var Detail = React.createClass({
                                             <h2>{product.symbol}</h2>
                                         </div>
                                     </div>}
+                                    <br />
+                                    <br />
+                                    <div className="row">
+                                        <div className="col-md-2">
+                                            <h4>{"Wallet" + (this.props.parent ? "" : " on top")}</h4>
+                                            <p className="small">{"The Ethereum wallet which will " + (this.props.parent ? "store the unlocked" : "raise the") + " funds"}</p>
+                                        </div>
+                                        <div className="col-md-10">
+                                            <h2><a href={ecosystemData.etherscanURL + 'address/' + (this.props.parent ? product.address : product.walletOnTop)} target="_blank">{this.props.parent ? product.address : product.walletOnTop}</a></h2>
+                                        </div>
+                                    </div>
                                     <br />
                                     <br />
                                     {this.state && this.state.documents && this.state.documents.length > 0 && [<div className="row">

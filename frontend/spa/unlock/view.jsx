@@ -22,6 +22,10 @@ var Unlock = React.createClass({
                                 <div className="kt-login__body">
                                     <div className="kt-login__signin">
                                         <div className="kt-login__head">
+                                            <br/>
+                                            <img src="./assets/favicon.png" width="100" height="100"></img>
+                                            <br/>
+                                            <br/>
                                             <h3 className="kt-login__title">Please, type you password to unlock your account</h3>
                                         </div>
                                         <div className="kt-login__form">

@@ -24,7 +24,7 @@ function BlockchainManager() {
                     ok();
                     return;
                 }
-                $.publish('transaction/lock', title, txHash);
+                $.publish('transaction/lock', [title, txHash]);
                 var tx = undefined;
                 var error = undefined;
                 try {

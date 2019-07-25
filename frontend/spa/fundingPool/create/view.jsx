@@ -143,7 +143,7 @@ var CreateFundingPool = React.createClass({
     loadImage(e) {
         e && e.preventDefault();
         var userChosenPath = require('electron').remote.dialog.showOpenDialog({
-            defaultPath: require('electron').remote.app.getPath("desktop"),
+            defaultPath: undefined,
             filters: [
                 {
                     name: "Image logo",
@@ -186,7 +186,7 @@ var CreateFundingPool = React.createClass({
         e && e.preventDefault();
         var userChosenPath = undefined;
         (userChosenPath = window.require('electron').remote.dialog.showOpenDialog({
-            defaultPath: window.require('electron').remote.app.getPath("desktop"),
+            defaultPath: undefined,
             options: {
                 openDirectory: false,
                 multiSelections: false

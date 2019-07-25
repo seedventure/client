@@ -21,7 +21,7 @@ var Member = React.createClass({
     componentDidMount() {
         var _this = this;
         var product = this.getProduct();
-        (!product.name || product.unavailable) && client.contractsManager.refreshMember(product, this.props.parent).then(p => _this.setState({product: p}));
+        (!product.name || product.unavailable) && client.contractsManager.getFundingPanelMemberData(product).then(p => _this.setState({product: p}));
     },
     enableDisable(e) {
         e && e.preventDefault();
