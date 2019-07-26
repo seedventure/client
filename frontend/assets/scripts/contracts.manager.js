@@ -273,7 +273,7 @@ function ContractsManager() {
                     ok();
                 }, 5000);
                 $.get({
-                    url: product.documentUrl + (product.documentUrl.indexOf('?') !== -1 ? '&' : '?') + ('callDate=' + new Date().getTime()),
+                    url: product.documentUrl,
                     dataType: 'json',
                     cache: false,
                     success: data => {
@@ -301,6 +301,13 @@ function ContractsManager() {
         }
 
         if(context.productQueue[product.productPosition + '_' + product.position]) {
+            return product;
+        }
+
+        if(product.pendingNotications && (!context.changesWaiter || !context.changesWaiter[product.position])) {
+            setTimeout(function() {
+                context.manageFundingPanelChanged(product);
+            });
             return product;
         }
 
@@ -349,7 +356,7 @@ function ContractsManager() {
                 ok();
             }, 5000);
             $.get({
-                url: product.documentUrl + (product.documentUrl.indexOf('?') !== -1 ? '&' : '?') + ('callDate=' + new Date().getTime()),
+                url: product.documentUrl,
                 dataType: 'json',
                 cache: false,
                 success: data => {
@@ -366,20 +373,58 @@ function ContractsManager() {
         return product;
     };
 
-    context['0xb9f320ca5d6edcd5b5ec403b3a0970d8ff03a3ab365497b976507b20e27c7067'] = async function memberDisabled(event, element) {
-        await context.getFundingPanelData(element.element || element);
+    context.manageFundingPanelChanged = function manageFundingPanelChanged(element) {
+        if(!client.configurationManager.hasUnlockedUser()) {
+            return;
+        }
+        var product = element.element || element;
+        !context.changesWaiter && (context.changesWaiter = {});
+        if(context.changesWaiter[product.position]) {
+            return;
+        }
+        context.changesWaiter[product.position] = true;
+        var copy = JSON.parse(JSON.stringify(product));
+        product.pendingNotications = true;
+        product.unavailable = true;
+        try {
+            for(var i in product.members) {
+                product.members[i].unavailable = true;
+            }
+        } catch(e) {
+        }
+        $.publish('fundingPanel/' + product.position + '/updated', product);
+        var subscripted = function(event, product) {
+            $.unsubscribe('fundingPanel/' + product.position + '/updated', subscripted);
+            delete product.pendingNotications;
+            context.notifyPotentialFundingPanelChanges(product, copy);
+            delete context.changesWaiter[product.position];
+        };
+        $.subscribe('fundingPanel/' + product.position + '/updated', subscripted);
+        context.getFundingPanelData(product);
     };
 
-    context['0x0dcb0d206ae1380b9262e6ac8529c80879595c33706fa1199edd4a7ef72cf3a1'] = async function memberEnabled(event, element) {
-        await context.getFundingPanelData(element.element || element);
+    context.notifyPotentialFundingPanelChanges = function notifyPotentialFundingPanelChanges(product, copy) {
+        console.log({product, copy});
     };
 
-    context['0x94d9b0a056867efca93631b338c7fde3befc3f54db36b90b8456b069385c30be'] = async function newMemberCreated(event, element) {
-        await context.getFundingPanelData(element.element || element);
+    context['0xb9f320ca5d6edcd5b5ec403b3a0970d8ff03a3ab365497b976507b20e27c7067'] = function memberDisabled(event, element) {
+        context.manageFundingPanelChanged(element.element || element);
     };
 
-    context['0x4ae00b988cb3b798b8bc44e759790a289c70af1275d958aafd5938e2da3592f9'] = async function memberRefreshed(event, element) {
-        await context.getFundingPanelData(element.element || element);
+    context['0x0dcb0d206ae1380b9262e6ac8529c80879595c33706fa1199edd4a7ef72cf3a1'] = function memberEnabled(event, element) {
+        context.manageFundingPanelChanged(element.element || element);
+    };
+
+    context['0x94d9b0a056867efca93631b338c7fde3befc3f54db36b90b8456b069385c30be'] = function newMemberCreated(event, element) {
+        context.manageFundingPanelChanged(element.element || element);
+    };
+
+    context['0x4ae00b988cb3b798b8bc44e759790a289c70af1275d958aafd5938e2da3592f9'] = function memberRefreshed(event, element) {
+        context.manageFundingPanelChanged(element.element || element);
+    };
+
+    context['0xb4630f894cab42818aa587f8d4fc219b8472578638e808b23df12161ad730af6'] = function fundingPanelDataChanged(event, element) {
+        context.manageFundingPanelChanged(element);
     };
 
     context['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] = async function erc20Transfer(event, element) {
@@ -409,29 +454,7 @@ function ContractsManager() {
         }
     };
 
-    context['0xb4630f894cab42818aa587f8d4fc219b8472578638e808b23df12161ad730af6'] = async function fundingPanelDataChanged(event, element) {
-        var list = context.getList();
-        element = list[element.position];
-        delete element.name;
-        delete element.url;
-        delete element.hash;
-        await context.getFundingPanelData(element, true);
-        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.list, list);
-        try {
-            for (var i in client.userManager.user.list) {
-                var position = client.userManager.user.list[i];
-                if (element.position === position) {
-                    $.publish('user/list/updated', element);
-                    return;
-                }
-            }
-        } catch {
-        }
-    };
-
     context['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'] = async function allowanceIncreased(event, element) {
-        $.publish('allowance/increased', element);
-        element.position !== undefined && $.publish('fundingPanel/' + element.position + '/updated', element);
     };
 
     context['0x28e958703d566ea9825155c28c95c3d92a2da219b51404343e4653bccd47525a'] = async function newFundingPanel(event, element) {
@@ -450,20 +473,14 @@ function ContractsManager() {
             position
         };
         list[position] = element;
-        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.list, list);
-        var alsoUser = false;
         try {
             if (element.owner.toLowerCase() === client.userManager.user.wallet.toLowerCase()) {
                 !client.userManager.user.list && (client.userManager.user.list = []);
                 client.userManager.user.list.push(position);
-                client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.user, user);
-                alsoUser = true;
-                client.userManager.getBalances();
             }
         } catch {
         }
-        $.publish('list/updated', element);
-        alsoUser === true && $.publish('user/list/updated', element);
+        $.publish('list/updated');
     };
 
     context.checkBaskets = async function checkBaskets() {
@@ -499,7 +516,6 @@ function ContractsManager() {
             list['' + index] = element;
         }
         client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.list, list);
-        $.publish('list/updated', list);
         try {
             !client.userManager.user.list && (client.userManager.user.list = []);
             var elements = [];
@@ -510,14 +526,9 @@ function ContractsManager() {
                     elements.push(element);
                 }
             }
-            if (elements.length > 0) {
-                client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.user, user);
-            }
-            for (var i in elements) {
-                $.publish('user/list/updated', elements[i]);
-            }
-        } catch {
+        } catch (e){
         }
+        $.publish('list/updated');
     };
     client.collaterateStart.push(context.checkBaskets);
 }

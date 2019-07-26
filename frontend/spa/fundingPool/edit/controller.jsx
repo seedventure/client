@@ -7,7 +7,7 @@ var EditFundingPoolController = function (view) {
     context.sendTransactionTo = async function sendTransactionTo(address, data) {
         context.view.emit('loader/hide');
         var signedTransaction = await client.userManager.signTransaction(address, data);
-        await client.blockchainManager.sendSignedTransaction(signedTransaction);
+        return client.blockchainManager.sendSignedTransaction(signedTransaction);
     };
 
     context.sendTransactionToFundingPanel = function sendTransactionToFundingPanel(data) {
@@ -51,8 +51,8 @@ var EditFundingPoolController = function (view) {
             );
             fundingPanelAddress = context.view.props.parent.fundingPanelAddress;
         }
-        await context.sendTransactionTo(fundingPanelAddress, method.encodeABI());
-        isStartup && context.view.back();
+        var tx = await context.sendTransactionTo(fundingPanelAddress, method.encodeABI());
+        tx && context.view.back();
     };
 
     context.updateSeedRate = async function updateSeedRate(seedRate) {
@@ -82,13 +82,13 @@ var EditFundingPoolController = function (view) {
     context.grantFundingManager = async function grantFundingManager(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.addFundingManagers(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.denyFundingManager = async function denyFundingManager(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.removeFundingManagers(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.verifyFundingManager = async function verifyFundingManager(address) {
@@ -106,13 +106,13 @@ var EditFundingPoolController = function (view) {
     context.grantFundingOperator = async function grantFundingOperator(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.addFundingOperators(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.denyFundingOperator = async function denyFundingOperator(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.removeFundingOperators(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.verifyFundingOperator = async function verifyFundingOperator(address) {
@@ -130,13 +130,13 @@ var EditFundingPoolController = function (view) {
     context.grantFundsUnlockManager = async function grantFundsUnlockManager(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.addFundsUnlockerManagers(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.denyFundsUnlockManager = async function denyFundsUnlockManager(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.removeFundsUnlockerManagers(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.verifyFundsUnlockManager = async function verifyFundsUnlockManager(address) {
@@ -154,13 +154,13 @@ var EditFundingPoolController = function (view) {
     context.grantFundsUnlockOperator  = async function grantFundsUnlockOperator(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.addFundsUnlockerOperators(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.denyFundsUnlockOperator = async function denyFundsUnlockOperator(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.removeFundsUnlockerOperators(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.verifyFundsUnlockOperator = async function verifyFundsUnlockOperator(address) {
@@ -178,13 +178,13 @@ var EditFundingPoolController = function (view) {
     context.grantWhiteListManager  = async function grantWhiteListManager(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.addWLManagers(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.denyWhiteListManager = async function denyWhiteListManager(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.removeWLManagers(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.verifyWhiteListManager = async function verifyWhiteListManager(address) {
@@ -202,13 +202,13 @@ var EditFundingPoolController = function (view) {
     context.grantWhiteListOperator  = async function grantWhiteListOperator(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.addWLOperators(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.denyWhiteListOperator = async function denyWhiteListOperator(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.removeWLOperators(address);
-        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
+        return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.verifyWhiteListOperator = async function verifyWhiteListOperator(address) {

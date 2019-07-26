@@ -30,7 +30,14 @@ var EditFundingPool = React.createClass({
         var position = this.getProduct().position;
         var subscriptions = {};
         subscriptions['product/set'] = this.setProduct;
-        subscriptions['fundingPanel/' + position + '/updated'] = element => this.setState({ product: element });
+        subscriptions['fundingPanel/' + position + '/updated'] = element => {
+            var oldMembers = this.getProduct().members;
+            var newMembers = element.members;
+            if(!oldMembers || !newMembers || JSON.stringify(oldMembers) !== JSON.stringify(newMembers)) {
+                return;
+            }
+            this.setState({product: element, documents: element.documents});
+        };
         return subscriptions;
     },
     setProduct(product) {

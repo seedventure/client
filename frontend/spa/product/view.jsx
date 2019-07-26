@@ -5,8 +5,9 @@ var Product = React.createClass({
     ],
     onClick(e) {
         e && e.preventDefault();
-        if(!this.getProduct().name) {
-            alert("Please, wait for the retrievement of all data");
+        var product = this.getProduct();
+        if(!product.name || (this.props.view === 'mine' && product.unavailable)) {
+            alert("Please wait until data has been downloaded");
             return;
         }
         this.emit('page/change', this.props.view === 'mine' ? EditFundingPool : Detail, { element: this.getProduct(), view: this.props.view });
@@ -55,9 +56,9 @@ var Product = React.createClass({
                             {product.name} {product.symbol && ((product.name ? "(" : "") + product.symbol + (product.name ? ")" : ""))}
                         </h3>
                     </div>
-                    {!product.name && <div className="retrieving">
+                    {(!product.name || product.unavailable) && <div className="retrieving">
                         <div className="retrievingContainer row">
-                            <div className="label col-md-8">Retrieveing data...</div>
+                            <div className="label col-md-8">Updating info...</div>
                             <div className="spinner col-md-4">
                                 <Loader/>
                             </div>

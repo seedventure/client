@@ -9,7 +9,7 @@ var Member = React.createClass({
         e && e.preventDefault();
         var _this = this;
         var product = _this.getProduct();
-        if(!product.name || product.unavailable) {
+        if(!product.name || (this.props.view === 'mine' && product.unavailable)) {
             alert("Please wait until data has been downloaded");
             return;
         }
@@ -21,7 +21,7 @@ var Member = React.createClass({
     componentDidMount() {
         var _this = this;
         var product = this.getProduct();
-        (!product.name || product.unavailable) && client.contractsManager.getFundingPanelMemberData(product).then(p => _this.setState({product: p}));
+        (!product.name || product.unavailable) && client.contractsManager.getFundingPanelMemberData(product).then(p => p && p.name && !p.unavailable && _this.setState({product: p}));
     },
     enableDisable(e) {
         e && e.preventDefault();
@@ -58,9 +58,9 @@ var Member = React.createClass({
                             {product.name || 'New Startup'} {product.url && <span> ({product.url})</span>}
                         </h3>
                     </div>
-                    {!product.name && <div className="retrieving">
+                    {(!product.name || product.unavailable) && <div className="retrieving">
                         <div className="retrievingContainer row">
-                            <div className="label col-md-8">Retrieveing data...</div>
+                            <div className="label col-md-8">Updating info...</div>
                             <div className="spinner col-md-4">
                                 <Loader/>
                             </div>
