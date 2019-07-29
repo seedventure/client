@@ -1,8 +1,5 @@
 {
-    "seedTokenAddress": "0x029eb9c1810a97431200c08b827944b30f615325",
-    "factoryAddress": "0x8ae7602522cb7d49b6dd229b60edc095ddb662a9",
-    "dexAddress": "0xa82606a6ffd493b939d16ca33cc2da8f1490481d",
-    "lastCheckedBlockNumber": 5633196,
+    "factoryAddress": "0x2ba5f76c44cfadca6962e5da2323293013301e80",
     "web3Provider": "assets/scripts/blockchain.provider.web3.js",
     "etherscanURL": "https://ropsten.etherscan.io/",
     "web3URL": "wss://testnet.seedventure.io",
@@ -13,5 +10,5 @@
     "ipfsUrlTemplate": "https://ipfs.io/ipfs/",
     "gasPrice": 30,
     "gasLimit": 8000000,
-    "distDate": 1564128868783
+    "distDate": 1564413644147
 }

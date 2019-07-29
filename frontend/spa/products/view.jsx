@@ -97,16 +97,16 @@ var Products = React.createClass({
                                 return (
                                     <div className="row">
                                         <div className="col-xl-4">
-                                            <Product key={product.position} element={product} view={this.props.view} />
+                                            <Product key={product.position + product.documentUrl} element={product} view={this.props.view} />
                                         </div>
                                         <div className="col-xl-4">
                                             {i + 1 < products.length &&
-                                                <Product key={products[i + 1].position} element={products[i + 1]} view={this.props.view} />
+                                                <Product key={products[i + 1].position + products[i + 2].documentUrl} element={products[i + 1]} view={this.props.view} />
                                             }
                                         </div>
                                         <div className="col-xl-4">
                                             {i + 2 < products.length &&
-                                                <Product key={products[i + 2].position} element={products[i + 2]} view={this.props.view} />
+                                                <Product key={products[i + 2].position + products[i + 2].documentUrl} element={products[i + 2]} view={this.props.view} />
                                             }
                                         </div>
                                     </div>

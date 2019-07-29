@@ -1,9 +1,9 @@
 function ContractsManager() {
     var context = this;
 
-    context.SEEDTokenAddress = ecosystemData.seedTokenAddress;
-    context.factoryAddress = ecosystemData.factoryAddress;
-    context.dexAddress = ecosystemData.dexAddress;
+    context.SEEDTokenAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress);
+    context.factoryAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress);
+    context.dexAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress);
 
     context.productQueue = {};
 
@@ -121,11 +121,11 @@ function ContractsManager() {
             address: context.factoryAddress.toLowerCase(),
             type: 'factory'
         });
-        context.dictionary.push({
+        context.dexAddress && context.dictionary.push({
             address: context.dexAddress.toLowerCase(),
             type: 'dex'
         });
-        context.dictionary.push({
+        context.SEEDTokenAddress && context.dictionary.push({
             address: context.SEEDTokenAddress.toLowerCase(),
             type: 'SEEDToken'
         });
@@ -223,11 +223,6 @@ function ContractsManager() {
         result = await client.blockchainManager.call(product.fundingPanelAddress, data);
         result = web3.eth.abi.decodeParameters(['uint256'], result);
         product.totalSupply = parseInt(result['0']);
-
-        data = contract.methods.getTotalRaised().encodeABI();
-        result = await client.blockchainManager.call(product.fundingPanelAddress, data);
-        result = web3.eth.abi.decodeParameters(['uint256'], result);
-        product.totalRaised = parseInt(result['0']);
 
         contract = new web3.eth.Contract(contracts.AdminTools);
         data = contract.methods.getWLThresholdBalance().encodeABI();
@@ -437,14 +432,14 @@ function ContractsManager() {
             return;
         }
 
-        var result = await context.call(contracts.FundingPanel, product.fundingPanelAddress, "getTotalRaised");
-        product.totalRaised = parseInt(result);
+        !product.totalRaised && (product.totalRaised = 0);
 
         var investor = web3.eth.abi.decodeParameters(['address'], event.topics[1])[0].toLowerCase();
         var amount = parseInt(web3.eth.abi.decodeParameters(['uint256'], event.data)[0]);
         !product.investors && (product.investors = {});
         !product.investors[investor] && (product.investors[investor] = 0);
         product.investors[investor] += amount;
+        product.totalRaised += amount;
         $.publish('fundingPanel/' + product.position + '/updated', product);
         try {
             if (client.userManager.user.wallet.toLowerCase() === investor.toLowerCase()) {
@@ -483,9 +478,36 @@ function ContractsManager() {
         $.publish('list/updated');
     };
 
+    context.changeFactoryAddress = async function changeFactoryAddress(factoryAddress) {
+        client.blockchainManager.pause();
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.list, {});
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress, factoryAddress);
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress, null);
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress, null);
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.lastCheckedBlockNumber, null);
+        var data = undefined;
+        try {
+            data = await context.Factory.getFactoryContext(factoryAddress);
+        } catch(e) {
+            data = undefined;
+        }
+        if(!data) {
+            return;
+        }
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress, data[0]);
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress, data[1]);
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.lastCheckedBlockNumber, parseInt(data[2]));
+        context.SEEDTokenAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress);
+        context.factoryAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress);
+        context.dexAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress);
+        await context.checkBaskets();
+        client.blockchainManager.resume();
+    };
+
     context.checkBaskets = async function checkBaskets() {
-        if (client.persistenceManager.get('factoryAddress') !== context.factoryAddress) {
-            client.persistenceManager.set('list', []);
+        if(!client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress)) {
+            await context.changeFactoryAddress(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress), true);
+            return;
         }
         var contract = new web3.eth.Contract(contracts.Factory);
         var data = contract.methods.getTotalFPContracts().encodeABI();

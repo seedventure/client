@@ -6,6 +6,8 @@ function BlockchainManager() {
     context.blockSequenceToCheck = 45000;
     context.addressesSplit = 500;
 
+    context.run = true;
+
     context.getTopics = function getTopics() {
         if(!context.topics) {
             context.topics = [];
@@ -14,6 +16,17 @@ function BlockchainManager() {
         }
         return context.topics;
     };
+
+    context.pause = function pause() {
+        context.run = false;
+        context.nextEventCheckTimeout && clearTimeout(context.nextEventCheckTimeout);
+    }
+
+    context.resume = function resume() {
+        context.nextEventCheckTimeout && clearTimeout(context.nextEventCheckTimeout);
+        context.run = true;
+        context.nextEventCheckTimeout = setTimeout(context.mainLoop, context.defaultTimeToNextEventsCheck);
+    }
 
     context.sendSignedTransaction = function sendSignedTransaction(signedTransaction, title) {
         return new Promise(function(ok, ko) {
@@ -67,6 +80,9 @@ function BlockchainManager() {
     };
 
     context.onEvents = async function onEvents(events) {
+        if(!context.run) {
+            return;
+        }
         if (!context.addressesToCheck || context.addressesToCheck.length === 0) {
             var newBlockNumber = context.getLastCkeckedBlockNumber() + context.blockSequenceToCheck;
             if(newBlockNumber > context.lastFetchedBlockNumber) {
@@ -95,6 +111,9 @@ function BlockchainManager() {
 
     context.scheduleNextEventCheckTimeout = function scheduleNextEventCheckTimeout(msec) {
         context.nextEventCheckTimeout && clearTimeout(context.nextEventCheckTimeout);
+        if(!context.run) {
+            return;
+        }
         delete context.nextEventCheckTimeout;
         (msec === undefined || msec === null) && (msec = context.timeToNextEventCheck);
         (msec === undefined || msec === null) && (msec = context.defaultTimeToNextEventsCheck);
@@ -102,6 +121,9 @@ function BlockchainManager() {
     };
 
     context.mainLoop = async function mainLoop() {
+        if(!context.run) {
+            return;
+        }
         delete context.timeToNextEventCheck;
         context.lastFetchedBlockNumber === undefined && (context.lastFetchedBlockNumber = await context.provider.fetchLastBlockNumber());
         var lastCheckedBlockNumber = context.getLastCkeckedBlockNumber();

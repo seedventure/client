@@ -3,7 +3,8 @@ var Index = React.createClass({
         'spa/unlock',
         'spa/header',
         'spa/products',
-        'spa/fundingPool/create'
+        'spa/fundingPool/create',
+        'spa/preferences'
     ],
     requiredScripts: [
         'spa/modal.jsx'
@@ -188,6 +189,14 @@ var Index = React.createClass({
         var distDate = window.distDate;
         delete window.distDate;
         distDate && distDate > ecosystemData.distDate && setTimeout(() => newVersionAvailableModal.show(), 1200);
+    },
+    componentDidMount() {
+        this.componentDidUpdate();
+    },
+    componentDidUpdate() {
+        if((!this.state || !this.state.element || this.state.element !== Preferences) && !client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress)) {
+            this.emit('page/change', Preferences);
+        }
     },
     render() {
         var rendered = this.state && this.state.element ? this.state.element : this.getDefaultRenderer();

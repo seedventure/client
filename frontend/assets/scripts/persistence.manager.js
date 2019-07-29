@@ -5,7 +5,10 @@ function PersistenceManager() {
   context.PERSISTENCE_PROPERTIES = [
     'locale',
     'user',
-    'list'
+    'list',
+    'seedTokenAddress',
+    'dexAddress',
+    'lastCheckedBlockNumber'
   ];
   Object.keys(ecosystemData).map(function(key) {
       context.PERSISTENCE_PROPERTIES.push(key);
@@ -42,13 +45,13 @@ function PersistenceManager() {
 
   context.assertIsKey = function assertIsKey(key) {
     if(key === undefined || key === null || key === '') {
-      throw new Exception("Invalid key value");
+      throw ("Invalid key value");
     }
     for (var name in context.PERSISTENCE_PROPERTIES) {
       if (context.PERSISTENCE_PROPERTIES[name] === key) {
         return;
       }
     }
-    throw new Exception(key + ' is NOT a recognized key.');
+    throw (key + ' is NOT a recognized key.');
   };
 };

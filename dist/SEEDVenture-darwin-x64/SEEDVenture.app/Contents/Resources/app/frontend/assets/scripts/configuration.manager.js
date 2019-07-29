@@ -127,11 +127,6 @@ function ConfigurationManager() {
     } catch(e) {
       return false;
     }
-    if(client.persistenceManager.get('factoryAddress') !== client.contractsManager.factoryAddress) {
-      context.content.user.list = [];
-      client.contractsManager.checkBaskets();
-      client.persistenceManager.set('factoryAddress', client.contractsManager.factoryAddress);
-    }
     $.publish('configuration/unlocked');
     return true;
   };

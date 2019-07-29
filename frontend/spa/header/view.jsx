@@ -1,9 +1,12 @@
+import { timingSafeEqual } from "crypto";
+
 var Header = React.createClass({
     requiredModules: [
         'spa/configuration/import',
         'spa/configuration/create',
         'spa/configuration/backup',
-        'spa/configuration/move'
+        'spa/configuration/move',
+        'spa/preferences'
     ],
     getDefaultSubscriptions() {
         return {
@@ -35,6 +38,10 @@ var Header = React.createClass({
     moveConfiguration(e) {
         e && e.preventDefault();
         this.emit('page/change', MoveConfiguration);
+    },
+    openPreferences(e) {
+        e && e.preventDefault();
+        this.emit('page/change', Preferences);
     },
     componentDidUpdate() {
         if(client.userManager.user && (new Date().getTime() - this.lastBalanceCheck) > 50000) {
@@ -99,9 +106,9 @@ var Header = React.createClass({
                             {!client.userManager.user && <a href="javascript:;" onClick={this.importConfiguration} data-toggle="kt-tooltip" data-placement="bottom" title="Import Configuration">
                                 <i className="fas fa-file-import"></i>
                             </a>}
-                            {false && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Settings">
+                            <a href="javascript:;" onClick={this.openPreferences} data-toggle="kt-tooltip" data-placement="bottom" title="Preferences">
                                 <i className="fas fa-cog"></i>
-                            </a>}
+                            </a>
                             {client.configurationManager.hasUnlockedUser() && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Forget Me" onClick={() => this.emit('user/askForget')}>
                                 <i className="fas fa-sign-out-alt"></i>
                             </a>}

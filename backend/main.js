@@ -56,7 +56,7 @@ var distURL = (debug || test) ? '' : 'https://cdn.jsdelivr.net/gh/seedventure/cl
 var lazyLoad = fs.readFileSync(__dirname + '/productionURL.js', 'UTF-8').split('\n').join('');
 
 function loadData() {
-    if(!focus) {
+    if(!debug && !test && !dist && !focus) {
         return;
     }
     electronWindow.webContents.session.clearCache(function () {
