@@ -13,20 +13,23 @@ var Detail = React.createClass({
     },
     getProduct() {
         var product = this.state && this.state.product ? this.state.product : this.props.element;
-        product.totalRaised = 0;
-        try {
-            Object.keys(product.investors).map(function(address) {
-                product.totalRaised += product.investors[address];
-            });
-        } catch(e) {
+        if(!this.props.parent) {
+            product.totalRaised = 0;
+            try {
+                Object.keys(product.investors).map(function(address) {
+                    product.totalRaised += product.investors[address];
+                });
+            } catch(e) {
+            }
         }
         return product;
     },
     getDefaultSubscriptions() {
-        var position = this.getProduct().position;
+        var product = this.getProduct();
+        var position = product.position;
         var subscriptions = {};
         subscriptions['product/set'] = this.setProduct;
-        subscriptions['fundingPanel/' + position + '/updated'] = element => this.setState({ product: element }, this.controller.updateInvestments);
+        subscriptions['fundingPanel/' + position + '/updated'] = (product, member) => this.setState({ product: member || product }, this.controller.updateInvestments);
         return subscriptions;
     },
     setProduct(product) {
@@ -142,15 +145,19 @@ var Detail = React.createClass({
         p.innerText.split(' ').join('').trim() === '' && (description = undefined);
         var full = false;
         try {
-            full = product.totalRaised >= product.totalSupply;
+            full = !this.props.parent && product.totalRaised >= product.totalSupply;
         } catch (e) {
         }
         return (
             <div className="kt-content kt-grid__item kt-grid__item--fluid">
                 {full === true && <h2>This Basked has reached its goal!</h2>}
-                {!this.props.parent && <div className="progress">
-                    <div className="progress-bar" role="progressbar" ref={ref => this.progressBar = $(ref)} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-                </div>}
+                {!this.props.parent && [
+                    <div className="progress">
+                        <div className="progress-bar" role="progressbar" ref={ref => this.progressBar = $(ref)} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                    </div>,
+                    <h3><strong>{product.totalUnlocked && product.totalUnlocked > 0 ? Utils.roundWei(product.totalUnlocked) : '0'}</strong> SEED Tokens Unlocked for its Startups</h3>
+                ]}
+                {this.props.parent && product.productPosition !== undefined && <h3>This Startup raised <strong>{product.totalRaised && product.totalRaised > 0 ? Utils.roundWei(product.totalRaised) : '0'}</strong> SEED Tokens Unlocked from this Basket</h3>}
                 {full !== true && !client.configurationManager.hasUnlockedUser() && <div className="investments">
                     <h3>To invest in this Basket you need to <a href="#" onClick={() => this.emit('page/change', CreateConfiguration)}>create a new wallet</a> or <a href="#" onClick={() => this.emit('page/change', ImportConfiguration)}>import an existing one</a></h3>
                 </div>}

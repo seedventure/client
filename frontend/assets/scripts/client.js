@@ -6,7 +6,7 @@ function Client() {
 
     context.start = async function start() {
         delete context.start
-        context.localeManager.init();
+        context.localeManager && context.localeManager.init();
         if (context.collaterateStart && context.collaterateStart.length > 0) {
             for (var i in context.collaterateStart) {
                 var x = context.collaterateStart[i]();
@@ -23,10 +23,10 @@ function Client() {
         context.callback = callback
         context.configurationManager = new ConfigurationManager();
         context.persistenceManager = new PersistenceManager();
-        context.ipfsManager = new IPFSManager();
+        context.documentsUploaderManager = new DocumentsUploaderManager();
         context.blockchainManager = new BlockchainManager();
         context.contractsManager = new ContractsManager();
-        context.localeManager = new LocaleManager();
+        //context.localeManager = new LocaleManager();
         context.userManager = new UserManager();
         setTimeout(context.start);
     };

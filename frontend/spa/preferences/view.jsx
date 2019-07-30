@@ -1,4 +1,7 @@
 var Preferences = React.createClass({
+    requiredModules: [
+        'spa/preferences/documentUploader'
+    ],
     title: 'System Preferences',
     changeFactoryAddress(e) {
         e && e.preventDefault();
@@ -17,21 +20,35 @@ var Preferences = React.createClass({
         }
         this.controller.changeFactoryAddress(factoryAddress);
     },
+    componentDidMount() {
+        this.updateNavLinks();
+    },
+    updateNavLinks() {
+        this.domRoot.children().find('.active').removeClass('active');
+        this.domRoot.children().find('a.nav-link').click(function () {
+            $($(this).parents('.nav-tabs')).children().find('a.nav-link').removeClass('active');
+            $(this).addClass('active');
+        });
+        this.domRoot.children().find('ul.nav-tabs').children('li.nav-item:first-of-type').children('a.nav-link').click();
+    },
     render() {
         return (
             <div className="kt-content kt-grid__item kt-grid__item--fluid">
                 <div className="row">
                     <div className="col-xl-12 mt-5">
                         <ul className="nav nav-tabs nav-tabs-line nav-tabs-bold nav-tabs-line-3x mb-5" role="tablist">
+                            {client.configurationManager.hasUnlockedUser() && <li className="nav-item">
+                                <a className="nav-link" data-toggle="tab" href="#documents" role="tab"><i className="far fa-hdd mr-2"></i>Documents Uploader</a>
+                            </li>}
                             <li className="nav-item">
-                                <a className="nav-link" data-toggle="tab" href="#blockchain" role="tab"><i className="far fa-hdd mr-2"></i>Blockchain</a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" data-toggle="tab" href="#documents" role="tab"><i className="far fa-hdd mr-2"></i>Documents location</a>
+                                <a className="nav-link" data-toggle="tab" href="#blockchain" role="tab"><i className="far fa-ethereum mr-2"></i>Blockchain</a>
                             </li>
                         </ul>
                         <div className="tab-content">
-                            <div className="tab-pane active" id="blockchain" role="tabpanel">
+                            {client.configurationManager.hasUnlockedUser() && <div className="tab-pane" id="documents" role="tabpanel">
+                                <DocumentUploader/>
+                            </div>}
+                            <div className="tab-pane" id="blockchain" role="tabpanel">
                                 <form className="kt-form" action="">
                                     <legend>Blockchain Preferences</legend>
                                     <div className="form-group mb-5">
@@ -40,23 +57,6 @@ var Preferences = React.createClass({
                                         </div>
                                         <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.changeFactoryAddress}>Change Factory Address</button>
                                     </div>
-                                </form>
-                            </div>
-                            <div className="tab-pane" id="documents" role="tabpanel">
-                                <form className="kt-form" action="">
-                                    <legend>Documents Location Preferences</legend>
-                                    <div className="form-group mb-5">
-                                        <select>
-                                            <option value="ipfs">IPFS</option>
-                                            <option value="custom">CUSTOM</option>
-                                        </select>
-                                    </div>
-                                    {false && <div className="form-group mb-5">
-                                        <input className="form-control form-control-last" type="password" placeholder="Type your password" name="password" ref={ref => this.mnemonicPassword = ref} />
-                                    </div>}
-                                    {false && <div className="form-group mb-5">
-                                        <input className="form-control form-control-last" type="password" placeholder="Confirm password" name="password" ref={ref => this.mnemonicRetype = ref} />
-                                    </div>}
                                 </form>
                             </div>
                         </div>

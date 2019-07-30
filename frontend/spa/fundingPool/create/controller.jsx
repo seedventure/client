@@ -5,7 +5,7 @@ var CreateFundingPoolController = function(view) {
     context.urlRegex = new RegExp(/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi);
 
     context.deployBasket = async function deployBasket(data) {
-        context.view.emit('loader/show', '', 'Uploading to IPFS...');
+        context.view.emit('loader/show', '', 'Uploading documents...');
         var documents = data && data.documents;
         if(documents && documents.length > 0) {
             for(var i = 0; i < documents.length; i++) {
@@ -13,8 +13,8 @@ var CreateFundingPoolController = function(view) {
                 if(document.link.indexOf('http') === 0) {
                     continue;
                 }
-                var hash = await client.ipfsManager.uploadFile(document.link);
-                documents[i].link = ecosystemData.ipfsUrlTemplate + hash;
+                var link = await client.documentsUploaderManager.uploadFile(document.link);
+                documents[i].link = link;
             }
         }
         var document = {
@@ -25,18 +25,18 @@ var CreateFundingPoolController = function(view) {
             documents,
             tags: data.tags
         };
-        var hash = await client.ipfsManager.uploadDocument(document);
+        var link = await client.documentsUploaderManager.uploadDocument(document);
         context.view.emit('loader/hide');
         var tx = await client.contractsManager.Factory.deployPanelContracts(
-            ecosystemData.factoryAddress,
+            client.contractsManager.factoryAddress,
             data.name,
             data.symbol,
-            ecosystemData.ipfsUrlTemplate + hash, 
+            link, 
             web3.utils.soliditySha3(JSON.stringify(document)),
             web3.utils.toWei('' + data.seedRate, 'ether'),
             web3.utils.toWei('' + data.exchangeRateOnTop, 'ether'),
-            parseInt(data.totalSupply),
-            parseInt(data.whiteListThreshold)
+            web3.utils.toWei('' + data.totalSupply, 'ether'),
+            web3.utils.toWei('' + data.whiteListThreshold, 'ether')
         );
         tx && setTimeout(() => context.view.emit('page/change', Products, {view : 'mine'}), 700);
     };
@@ -63,7 +63,7 @@ var CreateFundingPoolController = function(view) {
             alert('Your user is not able to do this operation');
             return;
         }
-        context.view.emit('loader/show', '', 'Uploading to IPFS...');
+        context.view.emit('loader/show', '', 'Uploading document...');
         var document = {
             name : data.name,
             description : data.description,
@@ -71,13 +71,13 @@ var CreateFundingPoolController = function(view) {
             image : data.image,
             documents: data.documents
         };
-        var hash = await client.ipfsManager.uploadDocument(document);
+        var link = await client.documentsUploaderManager.uploadDocument(document);
         context.view.emit('loader/hide');
         var tx = await client.contractsManager.FundingPanel.addMemberToSet(
             product.fundingPanelAddress,
             data.walletAddress,
             0,
-            ecosystemData.ipfsUrlTemplate + hash, 
+            link, 
             web3.utils.soliditySha3(JSON.stringify(document)));
         tx && context.view.back();
     };

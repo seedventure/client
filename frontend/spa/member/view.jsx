@@ -32,9 +32,9 @@ var Member = React.createClass({
         e && e.preventDefault();
         var amount = 0;
         try {
-            amount = parseFloat(this.unlockAmount.value);
+            amount = parseFloat(this.cleanNumber(this.unlockAmount));
         } catch(e) {}
-        if(isNaN(amount) || amount < 1) {
+        if(isNaN(amount) || amount <= 0) {
             alert("Unlock amount must be a number greater than 0");
             return;
         }
@@ -45,6 +45,35 @@ var Member = React.createClass({
             return;
         }
         this.edit(e);
+    },
+    cleanNumber(target) {
+        var value = target.value.split(' ').join('').split(Utils.dozensSeparator).join('');
+        if (value.indexOf('.') !== -1) {
+            var s = value.split(Utils.decimalsSeparator);
+            var last = s.pop();
+            value = s.join('') + '.' + last;
+        }
+        return value;
+    },
+    parseNumber(e) {
+        e && e.preventDefault();
+        var _this = this;
+        var target = e.target;
+        this.localeTimeout && clearTimeout(this.localeTimeout);
+        this.localeTimeout = setTimeout(function () {
+            try {
+                var value = _this.cleanNumber(target);
+                value = parseFloat(value);
+                if (isNaN(value)) {
+                    target.value = '';
+                    return;
+                }
+                value = value.toLocaleString(value);
+                target.value = value;
+            } catch (e) {
+                console.error(e);
+            }
+        }, 900);
     },
     render() {
         var product = this.getProduct();
@@ -69,7 +98,7 @@ var Member = React.createClass({
                 </div>
                 <div className="kt-portlet__body">
                     <dl>
-                        {this.props.view === 'mine' && <input type="number" className="form-control" placeholder="Funds to unlock" ref={ref => this.unlockAmount = ref}/>}
+                        {this.props.view === 'mine' && <input type="text" className="form-control" placeholder="Funds to unlock" ref={ref => this.unlockAmount = ref} onChange={this.parseNumber}/>}
                     </dl>
                 </div>
                 {this.props.view === 'mine' && <div className="kt-portlet__foot">

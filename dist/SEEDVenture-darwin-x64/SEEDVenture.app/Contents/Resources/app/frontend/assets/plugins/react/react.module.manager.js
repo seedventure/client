@@ -46,10 +46,14 @@ var ReactModuleManager = function() {
                         try {
                             rendered = this.oldRender.apply(this);
                         } catch(e) {
+                            if(requireCalled === true) {
+                                console.error(e);
+                                return;
+                            }
                             loader = true;
                             requireCalled = false;
                         }
-                    } 
+                    }
                     if(requireCalled === false) {
                         if(this.getCustomLoader) {
                             rendered = this.getCustomLoader();

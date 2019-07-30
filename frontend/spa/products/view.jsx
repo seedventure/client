@@ -101,7 +101,7 @@ var Products = React.createClass({
                                         </div>
                                         <div className="col-xl-4">
                                             {i + 1 < products.length &&
-                                                <Product key={products[i + 1].position + products[i + 2].documentUrl} element={products[i + 1]} view={this.props.view} />
+                                                <Product key={products[i + 1].position + products[i + 1].documentUrl} element={products[i + 1]} view={this.props.view} />
                                             }
                                         </div>
                                         <div className="col-xl-4">

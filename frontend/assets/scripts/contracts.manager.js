@@ -182,8 +182,12 @@ function ContractsManager() {
             return product;
         }
 
-        if(context.productQueue[product.position]) {
+        if (context.productQueue[product.position]) {
             return product;
+        }
+
+        if(context.factoryAddress !== product.factoryAddress) {
+            return;
         }
 
         product.unavailable === true && delete product.lastCheck;
@@ -256,35 +260,21 @@ function ContractsManager() {
 
         call && $.publish('fundingPanel/' + product.position + '/updated', product);
 
-        call = false;
-
         try {
-            await new Promise(function (ok) {
-                var deleteTimeout = setTimeout(function () {
-                    product.unavailable = true;
-                    setTimeout(function () {
-                        context.getFundingPanelData(product);
-                    }, 15000);
-                    ok();
-                }, 5000);
-                $.get({
-                    url: product.documentUrl,
-                    dataType: 'json',
-                    cache: false,
-                    success: data => {
-                        clearTimeout(deleteTimeout);
-                        call = product.unavailable !== undefined && product.unavailable !== null;
-                        delete product.unavailable;
-                        Object.keys(data).map(key => product[key] = data[key]);
-                        ok();
-                    }
-                });
-            });
+            var xmlResponse = await Utils.AJAXRequest(product.documentUrl, 5000);
+            xmlResponse = JSON.parse(xmlResponse);
+            call = product.unavailable !== undefined && product.unavailable !== null;
+            delete product.unavailable;
+            Object.keys(xmlResponse).map(key => product[key] = xmlResponse[key]);
             for (var i in product.members) {
                 await context.getFundingPanelMemberData(product.members[i]);
             }
             call && $.publish('fundingPanel/' + product.position + '/updated', product);
         } catch (e) {
+            product.unavailable = true;
+            setTimeout(function () {
+                context.getFundingPanelData(product);
+            }, 15000);
         }
         delete context.productQueue[product.position];
         return product;
@@ -295,12 +285,12 @@ function ContractsManager() {
             return;
         }
 
-        if(context.productQueue[product.productPosition + '_' + product.position]) {
+        if (context.productQueue[product.productPosition + '_' + product.position]) {
             return product;
         }
 
-        if(product.pendingNotications && (!context.changesWaiter || !context.changesWaiter[product.position])) {
-            setTimeout(function() {
+        if (product.pendingNotications && (!context.changesWaiter || !context.changesWaiter[product.position])) {
+            setTimeout(function () {
                 context.manageFundingPanelChanged(product);
             });
             return product;
@@ -333,48 +323,32 @@ function ContractsManager() {
         product.documentUrl = result['2'];
         product.documentHash = result['3'];
 
-        contract = new web3.eth.Contract(contracts.Token);
-        data = contract.methods.balanceOf(product.address).encodeABI();
-        result = await client.blockchainManager.call(context.SEEDTokenAddress, data);
-        result = web3.eth.abi.decodeParameters(['uint256'], result);
-        product.totalRaised = result['0'];
-
         call && $.publish('fundingPanel/' + product.productPosition + '/member/' + product.position + '/updated', product);
 
-        call = false;
-        await new Promise(function (ok) {
-            var deleteTimeout = setTimeout(function () {
-                product.unavailable = true;
-                setTimeout(function () {
-                    context.getFundingPanelMemberData(product);
-                }, 15000);
-                ok();
-            }, 5000);
-            $.get({
-                url: product.documentUrl,
-                dataType: 'json',
-                cache: false,
-                success: data => {
-                    clearTimeout(deleteTimeout);
-                    call = product.unavailable !== undefined && product.unavailable !== null;
-                    delete product.unavailable;
-                    Object.keys(data).map(key => product[key] = data[key]);
-                    ok();
-                }
-            });
-        });
-        call && $.publish('fundingPanel/' + product.productPosition + '/member/' + product.position + '/updated', product);
+        try {
+            var xmlResponse = await Utils.AJAXRequest(product.documentUrl, 5000);
+            xmlResponse = JSON.parse(xmlResponse);
+            call = product.unavailable !== undefined && product.unavailable !== null;
+            delete product.unavailable;
+            Object.keys(xmlResponse).map(key => product[key] = xmlResponse[key]);
+            call && $.publish('fundingPanel/' + product.productPosition + '/member/' + product.position + '/updated', product);
+        } catch (e) {
+            product.unavailable = true;
+            setTimeout(function () {
+                context.getFundingPanelMemberData(product);
+            }, 15000);
+        }
         delete context.productQueue[product.productPosition + '_' + product.position];
         return product;
     };
 
     context.manageFundingPanelChanged = function manageFundingPanelChanged(element) {
-        if(!client.configurationManager.hasUnlockedUser()) {
+        if (!client.configurationManager.hasUnlockedUser()) {
             return;
         }
         var product = element.element || element;
         !context.changesWaiter && (context.changesWaiter = {});
-        if(context.changesWaiter[product.position]) {
+        if (context.changesWaiter[product.position]) {
             return;
         }
         context.changesWaiter[product.position] = true;
@@ -382,13 +356,13 @@ function ContractsManager() {
         product.pendingNotications = true;
         product.unavailable = true;
         try {
-            for(var i in product.members) {
+            for (var i in product.members) {
                 product.members[i].unavailable = true;
             }
-        } catch(e) {
+        } catch (e) {
         }
         $.publish('fundingPanel/' + product.position + '/updated', product);
-        var subscripted = function(event, product) {
+        var subscripted = function (event, product) {
             $.unsubscribe('fundingPanel/' + product.position + '/updated', subscripted);
             delete product.pendingNotications;
             context.notifyPotentialFundingPanelChanges(product, copy);
@@ -399,7 +373,7 @@ function ContractsManager() {
     };
 
     context.notifyPotentialFundingPanelChanges = function notifyPotentialFundingPanelChanges(product, copy) {
-        console.log({product, copy});
+        console.log({ product, copy });
     };
 
     context['0xb9f320ca5d6edcd5b5ec403b3a0970d8ff03a3ab365497b976507b20e27c7067'] = function memberDisabled(event, element) {
@@ -428,10 +402,38 @@ function ContractsManager() {
         }
         var product = web3.eth.abi.decodeParameters(['address'], event.topics[2])[0].toLowerCase();
         product = Enumerable.From(context.getArray()).Where(it => it.fundingPanelAddress.toLowerCase() === product).FirstOrDefault();
-        if (!product) {
+        if (product) {
+            await context.fundingPanelFunded(event, element, product);
             return;
         }
+        product = web3.eth.abi.decodeParameters(['address'], event.topics[1])[0].toLowerCase();
+        product = Enumerable.From(context.getArray()).Where(it => it.fundingPanelAddress.toLowerCase() === product).FirstOrDefault();
+        if(!product) {
+            return;
+        }
+        var member = web3.eth.abi.decodeParameters(['address'], event.topics[2])[0].toLowerCase();
+        try {
+            for(var i in product.members) {
+                var m = product.members[i];
+                if(!m.disabled && m.address.toLowerCase() === member.toLowerCase()) {
+                    await context.memberFunded(event, element, product, m);
+                    return;
+                }
+            }
+        } catch(e) {
+        }
+    };
 
+    context.memberFunded = async function memberFunded(event, element, product, member) {
+        !member.totalRaised && (member.totalRaised = 0);
+        !product.totalUnlocked && (product.totalUnlocked = 0);
+        var amount = parseInt(web3.eth.abi.decodeParameters(['uint256'], event.data)[0]);
+        member.totalRaised += amount;
+        product.totalUnlocked += amount;
+        $.publish('fundingPanel/' + product.position + '/updated', [product, member]);
+    };
+
+    context.fundingPanelFunded = async function fundingPanelFunded(event, element, product) {
         !product.totalRaised && (product.totalRaised = 0);
 
         var investor = web3.eth.abi.decodeParameters(['address'], event.topics[1])[0].toLowerCase();
@@ -447,7 +449,7 @@ function ContractsManager() {
             }
         } catch (e) {
         }
-    };
+    }
 
     context['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'] = async function allowanceIncreased(event, element) {
     };
@@ -461,6 +463,7 @@ function ContractsManager() {
             return;
         }
         var element = {
+            factoryAddress : context.factoryAddress,
             owner: data['0'],
             adminsToolsAddress: data['1'],
             tokenAddress: data['2'],
@@ -488,10 +491,10 @@ function ContractsManager() {
         var data = undefined;
         try {
             data = await context.Factory.getFactoryContext(factoryAddress);
-        } catch(e) {
+        } catch (e) {
             data = undefined;
         }
-        if(!data) {
+        if (!data) {
             return;
         }
         client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress, data[0]);
@@ -505,15 +508,11 @@ function ContractsManager() {
     };
 
     context.checkBaskets = async function checkBaskets() {
-        if(!client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress)) {
-            await context.changeFactoryAddress(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress), true);
+        if (!client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress)) {
+            await context.changeFactoryAddress(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress));
             return;
         }
-        var contract = new web3.eth.Contract(contracts.Factory);
-        var data = contract.methods.getTotalFPContracts().encodeABI();
-        var result = await client.blockchainManager.call(context.factoryAddress, data);
-        result = web3.eth.abi.decodeParameters(['uint256'], result);
-        result = parseInt(result['0']);
+        var result = parseInt(await context.Factory.getTotalFPContracts(context.factoryAddress));
         if (result === 0) {
             return;
         }
@@ -525,10 +524,9 @@ function ContractsManager() {
         }
         for (var i in missing) {
             var index = missing[i];
-            data = contract.methods.getContractsByIndex(index).encodeABI();
-            result = await client.blockchainManager.call(context.factoryAddress, data);
-            result = web3.eth.abi.decodeParameters(['address', 'address', 'address', 'address'], result);
+            result = await context.Factory.getContractsByIndex(context.factoryAddress, index);
             var element = {
+                factoryAddress : context.factoryAddress,
                 owner: result['0'],
                 adminsToolsAddress: result['1'],
                 tokenAddress: result['2'],
@@ -548,7 +546,7 @@ function ContractsManager() {
                     elements.push(element);
                 }
             }
-        } catch (e){
+        } catch (e) {
         }
         $.publish('list/updated');
     };

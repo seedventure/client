@@ -8,7 +8,9 @@ function PersistenceManager() {
     'list',
     'seedTokenAddress',
     'dexAddress',
-    'lastCheckedBlockNumber'
+    'lastCheckedBlockNumber',
+    'documentsUploaderHost',
+    'documentsUploaderProviderSet'
   ];
   Object.keys(ecosystemData).map(function(key) {
       context.PERSISTENCE_PROPERTIES.push(key);

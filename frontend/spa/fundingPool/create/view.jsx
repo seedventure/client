@@ -1,4 +1,7 @@
 var CreateFundingPool = React.createClass({
+    requiredModules: [
+        'spa/preferences/documentUploader'
+    ],
     requiredScripts: [
         "assets/plugins/summernote/summernote.min.js",
         "assets/plugins/summernote/summernote.css"
@@ -249,6 +252,7 @@ var CreateFundingPool = React.createClass({
         }, 450);
     },
     render() {
+        var _this = this;
         return (
             <form className="kt-form" action="#">
                 <div className="row">
@@ -419,6 +423,14 @@ var CreateFundingPool = React.createClass({
                 </div>
                 <br />
                 <br />
+                {client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.documentsUploaderProviderSet) !== true && <Modal
+                  title="Choose the way tou will upload documents"
+                  readonly={true}
+                  backdrop="static"
+                  keyboard="false"
+                  ref={ref => (this.documentsUploaderModal = ref) && ref.show()}>
+                    <DocumentUploader onClick={() => _this.documentsUploaderModal.hide()}/>
+                </Modal>}
             </form>
         );
     }

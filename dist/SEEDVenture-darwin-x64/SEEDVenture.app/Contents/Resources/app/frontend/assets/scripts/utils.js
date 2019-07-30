@@ -5,13 +5,53 @@ var Utils = function () {
   pageTitlePreamble = 'SEEDVenture - Platform';
 
   copyToClipboard = function copyToClipboard(str) {
-      const el = document.createElement('textarea');
-      el.value = str === undefined || str === null ? '' : str.toString && str.toString() || ('' + str);
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
+    const el = document.createElement('textarea');
+    el.value = str === undefined || str === null ? '' : str.toString && str.toString() || ('' + str);
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
   };
+
+  var AJAXRequest = function (link, timeout, toU) {
+    var toUpload = toU !== undefined && toU !== null && typeof toU !== 'string' ? JSON.stringify(toU) : toU;
+    var xmlhttp;
+    if (window.XMLHttpRequest) {
+      xmlhttp = new XMLHttpRequest();
+    } else {
+      xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');
+    }
+    return new Promise(function (ok, ko) {
+      var going = true;
+      xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+          if (going) {
+            going = false;
+            ok(xmlhttp.responseText);
+          }
+          try {
+            xmlhttp.abort();
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+      xmlhttp.open(toUpload ? 'POST' : 'GET', link + (link.indexOf('?') === -1 ? '?' : '&') + ('cached_' + new Date().getTime()) + '=' + (new Date().getTime()));
+      toUpload ? xmlhttp.send(toUpload) : xmlhttp.send();
+      (timeout !== undefined && timeout !== null) && setTimeout(function () {
+        if (!going) {
+          return;
+        }
+        going = false;
+        try {
+          xmlhttp.abort();
+        } catch (e) {
+          console.error(e);
+        }
+        ko();
+      }, timeout);
+    });
+  }
 
   getJQueryElement = function (element, defaultElementName) {
     if (defaultElementName === undefined || defaultElementName === null
@@ -78,7 +118,7 @@ var Utils = function () {
   }
 
   numberToString = function numberToString(num) {
-    if(num === undefined || num === null) {
+    if (num === undefined || num === null) {
       num = 0;
     }
     let numStr = String(num);
@@ -111,21 +151,21 @@ var Utils = function () {
     (typeof wei !== 'string') && (wei = Utils.numberToString(wei));
     var str = web3.utils.fromWei(wei, 'ether');
     var fixed = 2;
-    if(str.indexOf(Utils.decimalsSeparator) !== -1) {
+    if (str.indexOf(Utils.decimalsSeparator) !== -1) {
       var n = str.split(Utils.decimalsSeparator)[1]
       fixed = parseInt(n) === 0 ? 2 : n.length;
     }
     str = parseFloat(str).toFixed(fixed);
     fixed = 2;
-    if(str.indexOf(Utils.decimalsSeparator) !== -1) {
+    if (str.indexOf(Utils.decimalsSeparator) !== -1) {
       var n = str.split(Utils.decimalsSeparator)[1]
       fixed = parseInt(n) === 0 ? 2 : n.length;
     }
     var s = parseFloat(parseFloat(str).toFixed(fixed)).toLocaleString();
-    if(s.indexOf(Utils.decimalsSeparator) === -1) {
+    if (s.indexOf(Utils.decimalsSeparator) === -1) {
       s += (Utils.decimalsSeparator + '00');
     }
-    if(s.indexOf(Utils.decimalsSeparator) < s.length - 3) {
+    if (s.indexOf(Utils.decimalsSeparator) < s.length - 3) {
       s = s.split(Utils.decimalsSeparator)[0] + Utils.decimalsSeparator + s.split(Utils.decimalsSeparator)[1].substring(0, 2);
     }
     return s;
@@ -169,13 +209,13 @@ var Utils = function () {
 
   var toTitle = function toTitle(name) {
     var title = '';
-    for(var i = 0; i < name.length; i++) {
-        var character = name.charAt(i);
-        if (!isNaN(character * 1) || character === character.toUpperCase()) {
-            title += (' ' + character.toUpperCase());
-        } else {
-            title += (title.length === 0 ? character.toUpperCase() : character);
-        }
+    for (var i = 0; i < name.length; i++) {
+      var character = name.charAt(i);
+      if (!isNaN(character * 1) || character === character.toUpperCase()) {
+        title += (' ' + character.toUpperCase());
+      } else {
+        title += (title.length === 0 ? character.toUpperCase() : character);
+      }
     }
     return title;
   }
@@ -193,8 +233,9 @@ var Utils = function () {
     toEthereumChecksumAddress,
     numberToString,
     copyToClipboard,
-    dozensSeparator : (1000.02).toLocaleString().charAt(1),
-    decimalsSeparator : (1000.02).toLocaleString().charAt(5),
-    toTitle
+    dozensSeparator: (1000.02).toLocaleString().charAt(1),
+    decimalsSeparator: (1000.02).toLocaleString().charAt(5),
+    toTitle,
+    AJAXRequest
   };
 }();

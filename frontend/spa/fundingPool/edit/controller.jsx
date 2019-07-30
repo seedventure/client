@@ -15,7 +15,7 @@ var EditFundingPoolController = function (view) {
     }
 
     context.saveDoc = async function saveDoc(data, isStartup) {
-        context.view.emit('loader/show', '', 'Uploading to IPFS...');
+        context.view.emit('loader/show', '', 'Uploading document...');
         var documents = data && data.documents;
         if(documents && documents.length > 0) {
             for(var i = 0; i < documents.length; i++) {
@@ -23,8 +23,8 @@ var EditFundingPoolController = function (view) {
                 if(document.link.indexOf('http') === 0) {
                     continue;
                 }
-                var hash = await client.ipfsManager.uploadFile(document.link);
-                documents[i].link = ecosystemData.ipfsUrlTemplate + hash;
+                var link = await client.documentsUploaderManager.uploadFile(document.link);
+                documents[i].link = link;
             }
         }
         var document = {
@@ -35,8 +35,7 @@ var EditFundingPoolController = function (view) {
             documents,
             tags: data.tags
         };
-        var hash = await client.ipfsManager.uploadDocument(document);
-        var url = ecosystemData.ipfsUrlTemplate + hash;
+        var url = await client.documentsUploaderManager.uploadDocument(document);
         var contract = new web3.eth.Contract(contracts.FundingPanel);
         var method = contract.methods.setOwnerData(
             url,

@@ -1,6 +1,7 @@
 var EditFundingPool = React.createClass({
     requiredModules: [
-        'spa/members'
+        'spa/members',
+        'spa/preferences/documentUploader'
     ],
     requiredScripts: [
         "assets/plugins/summernote/summernote.min.js",
@@ -357,6 +358,7 @@ var EditFundingPool = React.createClass({
         this.controller.setSingleWhitelist(address, whiteListAmount);
     },
     render() {
+        var _this = this;
         var product = this.getProduct();
         var description = '';
         try {
@@ -640,6 +642,14 @@ var EditFundingPool = React.createClass({
                         </div>
                     </div>
                 </div>
+                {client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.documentsUploaderProviderSet) !== true && <Modal
+                  title="Choose the way tou will upload documents"
+                  readonly={true}
+                  backdrop="static"
+                  keyboard="false"
+                  ref={ref => (this.documentsUploaderModal = ref) && ref.show()}>
+                    <DocumentUploader onClick={() => _this.documentsUploaderModal.hide()}/>
+                </Modal>}
             </div>
         );
     }

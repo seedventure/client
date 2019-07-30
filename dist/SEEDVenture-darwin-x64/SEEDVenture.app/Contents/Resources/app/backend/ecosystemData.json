@@ -1,14 +1,14 @@
 {
-    "factoryAddress": "0x2ba5f76c44cfadca6962e5da2323293013301e80",
+    "factoryAddress": "0xd7f7c1206cf5dd94d6a2565dc1d078cdeaefb8c8",
     "web3Provider": "assets/scripts/blockchain.provider.web3.js",
     "etherscanURL": "https://ropsten.etherscan.io/",
     "web3URL": "wss://testnet.seedventure.io",
-    "ipfsProvider": "assets/scripts/ipfs.provider.http.js",
+    "documentsUploaderProvider": "assets/scripts/documents.uploader.provider.ipfs.http.js",
     "ipfsHost": "ipfs.infura.io",
     "ipfsPort": "5001",
     "ipfsProtocol": "https",
     "ipfsUrlTemplate": "https://ipfs.io/ipfs/",
     "gasPrice": 30,
     "gasLimit": 8000000,
-    "distDate": 1564413644147
+    "distDate": 1564504693135
 }
