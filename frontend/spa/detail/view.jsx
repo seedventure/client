@@ -12,31 +12,24 @@ var Detail = React.createClass({
         this.emit('page/change', parent ? Detail : Products, { element: parent, parent: null, fromBack: true, view: this.props.view }, () => parent && _this.setProduct(parent));
     },
     getProduct() {
-        var product = this.state && this.state.product ? this.state.product : this.props.element;
-        if(!this.props.parent) {
-            product.totalRaised = 0;
-            try {
-                Object.keys(product.investors).map(function(address) {
-                    product.totalRaised += product.investors[address];
-                });
-            } catch(e) {
-            }
-        }
-        return product;
+        return this.state && this.state.product ? this.state.product : this.props.element;
     },
     getDefaultSubscriptions() {
         var product = this.getProduct();
         var position = product.position;
         var subscriptions = {};
         subscriptions['product/set'] = this.setProduct;
-        subscriptions['fundingPanel/' + position + '/updated'] = (product, member) => this.setState({ product: member || product }, this.controller.updateInvestments);
+        subscriptions['fundingPanel/' + position + '/updated'] = (product, member) => this.setProduct((this.props.parent && member) || product, this.controller.updateInvestments);
         return subscriptions;
     },
-    setProduct(product) {
+    setProduct(product, callback) {
         var _this = this;
         this.setState({ product, documents: product.documents }, function () {
             _this.forceUpdate();
-            setTimeout(() => _this.setState({ product }, () => _this.updateGui()));
+            setTimeout(() => _this.setState({ product, documents: product.documents }, () => {
+                _this.updateGui();
+                callback && callback();
+            }));
         });
     },
     updateNavLinks() {
@@ -56,9 +49,6 @@ var Detail = React.createClass({
         this.updateProgressBar();
     },
     updateProgressBar() {
-        if (this.props.parent || !this.progressBar) {
-            return;
-        }
         var product = this.getProduct();
         var totalSupply = parseInt(Utils.numberToString(product.totalSupply));
         isNaN(totalSupply) && (totalSupply = 0);
@@ -71,45 +61,13 @@ var Detail = React.createClass({
     },
     componentDidMount() {
         this.updateGui();
-        var _this = this;
         this.setState({ documents: this.getProduct().documents }, this.controller.updateInvestments);
     },
-    cleanNumber(target) {
-        var value = target.value.split(' ').join('').split(Utils.dozensSeparator).join('');
-        if (value.indexOf('.') !== -1) {
-            var s = value.split(Utils.decimalsSeparator);
-            var last = s.pop();
-            value = s.join('') + '.' + last;
-        }
-        return value;
-    },
-    parseNumber(e, callback) {
-        e && e.preventDefault();
-        var _this = this;
-        var target = e.target;
-        this.localeTimeout && clearTimeout(this.localeTimeout);
-        this.localeTimeout = setTimeout(function () {
-            try {
-                var value = _this.cleanNumber(target);
-                value = parseFloat(value);
-                if (isNaN(value)) {
-                    target.value = '';
-                    callback && callback();
-                    return;
-                }
-                value = value.toLocaleString(value);
-                target.value = value;
-                callback && callback();
-            } catch (e) {
-                console.error(e);
-            }
-        }, 900);
-    },
     onInvestChange(e) {
-        this.parseNumber(e, this.investChanged);
+        Utils.parseNumber(e, this.investChanged);
     },
     investChanged() {
-        var investment = parseFloat(this.cleanNumber(this.investment));
+        var investment = Utils.cleanNumber(this.investment);
         if(isNaN(investment)) {
             this.forYou.innerHTML = '0.00';
             return;
@@ -123,7 +81,7 @@ var Detail = React.createClass({
         var investment = 0;
         var investmentFloat;
         try {
-            investment = this.cleanNumber(this.investment);
+            investment = Utils.numberToString(Utils.cleanNumber(this.investment));
             investmentFloat = parseFloat(investment);
         } catch (e) {
         }
@@ -145,17 +103,17 @@ var Detail = React.createClass({
         p.innerText.split(' ').join('').trim() === '' && (description = undefined);
         var full = false;
         try {
-            full = !this.props.parent && product.totalRaised >= product.totalSupply;
+            full = product.totalRaised >= product.totalSupply;
         } catch (e) {
         }
         return (
             <div className="kt-content kt-grid__item kt-grid__item--fluid">
-                {full === true && <h2>This Basked has reached its goal!</h2>}
-                {!this.props.parent && [
+                {full === true && <h2>{"This " + (this.props.parent ? "Startup" : "Basket") + " has reached its goal!"}</h2>}
+                {(!this.props.parent || product.totalSupply) && [
                     <div className="progress">
                         <div className="progress-bar" role="progressbar" ref={ref => this.progressBar = $(ref)} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
                     </div>,
-                    <h3><strong>{product.totalUnlocked && product.totalUnlocked > 0 ? Utils.roundWei(product.totalUnlocked) : '0'}</strong> SEED Tokens Unlocked for its Startups</h3>
+                    <h3><strong>{product.totalUnlocked && product.totalUnlocked > 0 ? Utils.roundWei(product.totalUnlocked) : '0'}</strong>{" SEED Tokens " + (this.props.parent ? "Raised by this Startup" : "Unlocked for its Startups")}</h3>
                 ]}
                 {this.props.parent && product.productPosition !== undefined && <h3>This Startup raised <strong>{product.totalRaised && product.totalRaised > 0 ? Utils.roundWei(product.totalRaised) : '0'}</strong> SEED Tokens Unlocked from this Basket</h3>}
                 {full !== true && !client.configurationManager.hasUnlockedUser() && <div className="investments">
@@ -300,6 +258,16 @@ var Detail = React.createClass({
                                             {product.image && <img width="100" height="100" ref={ref => this.image = $(ref)} src={product.image ? ("data:image/png;base64, " + product.image) : ''} />}
                                         </div>
                                     </div>
+                                    {this.props.parent && product.totalSupply && <br />}
+                                    {this.props.parent && product.totalSupply && <div className="row">
+                                        <div className="col-md-4">
+                                            <h4>Total Supply</h4>
+                                            <p className="small">The amount of SEED tokens this startup needs to raise</p>
+                                        </div>
+                                        <div className="col-md-8">
+                                            <h2>{Utils.roundWei(product.totalSupply)} SEED</h2>
+                                        </div>
+                                    </div>}
                                     {!this.props.parent && <br />}
                                     {!this.props.parent && <div className="row">
                                         <div className="col-md-2">

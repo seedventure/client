@@ -64,12 +64,24 @@ var CreateFundingPoolController = function(view) {
             return;
         }
         context.view.emit('loader/show', '', 'Uploading document...');
+        var documents = data && data.documents;
+        if(documents && documents.length > 0) {
+            for(var i = 0; i < documents.length; i++) {
+                var document = documents[i];
+                if(document.link.indexOf('http') === 0) {
+                    continue;
+                }
+                var link = await client.documentsUploaderManager.uploadFile(document.link);
+                documents[i].link = link;
+            }
+        }
         var document = {
             name : data.name,
             description : data.description,
             url : data.url,
             image : data.image,
-            documents: data.documents
+            documents,
+            totalSupply : Utils.toWei(data.totalSupply)
         };
         var link = await client.documentsUploaderManager.uploadDocument(document);
         context.view.emit('loader/hide');

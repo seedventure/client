@@ -9,15 +9,7 @@ var Members = React.createClass({
         return subscriptions;
     },
     getProduct() {
-        var product = this.state && this.state.product ? this.state.product : this.props.element;
-        product.totalRaised = 0;
-        try {
-            Object.keys(product.investors).map(function(address) {
-                product.totalRaised += product.investors[address];
-            });
-        } catch(e) {
-        }
-        return product;
+        return this.state && this.state.product ? this.state.product : this.props.element;
     },
     getMembers() {
         var productMembers = this.getProduct().members || {};
@@ -25,7 +17,7 @@ var Members = React.createClass({
         for(var i in productMembers) {
             members.push(productMembers[i]);
         }
-        var members = Enumerable.From(members).Distinct(it => it.position);
+        members = Enumerable.From(members).Distinct(it => it.position);
         if(this.state && this.state.search) {
             var search = this.state.search.toLowerCase();
             members = members.Where(it => it.name.toLowerCase().indexOf(search) === 0);

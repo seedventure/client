@@ -58,7 +58,7 @@ var MemberController = function (view) {
             alert('Your user is not able to perform this operation');
             return;
         }
-        var seedToUnlock = web3.utils.toWei(amount + '', 'ether');
+        var seedToUnlock = web3.utils.toWei(Utils.numberToString(amount), 'ether');
         var seed = await client.contractsManager.seedOf(product.fundingPanelAddress);
 
         if(parseInt(seed + '') < parseInt(seedToUnlock + '')) {

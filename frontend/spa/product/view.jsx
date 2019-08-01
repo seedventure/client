@@ -19,15 +19,7 @@ var Product = React.createClass({
         return subscriptions;
     },
     getProduct() {
-        var product = this.state && this.state.product ? this.state.product : this.props.element;
-        product.totalRaised = 0;
-        try {
-            Object.keys(product.investors).map(function(address) {
-                product.totalRaised += product.investors[address];
-            });
-        } catch(e) {
-        }
-        return product;
+        return this.state && this.state.product ? this.state.product : this.props.element;
     },
     componentDidMount() {
         this.tryUpdateProduct();

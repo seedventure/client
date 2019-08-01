@@ -396,6 +396,10 @@ function ContractsManager() {
         context.manageFundingPanelChanged(element);
     };
 
+    context['0x6c0400aaf859104057a4afd47301bdc6ac1829e4fd0b02292b6287ea761862e7'] = function totalSupplyChanged(event, element) {
+        context.manageFundingPanelChanged(element);
+    };
+
     context['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] = async function erc20Transfer(event, element) {
         if (element.type !== 'SEEDToken') {
             return;

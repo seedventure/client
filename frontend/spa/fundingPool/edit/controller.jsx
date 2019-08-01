@@ -35,6 +35,7 @@ var EditFundingPoolController = function (view) {
             documents,
             tags: data.tags
         };
+        isStartup && (document.totalSupply = data.totalSupply);
         var url = await client.documentsUploaderManager.uploadDocument(document);
         var contract = new web3.eth.Contract(contracts.FundingPanel);
         var method = contract.methods.setOwnerData(

@@ -17,15 +17,7 @@ var EditFundingPool = React.createClass({
         this.emit('page/change', parent ? EditFundingPool : Products, { element: parent, parent: null, fromBack: true, view: this.props.view }, () => parent && _this.setProduct(parent));
     },
     getProduct() {
-        var product = this.state && this.state.product ? this.state.product : this.props.element;
-        product.totalRaised = 0;
-        try {
-            Object.keys(product.investors).map(function (address) {
-                product.totalRaised += product.investors[address];
-            });
-        } catch (e) {
-        }
-        return product;
+        return this.state && this.state.product ? this.state.product : this.props.element;
     },
     getDefaultSubscriptions() {
         var position = this.getProduct().position;
@@ -34,18 +26,24 @@ var EditFundingPool = React.createClass({
         subscriptions['fundingPanel/' + position + '/updated'] = element => {
             var oldMembers = this.getProduct().members;
             var newMembers = element.members;
-            if(!oldMembers || !newMembers || JSON.stringify(oldMembers) !== JSON.stringify(newMembers)) {
+            if (!oldMembers || !newMembers || JSON.stringify(oldMembers) !== JSON.stringify(newMembers)) {
                 return;
             }
-            this.setState({product: element, documents: element.documents});
+            this.setState({ product: element, documents: this.copyDocuments(element.documents) });
         };
         return subscriptions;
     },
+    copyDocuments(documents) {
+        if (!documents) {
+            return [];
+        }
+        return JSON.parse(JSON.stringify(documents));
+    },
     setProduct(product) {
         var _this = this;
-        this.setState({ product, documents: product.documents }, function () {
+        this.setState({ product, documents: this.copyDocuments(product.documents) }, function () {
             _this.forceUpdate();
-            setTimeout(() => _this.setState({ product }, () => _this.updateGui()));
+            setTimeout(() => _this.setState({ product, documents: this.copyDocuments(product.documents) }, () => _this.updateGui()));
         });
     },
     loadImage(e) {
@@ -103,6 +101,12 @@ var EditFundingPool = React.createClass({
         } catch (error) {
         }
 
+        var totalSupply = 0;
+        try {
+            totalSupply = Utils.toWei(this.startupTotalSupply);
+        } catch (error) {
+        }
+
         var tags = [];
         try {
             var tgs = this.tags.value.split(' ');
@@ -121,7 +125,8 @@ var EditFundingPool = React.createClass({
             url,
             image,
             tags,
-            documents: (this.state && this.state.documents) || []
+            documents: (this.state && this.state.documents) || [],
+            totalSupply
         };
         var thisProduct = this.getProduct();
         var oldProduct = {
@@ -129,7 +134,8 @@ var EditFundingPool = React.createClass({
             description: thisProduct.description,
             url: thisProduct.url,
             tags: thisProduct.tags,
-            documents: thisProduct.documents
+            documents: thisProduct.documents,
+            totalSupply : thisProduct.totalSupply
         }
         try {
             oldProduct.image = thisProduct.image.split('data:image/png;base64, ').join('');
@@ -144,7 +150,7 @@ var EditFundingPool = React.createClass({
         e && e.preventDefault();
         var seedRate = 0;
         try {
-            seedRate = web3.utils.toWei(this.cleanNumber(this.seedRate));
+            seedRate = parseInt(web3.utils.toWei(Utils.numberToString(this.seedRate.value), 'ether'));
         } catch (error) {
         }
         if (isNaN(seedRate) || seedRate < 0) {
@@ -154,29 +160,29 @@ var EditFundingPool = React.createClass({
         if (this.getProduct().seedRate === seedRate) {
             return;
         }
-        this.controller.updateSeedRate(seedRate);
+        this.controller.updateSeedRate(Utils.numberToString(seedRate));
     },
     updateExchangeRate(e) {
         e && e.preventDefault();
         var exchangeRateOnTop = 0;
         try {
-            exchangeRateOnTop = web3.utils.toWei(this.cleanNumber(this.exchangeRateOnTop));
+            exchangeRateOnTop = parseInt(web3.utils.toWei(Utils.numberToString(this.exchangeRateOnTop.value), 'ether'));
         } catch (error) {
         }
         if (isNaN(exchangeRateOnTop) || exchangeRateOnTop < 0) {
-            alert('Exchange Rate is a mandatory positive number or zero');
+            alert('Exchange Rate on Top is a mandatory positive number or zero');
             return;
         }
         if (this.getProduct().exchangeRateOnTop === exchangeRateOnTop) {
             return;
         }
-        this.controller.updateExchangeRate(exchangeRateOnTop);
+        this.controller.updateExchangeRate(Utils.numberToString(exchangeRateOnTop));
     },
     updateWhiteListThreshold(e) {
         e && e.preventDefault();
         var whiteListThreshold = 0;
         try {
-            whiteListThreshold = web3.utils.toWei(this.cleanNumber(this.whiteListThreshold));
+            whiteListThreshold = parseInt(web3.utils.toWei(Utils.numberToString(this.whiteListThreshold.value), 'ether'));
         } catch (error) {
         }
         if (isNaN(whiteListThreshold) || whiteListThreshold < 0) {
@@ -186,13 +192,13 @@ var EditFundingPool = React.createClass({
         if (this.getProduct().whiteListThreshold === whiteListThreshold) {
             return;
         }
-        this.controller.updateWhiteListThreshold(whiteListThreshold);
+        this.controller.updateWhiteListThreshold(Utils.numberToString(whiteListThreshold));
     },
     updateTotalSupply(e) {
         e && e.preventDefault();
         var totalSupply = 0;
         try {
-            totalSupply = parseInt(this.cleanNumber(this.totalSupply));
+            totalSupply = parseInt(web3.utils.toWei(Utils.numberToString(this.totalSupply.value), 'ether'));
         } catch (error) {
         }
         if (isNaN(totalSupply) || totalSupply < 0) {
@@ -202,7 +208,7 @@ var EditFundingPool = React.createClass({
         if (this.getProduct().totalSupply === totalSupply) {
             return;
         }
-        this.controller.updateTotalSupply(totalSupply);
+        this.controller.updateTotalSupply(Utils.numberToString(totalSupply));
     },
     updateNavLinks() {
         this.domRoot.children().find('.active').removeClass('active');
@@ -229,14 +235,14 @@ var EditFundingPool = React.createClass({
         isNaN(totalSupply) && (totalSupply = 0);
         var totalRaised = parseInt(Utils.numberToString(product.totalRaised));
         isNaN(totalRaised) && (totalRaised = 0);
-        var percentage = parseFloat(((totalRaised / totalSupply) * 100).toFixed(2));
+        var percentage = parseFloat(parseFloat(((totalRaised / totalSupply) * 100).toFixed(2))).toLocaleString();
         totalRaised = Utils.roundWei(totalRaised);
         totalSupply = Utils.roundWei(totalSupply);
         this.progressBar.attr('aria-valuenow', percentage).css('width', percentage + '%').css('color', percentage > 6 ? "white" : "black").html(totalRaised + ' of ' + totalSupply + ' SEEDs raised');
     },
     componentDidMount() {
         this.updateGui();
-        this.setState({ documents: this.getProduct().documents });
+        this.setState({ documents: this.copyDocuments(this.getProduct().documents) });
     },
     walletRef(ref) {
         (this.wallet = ref) && $(this.wallet).focus((e) => $(e.target).select());
@@ -310,35 +316,6 @@ var EditFundingPool = React.createClass({
             _this.documentLink.value = doc.link;
         });
     },
-    cleanNumber(target) {
-        var value = target.value.split(' ').join('').split(Utils.dozensSeparator).join('');
-        if (value.indexOf('.') !== -1) {
-            var s = value.split(Utils.decimalsSeparator);
-            var last = s.pop();
-            value = s.join('') + '.' + last;
-        }
-        return value;
-    },
-    parseNumber(e) {
-        e && e.preventDefault();
-        var _this = this;
-        var target = e.target;
-        this.localeTimeout && clearTimeout(this.localeTimeout);
-        this.localeTimeout = setTimeout(function () {
-            try {
-                var value = _this.cleanNumber(target);
-                value = parseFloat(value);
-                if (isNaN(value)) {
-                    target.value = '';
-                    return;
-                }
-                value = value.toLocaleString(value);
-                target.value = value;
-            } catch (e) {
-                console.error(e);
-            }
-        }, 900);
-    },
     setSingleWhitelist(e) {
         e && e.preventDefault();
         var address = this.whiteListWallet.value.split(' ').join('');
@@ -348,7 +325,7 @@ var EditFundingPool = React.createClass({
         }
         var whiteListAmount = 0;
         try {
-            whiteListAmount = parseInt(web3.utils.toWei(this.cleanNumber(this.whiteListAmount)));
+            whiteListAmount = parseInt(web3.utils.toWei(this.whiteListAmount.value));
         } catch (error) {
         }
         if (isNaN(whiteListAmount) || whiteListAmount < 0) {
@@ -482,6 +459,16 @@ var EditFundingPool = React.createClass({
                                             <a href="javascript:;" onClick={this.deleteImage}><i className="fas fa-remove"></i></a>
                                         </div>
                                     </div>
+                                    {this.props.parent && <br />}
+                                    {this.props.parent && <div className="row">
+                                        <div className="col-md-4">
+                                            <h4>Total Supply</h4>
+                                            <p className="small">The amount of SEED tokens this Startup needs to raise</p>
+                                        </div>
+                                        <div className="col-md-8 form-group">
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.startupTotalSupply = ref) && (this.startupTotalSupply.value = Utils.roundWei(product.totalSupply))} onChange={Utils.parseNumber} />
+                                        </div>
+                                    </div>}
                                     {!this.props.parent && <br />}
                                     {!this.props.parent && <div className="row">
                                         <div className="col-md-2">
@@ -567,7 +554,7 @@ var EditFundingPool = React.createClass({
                                             <h4>Amount</h4>
                                             <p className="small">the max amount of tokens that this investor can hold (expressed in SEED)</p>
                                             <div className="form-group">
-                                                <input className="form-control" type="text" placeholder="Amount" ref={ref => this.whiteListAmount = ref} onChange={this.parseNumber} />
+                                                <input className="form-control" type="text" placeholder="Amount" ref={ref => this.whiteListAmount = ref} onChange={Utils.parseNumber} />
                                             </div>
                                         </div>
                                         <div className="col-md-2">
@@ -586,7 +573,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">the amount of {product.symbol} tokens the investor will receive for every invested SEED</p>
                                         </div>
                                         <div className="col-md-6 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.seedRate = ref) && (this.seedRate.value = Utils.roundWei(product.seedRate))} onChange={this.parseNumber} />
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.seedRate = ref) && (this.seedRate.value = Utils.roundWei(product.seedRate))} onChange={Utils.parseNumber} />
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateSeedRate}>OK</button>
@@ -599,7 +586,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">the amount of {product.symbol} tokens the incubator will receive for every invested SEED</p>
                                         </div>
                                         <div className="col-md-6 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.exchangeRateOnTop = ref) && (this.exchangeRateOnTop.value = Utils.roundWei(product.exchangeRateOnTop))} onChange={this.parseNumber} />
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.exchangeRateOnTop = ref) && (this.exchangeRateOnTop.value = Utils.roundWei(product.exchangeRateOnTop))} onChange={Utils.parseNumber} />
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateExchangeRate}>OK</button>
@@ -612,7 +599,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">The amount of SEED tokens this basket needs to raise</p>
                                         </div>
                                         <div className="col-md-6 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.totalSupply = ref) && (this.totalSupply.value = product.totalSupply && parseFloat(Utils.roundWei(product.totalSupply)) || '')} onChange={this.parseNumber} />
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.totalSupply = ref) && (this.totalSupply.value = Utils.roundWei(product.totalSupply))} onChange={Utils.parseNumber} />
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateTotalSupply}>OK</button>
@@ -625,7 +612,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">the maximum amount of {product.symbol} tokens that each investor can accumulate without the need of whitelisting</p>
                                         </div>
                                         <div className="col-md-6 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.whiteListThreshold = ref) && (this.whiteListThreshold.value = product.whiteListThreshold && parseFloat(Utils.roundWei(product.whiteListThreshold)) || '')} onChange={this.parseNumber} />
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.whiteListThreshold = ref) && (this.whiteListThreshold.value = Utils.roundWei(product.whiteListThreshold))} onChange={Utils.parseNumber} />
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateWhiteListThreshold}>OK</button>
@@ -643,12 +630,12 @@ var EditFundingPool = React.createClass({
                     </div>
                 </div>
                 {client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.documentsUploaderProviderSet) !== true && <Modal
-                  title="Choose the way tou will upload documents"
-                  readonly={true}
-                  backdrop="static"
-                  keyboard="false"
-                  ref={ref => (this.documentsUploaderModal = ref) && ref.show()}>
-                    <DocumentUploader onClick={() => _this.documentsUploaderModal.hide()}/>
+                    title="Choose the way tou will upload documents"
+                    readonly={true}
+                    backdrop="static"
+                    keyboard="false"
+                    ref={ref => (this.documentsUploaderModal = ref) && ref.show()}>
+                    <DocumentUploader onClick={() => _this.documentsUploaderModal.hide()} />
                 </Modal>}
             </div>
         );

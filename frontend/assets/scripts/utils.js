@@ -4,6 +4,39 @@ var Utils = function () {
 
   pageTitlePreamble = 'SEEDVenture - Platform';
 
+  var parseNumber = function parseNumber(e, callback) {
+    e && e.preventDefault();
+    e && e.stopPropagation();
+    var target = e.target;
+    this.localeTimeout && clearTimeout(this.localeTimeout);
+    this.localeTimeout = setTimeout(function () {
+      try {
+        var value = Utils.cleanNumber(target);
+        value = parseFloat(value);
+        if (isNaN(value)) {
+          target.value = '';
+          callback && callback();
+          return;
+        }
+        value = value.toLocaleString(value);
+        target.value = value;
+        callback && callback();
+      } catch (e) {
+        console.error(e);
+      }
+    }, 900);
+  };
+
+  var cleanNumber = function cleanNumber(target) {
+      var value = target.value || target;
+      if(typeof value !== 'string') {
+        return value;
+      }
+      value = value.split(' ').join('').split(Utils.dozensSeparator).join('').split(Utils.decimalsSeparator);
+      value = (value.length === 1 ? parseInt : parseFloat)(value[0] + (value.length === 1 ? '' : ('.' + value[1])));
+      return isNaN(value) ? 0 : value;
+  };
+
   copyToClipboard = function copyToClipboard(str) {
     const el = document.createElement('textarea');
     el.value = str === undefined || str === null ? '' : str.toString && str.toString() || ('' + str);
@@ -121,6 +154,7 @@ var Utils = function () {
     if (num === undefined || num === null) {
       num = 0;
     }
+    typeof num === 'string' && (num = Utils.cleanNumber(num))
     let numStr = String(num);
 
     if (Math.abs(num) < 1.0) {
@@ -146,22 +180,23 @@ var Utils = function () {
 
   roundWei = function (wei) {
     if (!wei) {
-      return '0';
+      return '0' + Utils.decimalsSeparator + '00';
     }
-    (typeof wei !== 'string') && (wei = Utils.numberToString(wei));
+    typeof wei === 'string' && (wei = Utils.cleanNumber(wei));
+    typeof wei !== 'string' && (wei = Utils.numberToString(wei));
     var str = web3.utils.fromWei(wei, 'ether');
     var fixed = 2;
     if (str.indexOf(Utils.decimalsSeparator) !== -1) {
-      var n = str.split(Utils.decimalsSeparator)[1]
+      var n = str.split(Utils.decimalsSeparator)[1];
       fixed = parseInt(n) === 0 ? 2 : n.length;
     }
-    str = parseFloat(str).toFixed(fixed);
+    str = Utils.cleanNumber(str).toFixed(fixed);
     fixed = 2;
     if (str.indexOf(Utils.decimalsSeparator) !== -1) {
       var n = str.split(Utils.decimalsSeparator)[1]
       fixed = parseInt(n) === 0 ? 2 : n.length;
     }
-    var s = parseFloat(parseFloat(str).toFixed(fixed)).toLocaleString();
+    var s = parseFloat(Utils.cleanNumber(str).toFixed(fixed)).toLocaleString();
     if (s.indexOf(Utils.decimalsSeparator) === -1) {
       s += (Utils.decimalsSeparator + '00');
     }
@@ -170,6 +205,13 @@ var Utils = function () {
     }
     return s;
   }
+
+  var toWei = function toWei(v) {
+    var value = v.value || v;
+    typeof value === 'string' && (value = Utils.cleanNumber(value));
+    typeof value !== 'string' && (value = Utils.numberToString(value))
+    return parseInt(web3.utils.toWei(value, 'ether'));
+  };
 
   isEthereumAddress = function (ad) {
     if (ad === undefined || ad === null) {
@@ -236,6 +278,9 @@ var Utils = function () {
     dozensSeparator: (1000.02).toLocaleString().charAt(1),
     decimalsSeparator: (1000.02).toLocaleString().charAt(5),
     toTitle,
-    AJAXRequest
+    AJAXRequest,
+    parseNumber,
+    cleanNumber,
+    toWei
   };
 }();

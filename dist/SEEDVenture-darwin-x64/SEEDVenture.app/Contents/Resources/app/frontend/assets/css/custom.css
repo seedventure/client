@@ -89,3 +89,8 @@ i.color-green {
 i.color-yellow {
     color: orange;
 }
+
+button.btn.btn-brand-secondary {
+    color: #fff !important;
+    background-color: #6fd2fb !important;
+}

@@ -81,7 +81,7 @@ var CreateFundingPool = React.createClass({
 
         var seedRate = 0;
         try {
-            seedRate = parseFloat(this.cleanNumber(this.seedRate));
+            seedRate = Utils.cleanNumber(this.seedRate);
         } catch (error) {
         }
         if (!this.props.parent && (isNaN(seedRate) || seedRate < 0)) {
@@ -91,7 +91,7 @@ var CreateFundingPool = React.createClass({
 
         var exchangeRateOnTop = 0;
         try {
-            exchangeRateOnTop = parseFloat(this.cleanNumber(this.exchangeRateOnTop));
+            exchangeRateOnTop = Utils.cleanNumber(this.exchangeRateOnTop);
         } catch (error) {
         }
         if (!this.props.parent && (isNaN(exchangeRateOnTop) || exchangeRateOnTop < 0)) {
@@ -101,7 +101,7 @@ var CreateFundingPool = React.createClass({
 
         var whiteListThreshold = 0;
         try {
-            whiteListThreshold = parseInt(this.cleanNumber(this.whiteListThreshold));
+            whiteListThreshold = Utils.cleanNumber(this.whiteListThreshold);
         } catch (error) {
         }
         if (!this.props.parent && (isNaN(whiteListThreshold) || exchangeRateOnTop < 0)) {
@@ -111,7 +111,7 @@ var CreateFundingPool = React.createClass({
 
         var totalSupply = 0;
         try {
-            totalSupply = parseInt(this.cleanNumber(this.totalSupply));
+            totalSupply = Utils.cleanNumber(this.totalSupply);
         } catch (error) {
         }
         if (!this.props.parent && (isNaN(totalSupply) || totalSupply < 0)) {
@@ -210,35 +210,7 @@ var CreateFundingPool = React.createClass({
             _this.documentLink.value = doc.link;
         });
     },
-    cleanNumber(target) {
-        var value = target.value.split(' ').join('').split(Utils.dozensSeparator).join('');
-        if(value.indexOf('.') !== -1) {
-            var s = value.split(Utils.decimalsSeparator);
-            var last = s.pop();
-            value = s.join('') + '.' + last;
-        }
-        return value;
-    },
-    parseNumber(e) {
-        e && e.preventDefault();
-        var _this = this;
-        var target = e.target;
-        this.localeTimeout && clearTimeout(this.localeTimeout);
-        this.localeTimeout = setTimeout(function() {
-            try {
-                var value = _this.cleanNumber(target);
-                value = parseFloat(value);
-                if(isNaN(value)) {
-                    target.value = '';
-                    return;
-                }
-                value = value.toLocaleString(value);
-                target.value = value;
-            } catch(e) {
-                console.error(e);
-            }
-        }, 900);
-    },
+    
     onSymbolChange(e) {
         e && e.preventDefault();
         var _this = this;
@@ -372,7 +344,7 @@ var CreateFundingPool = React.createClass({
                         <p className="small">the amount of <strong className="basketName">basket</strong> tokens the investor will receive for every invested SEED</p>
                     </div>
                     <div className="col-md-8 form-group">
-                        <input className="form-control form-control-last" type="text" ref={ref => this.seedRate = ref} onChange={this.parseNumber}/>
+                        <input className="form-control form-control-last" type="text" ref={ref => this.seedRate = ref} onChange={Utils.parseNumber}/>
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}
@@ -382,19 +354,19 @@ var CreateFundingPool = React.createClass({
                         <p className="small">the amount of <strong className="basketName">basket</strong> tokens the incubator will receive for every invested SEED</p>
                     </div>
                     <div className="col-md-8 form-group">
-                        <input className="form-control form-control-last" type="text" ref={ref => this.exchangeRateOnTop = ref} onChange={this.parseNumber}/>
+                        <input className="form-control form-control-last" type="text" ref={ref => this.exchangeRateOnTop = ref} onChange={Utils.parseNumber}/>
                     </div>
                 </div>}
-                {!this.props.parent && <br/>}
-                {!this.props.parent && <div className="row">
+                <br/>
+                <div className="row">
                     <div className="col-md-4">
                         <h4>Total Supply</h4>
-                        <p className="small">The amount of SEED tokens this basket needs to raise</p>
+                        <p className="small">{"The amount of SEED tokens this " + (this.props.parent ? "Startup" : "Basket") + " needs to raise"}</p>
                     </div>
                     <div className="col-md-8 form-group">
-                        <input className="form-control form-control-last" type="text" ref={ref => this.totalSupply = ref} onChange={this.parseNumber}/>
+                        <input className="form-control form-control-last" type="text" ref={ref => this.totalSupply = ref} onChange={Utils.parseNumber}/>
                     </div>
-                </div>}
+                </div>
                 {!this.props.parent && <br/>}
                 {!this.props.parent && <div className="row">
                     <div className="col-md-4">
@@ -402,7 +374,7 @@ var CreateFundingPool = React.createClass({
                         <p className="small">the maximum amount of <strong className="basketName">basket</strong> tokens that each investor can accumulate without the need of whitelisting</p>
                     </div>
                     <div className="col-md-8 form-group">
-                        <input className="form-control form-control-last" type="text" ref={ref => this.whiteListThreshold = ref} onChange={this.parseNumber}/>
+                        <input className="form-control form-control-last" type="text" ref={ref => this.whiteListThreshold = ref} onChange={Utils.parseNumber}/>
                     </div>
                 </div>}
                 {this.props.parent && <br/>}
