@@ -21,7 +21,7 @@ var Index = React.createClass({
             'transaction/unlock': () => this.genericLoadingModal.hide(),
             'transaction/submitted': this.showTransactionModal,
             'investment/mine': this.renderOwnedToken,
-            'configuration/forgotten' : this.refreshTokenList
+            'configuration/forgotten': this.refreshTokenList
         };
     },
     showWalletModal() {
@@ -101,7 +101,7 @@ var Index = React.createClass({
                 modules: element.prototype.requiredModules || [],
                 scripts: element.prototype.requiredScripts || [],
                 callback: function () {
-                    _this.setState({ title : element.prototype.title, element, props }, callback);
+                    _this.setState({ title: element.prototype.title, element, props }, callback);
                 }
             });
         }
@@ -141,13 +141,13 @@ var Index = React.createClass({
         this.emit('products/search');
     },
     renderOwnedToken(product, consume) {
-        if(!product || !product.name) {
+        if (!product || !product.name) {
             typeof consume === 'function' && setTimeout(consume);
             return;
         }
         var _this = this;
         client.contractsManager.tokenBalanceOf(product.tokenAddress, client.userManager.user.wallet).then(result => {
-            if(parseInt(result) <= 0) {
+            if (parseInt(result) <= 0) {
                 typeof consume === 'function' && setTimeout(consume);
                 return;
             }
@@ -165,7 +165,7 @@ var Index = React.createClass({
             </div>`).click(e => {
                 e && e.preventDefault();
                 _this.walletModal.hide();
-                _this.emit('page/change', Detail, {element : product});
+                _this.emit('page/change', Detail, { element: product });
             }).appendTo(_this.ownedTokens));
             element.children().find('.amount').html('<h3>' + result + ' ' + product.symbol + '</h3>');
             typeof consume === 'function' && setTimeout(consume);
@@ -183,7 +183,7 @@ var Index = React.createClass({
         setTimeout(consume);
     },
     checkDistDate(newVersionAvailableModal) {
-        if(!newVersionAvailableModal) {
+        if (!newVersionAvailableModal) {
             return;
         }
         var distDate = window.distDate;
@@ -194,7 +194,7 @@ var Index = React.createClass({
         this.componentDidUpdate();
     },
     componentDidUpdate() {
-        if((!this.state || !this.state.element || this.state.element !== Preferences) && !client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress)) {
+        if ((!this.state || !this.state.element || this.state.element !== Preferences) && !client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress)) {
             this.emit('page/change', Preferences);
         }
     },
@@ -215,8 +215,9 @@ var Index = React.createClass({
                 <div className="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--ver kt-page">
                     <div className={"kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor kt-wrapper" + (client.userManager.user ? "" : " guest")} id="kt_wrapper">
                         <Header title={this.state && this.state.title ? this.state.title : ''} element={rendered} view={props.view} back={this.state && this.state.back} />
-                        {!client.configurationManager.hasUnlockedUser() && [<br />, <br />]}
-                        {(!this.state || !this.state.element || this.state.element === Products) && <div className="kt-subheader kt-grid__item" id="kt_subheader">
+                        <br />
+                        {!client.configurationManager.hasUnlockedUser() && [<br />, <br />,<br />, <br />,<br />]}
+                        {(!this.state || !this.state.element || this.state.element === Products) && [<div className="kt-subheader kt-grid__item" id="kt_subheader">
                             <div className="kt-subheader__main">
                                 <div className="kt-subheader__breadcrumbs">
                                 </div>
@@ -229,9 +230,8 @@ var Index = React.createClass({
                                     <a href="#" className="kt-subheader__breadcrumbs-home" onClick={this.clearSearch}><i className="fas fa-remove"></i></a>
                                 </div>
                             </div>
-                        </div>}
-                        <br />
-                        <br />
+                        </div>,
+                        <br/>]}
                         {React.createElement(rendered, props)}
                     </div>
                 </div>

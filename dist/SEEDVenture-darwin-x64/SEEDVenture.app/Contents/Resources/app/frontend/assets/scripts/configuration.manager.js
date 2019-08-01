@@ -184,5 +184,12 @@ function ConfigurationManager() {
     delete context.content.user;
     var defaultConfiguration = context.getDefaultConfiguration();
     Object.keys(defaultConfiguration).map(key => !context.content[key] && (context.content[key] = defaultConfiguration[key]));
+    if(context.content.list && context.content.list.length !== undefined) {
+      var l = context.content.list;
+      context.content.list = {};
+      for(var i in l) {
+        context.content.list[i + ''] = l[i];
+      }
+    }
   })();
 };

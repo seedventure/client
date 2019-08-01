@@ -5,7 +5,8 @@ var Header = React.createClass({
         'spa/configuration/import',
         'spa/configuration/create',
         'spa/configuration/backup',
-        'spa/configuration/move'
+        'spa/configuration/move',
+        'spa/dex/main'
     ],
     getDefaultSubscriptions() {
         return {
@@ -114,27 +115,31 @@ var Header = React.createClass({
                         </div>
                     </div>
                 </div>
-                {client.configurationManager.hasUnlockedUser() && <div className="kt-header__bottom col-12 py-3 bg-secondary">
+                <div className="kt-header__bottom col-12 py-3 bg-secondary">
                     <div className="kt-container" ref={this.setupChooseSection}>
                         <div className="kt-header-menu-wrapper" id="kt_header_menu_wrapper">
                             <div id="kt_header_menu" className="kt-header-menu">
                                 <ul className="kt-menu__nav">
                                     <li className="kt-menu__item">
                                         <a href="javascript:;" onClick={() => this.emit('page/change', Products)}>
-                                            Investor
+                                            Baskets
                                         </a>
                                     </li>
                                     <li className="kt-menu__item">
-                                        <a href="javascript:;" onClick={() => this.emit('page/change', Products, {view : 'mine'})}>
-                                            Incubator
+                                        <a href="javascript:;" onClick={() => this.emit('page/change', Dex)}>
+                                            Trade
                                         </a>
                                     </li>
+                                    {client.configurationManager.hasUnlockedUser() && <li className="kt-menu__item">
+                                        <a href="javascript:;" onClick={() => this.emit('page/change', Products, {view : 'mine'})}>
+                                            My Baskets
+                                        </a>
+                                    </li>}
                                 </ul>
                             </div>
                         </div>
                     </div>
-                </div>}
-                {!client.configurationManager.hasUnlockedUser() && <p>{'\u00A0'}</p>}
+                </div>
             </header>
         );
     }
