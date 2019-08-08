@@ -186,11 +186,11 @@ var Utils = function () {
     typeof wei !== 'string' && (wei = Utils.numberToString(wei));
     var str = web3.utils.fromWei(wei, 'ether');
     var fixed = 2;
-    if (str.indexOf(Utils.decimalsSeparator) !== -1) {
-      var n = str.split(Utils.decimalsSeparator)[1];
+    if (str.indexOf('.') !== -1) {//DO NOT EDIT TO Utils.decimalsSeparator: web3 fromwei uses dots for decimals
+      var n = str.split('.')[1];
       fixed = parseInt(n) === 0 ? 2 : n.length;
     }
-    str = Utils.cleanNumber(str).toFixed(fixed);
+    str = parseFloat(Utils.cleanNumber(str.split('.').join(Utils.decimalsSeparator)).toFixed(fixed)).toLocaleString();
     fixed = 2;
     if (str.indexOf(Utils.decimalsSeparator) !== -1) {
       var n = str.split(Utils.decimalsSeparator)[1]

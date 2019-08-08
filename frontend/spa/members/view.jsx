@@ -25,7 +25,7 @@ var Members = React.createClass({
         return members.ToArray();
     },
     search(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.searchTimeout && clearTimeout(this.searchTimeout);
         var target = this.searchBar;
         var _this = this;
@@ -34,7 +34,7 @@ var Members = React.createClass({
         }, 300);
     },
     clearSearch(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.searchBar.value = '';
         this.search();
     },

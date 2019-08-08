@@ -6,7 +6,7 @@ var Member = React.createClass({
         return subscriptions;
     },
     edit(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var _this = this;
         var product = _this.getProduct();
         if(!product.name || (this.props.view === 'mine' && product.unavailable)) {
@@ -24,12 +24,12 @@ var Member = React.createClass({
         (!product.name || product.unavailable) && client.contractsManager.getFundingPanelMemberData(product).then(p => p && p.name && !p.unavailable && _this.setState({product: p}));
     },
     enableDisable(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var product = this.getProduct();
         this.controller[(product.disabled === 0 ? 'disable' : 'enable') + 'Startup'](product, this.props.parent);
     },
     unlockFunds(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var amount = 0;
         try {
             amount = Utils.cleanNumber(this.unlockAmount);

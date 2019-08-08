@@ -1,6 +1,6 @@
 var Unlock = React.createClass({
     unlock(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var password = this.password.value;
         if (password === '') {
             alert("Please, insert password");
@@ -9,7 +9,7 @@ var Unlock = React.createClass({
         !this.controller.tryUnlock(password) && alert("Password is wrong");
     },
     askForget(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.emit('user/askForget');
     },
     render() {
@@ -26,7 +26,7 @@ var Unlock = React.createClass({
                                             <img src="./assets/favicon.png" width="100" height="100"></img>
                                             <br/>
                                             <br/>
-                                            <h3 className="kt-login__title">Please, type you password to unlock your account</h3>
+                                            <h3 className="kt-login__title">Please, type your password to unlock your account</h3>
                                         </div>
                                         <div className="kt-login__form">
                                             <form className="kt-form" action="">
@@ -48,7 +48,7 @@ var Unlock = React.createClass({
                         <div className="kt-login__section">
                             <div className="kt-login__block">
                                 <h3 className="kt-login__pretitle">Welcome to</h3>
-                                <h3 className="kt-login__title">SEEDVenture</h3>
+                                <h3 className="kt-login__title">SEED Venture</h3>
                                 <br/>
                                 <img src="./assets/icon_contrast.svg" width="100" height="100"></img>
                                 <br/>

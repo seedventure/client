@@ -1,5 +1,3 @@
-import { timingSafeEqual } from "crypto";
-
 var Header = React.createClass({
     requiredModules: [
         'spa/configuration/import',
@@ -12,35 +10,35 @@ var Header = React.createClass({
         return {
             'index/title': title => this.setState({ title }),
             'amount/seed': seed => this.setState({ seed }),
-            'amount/eth': eth => this.setState({ eth }),
+            'amount/eth': eth => this.setState({ eth })
         };
     },
     copyAddress(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         Utils.copyToClipboard(client.userManager.user.wallet);
     },
     copyPrivateKey(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         Utils.copyToClipboard(client.userManager.user.privateKey);
     },
     importConfiguration(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.emit('page/change', ImportConfiguration);
     },
     createConfiguration(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.emit('page/change', CreateConfiguration);
     },
     backupConfiguration(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.emit('page/change', BackupConfiguration);
     },
     moveConfiguration(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.emit('page/change', MoveConfiguration);
     },
     openPreferences(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.emit('page/change', Preferences);
     },
     componentDidUpdate() {
@@ -48,15 +46,6 @@ var Header = React.createClass({
             this.lastBalanceCheck = new Date().getTime();
             client.userManager.getBalances();
         }
-    },
-    setupChooseSection(ref) {
-        if(!ref) {
-            return;
-        }
-        var firstSection = $((ref = $(ref)).children().find('li.kt-menu__item').click(function() {
-            ref.children().find('li.kt-menu__item').removeClass('kt-menu__item--open').removeClass('kt-menu__item--here');
-            $(this).addClass('kt-menu__item--open').addClass('kt-menu__item--here');
-        })[0]).click();
     },
     componentDidMount() {
         if(!client.userManager.user) {
@@ -74,12 +63,16 @@ var Header = React.createClass({
         return this.props.title;
     },
     render() {
+        var selected = null;
+        (this.props.element === Products || this.props.element === Detail) && (selected = 'Baskets');
+        this.props.view === 'mine' && (selected = 'My Baskets');
+        this.props.element === Dex && (selected = 'Trade');
         return (
             <header id="kt_header" className="kt-header kt-grid__item kt-header--fixed row mx-0" data-ktheader-minimize="on">
                 <div className="kt-header__top col-12 py-3 bg-primary">
                     <div className="kt-container">
                         <div className="kt-header__topbar header-left back-title">
-                            {this.props.title && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Back" className="back" onClick={e => this.props.back ? this.props.back(e) : this.emit('page/change', Products, {view : this.props.view})}>
+                            {this.props.title && this.props.element !== Dex && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Back" className="back" onClick={e => this.props.back ? this.props.back(e) : this.emit('page/change', Products, {view : this.props.view})}>
                                 <i className="fas fa-arrow-left"></i>
                             </a>}
                             <span>{'\u00A0'}{'\u00A0'}</span>
@@ -116,21 +109,21 @@ var Header = React.createClass({
                     </div>
                 </div>
                 <div className="kt-header__bottom col-12 py-3 bg-secondary">
-                    <div className="kt-container" ref={this.setupChooseSection}>
+                    <div className="kt-container">
                         <div className="kt-header-menu-wrapper" id="kt_header_menu_wrapper">
                             <div id="kt_header_menu" className="kt-header-menu">
                                 <ul className="kt-menu__nav">
-                                    <li className="kt-menu__item">
+                                    <li className={"kt-menu__item" + (selected === 'Baskets' ? " kt-menu__item--open kt-menu__item--here" : "")}>
                                         <a href="javascript:;" onClick={() => this.emit('page/change', Products)}>
                                             Baskets
                                         </a>
                                     </li>
-                                    <li className="kt-menu__item">
+                                    <li className={"kt-menu__item" + (selected === 'Trade' ? " kt-menu__item--open kt-menu__item--here" : "")}>
                                         <a href="javascript:;" onClick={() => this.emit('page/change', Dex)}>
                                             Trade
                                         </a>
                                     </li>
-                                    {client.configurationManager.hasUnlockedUser() && <li className="kt-menu__item">
+                                    {client.configurationManager.hasUnlockedUser() && <li className={"kt-menu__item" + (selected === 'My Baskets' ? " kt-menu__item--open kt-menu__item--here" : "")}>
                                         <a href="javascript:;" onClick={() => this.emit('page/change', Products, {view : 'mine'})}>
                                             My Baskets
                                         </a>

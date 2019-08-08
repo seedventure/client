@@ -4,7 +4,7 @@ var Product = React.createClass({
         'spa/fundingPool/edit'
     ],
     onClick(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var product = this.getProduct();
         if(!product.name || (this.props.view === 'mine' && product.unavailable)) {
             alert("Please wait until data has been downloaded");
@@ -33,7 +33,7 @@ var Product = React.createClass({
         (!product.name || product.unavailable) && client.contractsManager.getFundingPanelData(product).then(p => p && p.name && !p.unavailable && _this.setState({product : p}));
     },
     makeUnsuitable(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.controller.makeUnsuitable(this.getProduct());
     },
     render() {

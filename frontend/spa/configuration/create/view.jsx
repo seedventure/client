@@ -4,7 +4,7 @@ var CreateConfiguration = React.createClass({
         return { words: ethers.utils.HDNode.entropyToMnemonic(ethers.utils.randomBytes(16)).split(' ') };
     },
     resetWords(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var state = this.state;
         state.words = ethers.utils.HDNode.entropyToMnemonic(ethers.utils.randomBytes(16)).split(' ')
         state.wordsOK = false;
@@ -12,21 +12,21 @@ var CreateConfiguration = React.createClass({
         this.setState(state);
     },
     toWords(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var state = this.state;
         state.wordsOK = false;
         state.passwordsOK = false;
         this.setState(state);
     },
     toCheck(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var state = this.state;
         state.wordsOK = true;
         state.passwordsOK = false;
         this.setState(state);
     },
     toPasswords(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var words = this.textarea.value.split(' ');
         if (words.length !== this.state.words.length) {
             alert('Please, insert the words in the correct order');
@@ -44,7 +44,7 @@ var CreateConfiguration = React.createClass({
         this.setState(state);
     },
     check(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var pass = this.password.value;
         var repeat = this.repeatPassword.value;
         if (pass === '' || pass !== repeat) {

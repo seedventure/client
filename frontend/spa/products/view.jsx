@@ -48,7 +48,7 @@ var Products = React.createClass({
         return products;
     },
     search(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.searchTimeout && clearTimeout(this.searchTimeout);
         var target = e && e.target;
         var _this = this;

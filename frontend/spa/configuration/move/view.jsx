@@ -1,7 +1,7 @@
 var MoveConfiguration = React.createClass({
     title: "Move your data",
     ok(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var pass = this.password.value;
         if(pass === undefined || pass === null || pass === '') {
             alert('Please, insert password');

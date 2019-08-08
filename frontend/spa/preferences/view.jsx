@@ -4,7 +4,7 @@ var Preferences = React.createClass({
     ],
     title: 'System Preferences',
     changeFactoryAddress(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var factoryAddress = this.factoryAddress.value;
         factoryAddress = factoryAddress.split(' ').join('');
         if (factoryAddress === '') {

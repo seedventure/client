@@ -1,7 +1,7 @@
 var ImportConfiguration = React.createClass({
     title: 'Import Configuration or Wallet',
     importMnemonic(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         if(this.mnemonic.value === '') {
             alert("Insert Mnemocim Phrase");
             return;
@@ -13,7 +13,7 @@ var ImportConfiguration = React.createClass({
         this.emit('page/change');
     },
     importPrivateKey(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         if(this.privateKey.value === '') {
             alert("Insert Private Key");
             return;
@@ -25,7 +25,7 @@ var ImportConfiguration = React.createClass({
         this.emit('page/change');
     },
     browseJSONFile(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var userChosenPath = window.require('electron').remote.dialog.showOpenDialog({ 
             defaultPath: undefined,
             filters : [
@@ -45,7 +45,7 @@ var ImportConfiguration = React.createClass({
         this.setState({JSONFile : userChosenPath});
     },
     importJSON(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         if(!this.state || this.state.JSONFile === '') {
             alert("Select a valid JSON File first");
             return;
@@ -67,7 +67,7 @@ var ImportConfiguration = React.createClass({
         return true;
     },
     browserSEEDBackupFile(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         client.configurationManager.import() && this.emit('page/change');
     },
     componentDidMount() {

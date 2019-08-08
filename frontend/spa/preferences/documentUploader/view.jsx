@@ -1,12 +1,12 @@
 var DocumentUploader = React.createClass({
     urlRegex: new RegExp(/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi),
     onChange(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.documentUploaderLink.value = '';
         this.documentUploaderLink.style.display = e.target.value.indexOf('ipfs') === -1 ? 'block' : 'none';
     },
     changeDocumentUploader(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var type = '';
         try {
             type = this.documentUploaderType.value || ecosysyemData.documentUploaderProvider;

@@ -70,7 +70,7 @@ var EditFundingPoolController = function (view) {
     context.updateWhiteListThreshold = async function updateWhiteListThreshold(whiteListThreshold) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.setNewThreshold(whiteListThreshold);
-        await context.sendTransactionToFundingPanel(method.encodeABI());
+        await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
     };
 
     context.updateTotalSupply = async function updateTotalSupply(totalSupply) {

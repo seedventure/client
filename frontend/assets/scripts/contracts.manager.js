@@ -20,7 +20,7 @@ function ContractsManager() {
                 var originalInputLength = contractElement.inputs.length;
                 contractElement.payable == true && originalInputLength++;
                 if (argumentsLength < originalInputLength) {
-                    throw 'Wrong input paramenters length' + contractElement.payable ? ' for payable contract' : '' + ': expected ' + originalInputLength + ', found ' + argumentsLength
+                    throw 'Wrong input paramenters length' + (contractElement.payable ? ' for payable contract' : '') + ': expected ' + originalInputLength + ', found ' + argumentsLength
                 }
                 var title = view ? undefined : argumentsLength > originalInputLength ? arguments[arguments.length - 1] : Utils.toTitle(contractElement.name);
                 var args = [];
@@ -374,6 +374,10 @@ function ContractsManager() {
 
     context.notifyPotentialFundingPanelChanges = function notifyPotentialFundingPanelChanges(product, copy) {
         console.log({ product, copy });
+    };
+
+    context['0x10b2a5b108c7f1e07744f78d98a096424f89c30fca6176cb114052d552ea4650'] = function whiteListThresholdChanged(event, element) {
+        context.manageFundingPanelChanged(element.element || element);
     };
 
     context['0xb9f320ca5d6edcd5b5ec403b3a0970d8ff03a3ab365497b976507b20e27c7067'] = function memberDisabled(event, element) {

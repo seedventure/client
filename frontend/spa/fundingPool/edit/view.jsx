@@ -11,7 +11,7 @@ var EditFundingPool = React.createClass({
         return (this.props.parent ? <span>Edit Startup of <strong>{this.props.parent.name}</strong></span> : "Edit Basket");
     },
     back(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var _this = this;
         var parent = _this.props.parent;
         this.emit('page/change', parent ? EditFundingPool : Products, { element: parent, parent: null, fromBack: true, view: this.props.view }, () => parent && _this.setProduct(parent));
@@ -47,7 +47,7 @@ var EditFundingPool = React.createClass({
         });
     },
     loadImage(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var userChosenPath = require('electron').remote.dialog.showOpenDialog({
             defaultPath: undefined,
             filters: [
@@ -64,14 +64,14 @@ var EditFundingPool = React.createClass({
         }
     },
     deleteImage(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.image.attr('src', '');
     },
     saveDoc(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var name = ''
         try {
-            name = this.name.value.split(' ').join('');
+            name = this.name.value.trim();
         } catch (error) {
         }
         if (name === '') {
@@ -121,7 +121,7 @@ var EditFundingPool = React.createClass({
 
         var newProduct = {
             name,
-            description: $.base64.encode(this.description.summernote('code')),
+            description: $.base64.encode(encodeURI(this.description.summernote('code'))),
             url,
             image,
             tags,
@@ -147,7 +147,7 @@ var EditFundingPool = React.createClass({
         this.controller.saveDoc(newProduct, this.props.parent !== undefined && this.props.parent !== null);
     },
     updateSeedRate(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var seedRate = 0;
         try {
             seedRate = parseInt(web3.utils.toWei(Utils.numberToString(this.seedRate.value), 'ether'));
@@ -163,7 +163,7 @@ var EditFundingPool = React.createClass({
         this.controller.updateSeedRate(Utils.numberToString(seedRate));
     },
     updateExchangeRate(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var exchangeRateOnTop = 0;
         try {
             exchangeRateOnTop = parseInt(web3.utils.toWei(Utils.numberToString(this.exchangeRateOnTop.value), 'ether'));
@@ -179,7 +179,7 @@ var EditFundingPool = React.createClass({
         this.controller.updateExchangeRate(Utils.numberToString(exchangeRateOnTop));
     },
     updateWhiteListThreshold(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var whiteListThreshold = 0;
         try {
             whiteListThreshold = parseInt(web3.utils.toWei(Utils.numberToString(this.whiteListThreshold.value), 'ether'));
@@ -195,7 +195,7 @@ var EditFundingPool = React.createClass({
         this.controller.updateWhiteListThreshold(Utils.numberToString(whiteListThreshold));
     },
     updateTotalSupply(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var totalSupply = 0;
         try {
             totalSupply = parseInt(web3.utils.toWei(Utils.numberToString(this.totalSupply.value), 'ether'));
@@ -248,7 +248,7 @@ var EditFundingPool = React.createClass({
         (this.wallet = ref) && $(this.wallet).focus((e) => $(e.target).select());
     },
     changeWallet(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var address = this.wallet.value.split(' ').join('');
         if (!Utils.isEthereumAddress(address)) {
             alert('You must provide a valid ethereum address');
@@ -257,7 +257,7 @@ var EditFundingPool = React.createClass({
         this.controller.changeWalletOnTop(address);
     },
     administrationSubmit(e) {
-        e.preventDefault();
+        e.preventDefault() && e.stopPropagation();
         var $target = $(e.target);
         var value = $target.html().toLowerCase();
         var $parent = $($target.parents('.form-group'));
@@ -273,7 +273,7 @@ var EditFundingPool = React.createClass({
         });
     },
     addDocument(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var name = this.documentName.value;
         if (name.split(' ').join('') === '') {
             alert('Name is mandatory');
@@ -294,7 +294,7 @@ var EditFundingPool = React.createClass({
         this.setState({ documents });
     },
     browseLocalDocument(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var userChosenPath = undefined;
         (userChosenPath = window.require('electron').remote.dialog.showOpenDialog({
             defaultPath: undefined,
@@ -306,7 +306,7 @@ var EditFundingPool = React.createClass({
         userChosenPath && (this.documentLink.value = userChosenPath);
     },
     deleteDocument(i, e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var documents = this.state.documents;
         var doc = documents[i];
         documents.splice(i, 1);
@@ -317,7 +317,7 @@ var EditFundingPool = React.createClass({
         });
     },
     setSingleWhitelist(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var address = this.whiteListWallet.value.split(' ').join('');
         if (!Utils.isEthereumAddress(address)) {
             alert('You must provide a valid ethereum address');
@@ -325,7 +325,7 @@ var EditFundingPool = React.createClass({
         }
         var whiteListAmount = 0;
         try {
-            whiteListAmount = parseInt(web3.utils.toWei(this.whiteListAmount.value));
+            whiteListAmount = Utils.cleanNumber(this.whiteListAmount);
         } catch (error) {
         }
         if (isNaN(whiteListAmount) || whiteListAmount < 0) {
@@ -340,6 +340,10 @@ var EditFundingPool = React.createClass({
         var description = '';
         try {
             description = $.base64.decode(product.description);
+        } catch (e) {
+        }
+        try {
+            description = decodeURI(description);
         } catch (e) {
         }
         return (

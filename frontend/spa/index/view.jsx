@@ -37,15 +37,15 @@ var Index = React.createClass({
         });
     },
     copyAddress(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         Utils.copyToClipboard(client.userManager.user.wallet);
     },
     copyPrivateKey(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         Utils.copyToClipboard(client.userManager.user.privateKey);
     },
     togglePrivateKey(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var x = client.userManager.user.privateKey.substring(0, 50) + '...';
         if (this.privateKeyLabel.html().indexOf("*") !== 0) {
             x = '***************************************************************************'.substring(0, 50);
@@ -53,7 +53,7 @@ var Index = React.createClass({
         this.privateKeyLabel.html(x);
     },
     askForget(e) {
-        e && e.preventDefault && e.preventDefault();
+        e && e.preventDefault && e.preventDefault() && e.stopPropagation && e.stopPropagation();
         if (confirm('All your data will be lost, do you want to continue?')) {
             this.controller.forgetUser();
             this.emit('page/change');
@@ -136,7 +136,7 @@ var Index = React.createClass({
         Object.keys(newState).length > 0 && this.setState(newState);
     },
     clearSearch(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.searchBar.value = '';
         this.emit('products/search');
     },
@@ -163,7 +163,7 @@ var Index = React.createClass({
                     </div>
                 </div>
             </div>`).click(e => {
-                e && e.preventDefault();
+                e && e.preventDefault() && e.stopPropagation();
                 _this.walletModal.hide();
                 _this.emit('page/change', Detail, { element: product });
             }).appendTo(_this.ownedTokens));

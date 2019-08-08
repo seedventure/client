@@ -6,10 +6,14 @@ var Detail = React.createClass({
         return (this.props.parent ? <span>Startup of <strong>{this.props.parent.name}</strong></span> : this.getProduct().name);
     },
     back(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var _this = this;
         var parent = _this.props.parent;
         this.emit('page/change', parent ? Detail : Products, { element: parent, parent: null, fromBack: true, view: this.props.view }, () => parent && _this.setProduct(parent));
+    },
+    trade(e) {
+        e && e.preventDefault() && e.stopPropagation();
+        this.emit('page/change', Dex, {element: this.getProduct()});
     },
     getProduct() {
         return this.state && this.state.product ? this.state.product : this.props.element;
@@ -77,7 +81,7 @@ var Detail = React.createClass({
         this.forYou.innerHTML = Utils.roundWei(web3.utils.toWei(Utils.numberToString(forYou), 'ether'));
     },
     ok(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var investment = 0;
         var investmentFloat;
         try {
@@ -96,6 +100,10 @@ var Detail = React.createClass({
         var description = '';
         try {
             description = $.base64.decode(product.description);
+        } catch (e) {
+        }
+        try {
+            description = decodeURI(description);
         } catch (e) {
         }
         var p = document.createElement('p');
@@ -151,6 +159,8 @@ var Detail = React.createClass({
                         </div>
                     </div>
                 </form>}
+                {!this.props.parent && [<br />,
+                <h3><a href="javascript:;" onClick={this.trade}>Trade</a></h3>]}
                 <br />
                 <br />
                 <div className="row">

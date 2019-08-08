@@ -10,7 +10,7 @@ var CreateFundingPool = React.createClass({
         return (this.props.parent ? <span>Create new Startup for the Basket <strong>{this.props.parent.name}</strong></span> : "Create Basket");
     },
     back(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var _this = this;
         var parent = _this.props.parent;
         this.emit('page/change', !parent ? Products : this.props.view === 'mine' ? EditFundingPool : Detail, { element: parent, parent: null, fromBack: true, view: this.props.view }, () => parent && _this.setProduct(parent));
@@ -23,7 +23,7 @@ var CreateFundingPool = React.createClass({
         });
     },
     deploy(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var image = '';
         try {
             image = this.image.attr('src').split("data:image/png;base64, ").join('');
@@ -31,7 +31,7 @@ var CreateFundingPool = React.createClass({
         }
         var name = ''
         try {
-            name = this.name.value.split(' ').join('');
+            name = this.name.value.trim();
         } catch (error) {
         }
         if (name === '') {
@@ -130,7 +130,7 @@ var CreateFundingPool = React.createClass({
         }
         var data = {
             name,
-            description: $.base64.encode(this.description.summernote('code')),
+            description: $.base64.encode(encodeURI(this.description.summernote('code'))),
             url,
             image,
             tags,
@@ -146,7 +146,7 @@ var CreateFundingPool = React.createClass({
         this.controller['deploy' + type](data, this.props.parent);
     },
     loadImage(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var userChosenPath = require('electron').remote.dialog.showOpenDialog({
             defaultPath: undefined,
             filters: [
@@ -163,11 +163,11 @@ var CreateFundingPool = React.createClass({
         }
     },
     deleteImage(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         this.image.attr('src', '');
     },
     addDocument(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var name = this.documentName.value;
         if (name.split(' ').join('') === '') {
             alert('Name is mandatory');
@@ -188,7 +188,7 @@ var CreateFundingPool = React.createClass({
         this.setState({ documents });
     },
     browseLocalDocument(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var userChosenPath = undefined;
         (userChosenPath = window.require('electron').remote.dialog.showOpenDialog({
             defaultPath: undefined,
@@ -200,7 +200,7 @@ var CreateFundingPool = React.createClass({
         userChosenPath && (this.documentLink.value = userChosenPath);
     },
     deleteDocument(i, e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var documents = this.state.documents;
         var doc = documents[i];
         documents.splice(i, 1);
@@ -212,7 +212,7 @@ var CreateFundingPool = React.createClass({
     },
     
     onSymbolChange(e) {
-        e && e.preventDefault();
+        e && e.preventDefault() && e.stopPropagation();
         var _this = this;
         var target = e.target;
         this.symbolTimeout && clearTimeout(this.symbolTimeout);
