@@ -78,6 +78,9 @@ var CreateFundingPool = React.createClass({
             alert('Symbol is mandatory');
             return;
         }
+        if (!this.props.parent && symbol.length > Utils.tokenSymbolLimit) {
+            return alert('Symbol must be almost of ' + Utils.tokenSymbolLimit + ' characters long');
+        }
 
         var seedRate = 0;
         try {

@@ -4,16 +4,23 @@ function ContractsManager() {
     context.SEEDTokenAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress);
     context.factoryAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress);
     context.dexAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress);
+    context.ethAddress = '0x0000000000000000000000000000000000000000';
+
+    context.orderEvent = '0x3f7f2eda73683c21a15f9435af1028c93185b5f1fa38270762dc32be606b3e85';
+    context.orderEventData = ['address', 'uint', 'address', 'uint', 'uint', 'uint', 'address'];
+    context.cancelEvent = '0x1e0b760c386003e9cb9bcf4fcf3997886042859d9b6ed6320e804597fcdb28b0';
+    context.cancelEventData = ['address', 'uint', 'address', 'uint', 'uint', 'uint', 'address', 'uint8', 'bytes32', 'bytes32'];
+    context.tradeEvent = '0x6effdda786735d5033bfad5f53e5131abcced9e52be6c507b62d639685fbed6d';
+    context.tradeEventData = ['address', 'uint', 'address', 'uint', 'address', 'address'];
 
     context.productQueue = {};
 
-    Object.keys(contracts).map(function (key) {
-        contracts[key].map(function (contractElement) {
+    Object.keys(contracts).map(function(key) {
+        contracts[key].map(function(contractElement) {
             if (contractElement.type !== "function") {
                 return;
-            }
-            !context[key] && (context[key] = {});
-            context[key][contractElement.name] = function () {
+            }!context[key] && (context[key] = {});
+            context[key][contractElement.name] = function() {
                 var address = arguments[0];
                 var argumentsLength = arguments.length - 1;
                 var view = contractElement.stateMutability === "view";
@@ -109,7 +116,7 @@ function ContractsManager() {
     context.getArray = function getArray() {
         var array = [];
         var list = context.getList();
-        Object.keys(list).map(function (key) {
+        Object.keys(list).map(function(key) {
             array.push(list[key]);
         });
         return array;
@@ -186,7 +193,7 @@ function ContractsManager() {
             return product;
         }
 
-        if(context.factoryAddress !== product.factoryAddress) {
+        if (context.factoryAddress !== product.factoryAddress) {
             return;
         }
 
@@ -195,8 +202,7 @@ function ContractsManager() {
         if (checkDate) {
             try {
                 checkDate = !Enumerable.From(client.userManager.user.list).Contains(product.position);
-            } catch (e) {
-            }
+            } catch (e) {}
         }
         var lastCheck = new Date().getTime();
         if (checkDate === true && typeof product.lastCheck !== 'undefined' && lastCheck - product.lastCheck <= 60000) {
@@ -272,7 +278,7 @@ function ContractsManager() {
             call && $.publish('fundingPanel/' + product.position + '/updated', product);
         } catch (e) {
             product.unavailable = true;
-            setTimeout(function () {
+            setTimeout(function() {
                 context.getFundingPanelData(product);
             }, 15000);
         }
@@ -290,7 +296,7 @@ function ContractsManager() {
         }
 
         if (product.pendingNotications && (!context.changesWaiter || !context.changesWaiter[product.position])) {
-            setTimeout(function () {
+            setTimeout(function() {
                 context.manageFundingPanelChanged(product);
             });
             return product;
@@ -334,7 +340,7 @@ function ContractsManager() {
             call && $.publish('fundingPanel/' + product.productPosition + '/member/' + product.position + '/updated', product);
         } catch (e) {
             product.unavailable = true;
-            setTimeout(function () {
+            setTimeout(function() {
                 context.getFundingPanelMemberData(product);
             }, 15000);
         }
@@ -359,10 +365,9 @@ function ContractsManager() {
             for (var i in product.members) {
                 product.members[i].unavailable = true;
             }
-        } catch (e) {
-        }
+        } catch (e) {}
         $.publish('fundingPanel/' + product.position + '/updated', product);
-        var subscripted = function (event, product) {
+        var subscripted = function(event, product) {
             $.unsubscribe('fundingPanel/' + product.position + '/updated', subscripted);
             delete product.pendingNotications;
             context.notifyPotentialFundingPanelChanges(product, copy);
@@ -404,6 +409,37 @@ function ContractsManager() {
         context.manageFundingPanelChanged(element);
     };
 
+    context['0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7'] = function depositToDEX(event) {
+        if (!client.userManager.user) {
+            return;
+        }
+        var topic = web3.eth.abi.decodeParameters(['address', 'address', 'uint', 'uint'], event.data);
+        if (topic[0].toLowerCase() !== client.userManager.user.wallet.toLowerCase()) {
+            return;
+        }
+        var contractOrEth = topic[0].toLowerCase();
+        contractOrEth === context.ethAddress && $.publish('amount/eth');
+        contractOrEth === context.SEEDTokenAddress && $.publish('amount/seed');
+        var product = Enumerable.From(context.getArray()).Where(it => it.tokenAddress.toLowerCase() === contractOrEth).First();
+        $.publish('fundingPanel/' + product.position + '/updated', product);
+    };
+
+    context['0xf341246adaac6f497bc2a656f546ab9e182111d630394f0c57c710a59a2cb567'] = function withdrawToDEX(event) {
+        return context['0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7'](event);
+    };
+
+    context[context.orderEvent] = function dexOrder(event) {
+        $.publish('dex/order', event);
+    };
+
+    context[context.cancelEvent] = function cancelOrder(event) {
+        $.publish('dex/order', event);
+    };
+
+    context[context.tradeEvent] = function dexTrade(event) {
+        $.publish('dex/order', event);
+    };
+
     context['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] = async function erc20Transfer(event, element) {
         if (element.type !== 'SEEDToken') {
             return;
@@ -416,20 +452,90 @@ function ContractsManager() {
         }
         product = web3.eth.abi.decodeParameters(['address'], event.topics[1])[0].toLowerCase();
         product = Enumerable.From(context.getArray()).Where(it => it.fundingPanelAddress.toLowerCase() === product).FirstOrDefault();
-        if(!product) {
+        if (!product) {
             return;
         }
         var member = web3.eth.abi.decodeParameters(['address'], event.topics[2])[0].toLowerCase();
         try {
-            for(var i in product.members) {
+            for (var i in product.members) {
                 var m = product.members[i];
-                if(!m.disabled && m.address.toLowerCase() === member.toLowerCase()) {
+                if (!m.disabled && m.address.toLowerCase() === member.toLowerCase()) {
                     await context.memberFunded(event, element, product, m);
                     return;
                 }
             }
-        } catch(e) {
+        } catch (e) {}
+    };
+
+    context.getOrders = async function getOrders(a, events, event) {
+        !event && (events = await client.blockchainManager.retrieveEvents('0', 'latest', context.dexAddress, [[context.orderEvent, context.cancelEvent, context.tradeEvent]]));
+        if (!event && (!events || events.length === 0)) {
+            return;
         }
+        var main = (a || context.SEEDTokenAddress).toLowerCase();
+        var opposite = (a ? context.SEEDTokenAddress : context.ethAddress).toLowerCase();
+        var blockNumber = await client.blockchainManager.fetchLastBlockNumber();
+        var o = event ? events : {};
+        if (o.length !== undefined) {
+            var obj = {};
+            o.map(order => obj[order.key] = order);
+            o = obj;
+        }
+        event && context.elaborateSingleOrder(main, opposite, blockNumber, o, event);
+        !event && events.map(evt => context.elaborateSingleOrder(main, opposite, blockNumber, o, evt));
+        return Object.keys(o).map(k => o[k]);
+    };
+
+    context.elaborateSingleOrder = function elaborateSingleOrder(main, opposite, blockNumber, o, event) {
+        var isOrder = event.topics[0].toLowerCase() === context.orderEvent.toLowerCase();
+        var isCancel = event.topics[0].toLowerCase() === context.cancelEvent.toLowerCase();
+        var isTrade = event.topics[0].toLowerCase() === context.tradeEvent.toLowerCase();
+        var data = web3.eth.abi.decodeParameters(isOrder ? context.orderEventData : isCancel ? context.cancelEventData : context.tradeEventData, event.data);
+        var first = data[0].toLowerCase();
+        var amountGet = parseInt(data[1]);
+        var second = data[2].toLowerCase();
+        var amountGive = parseInt(data[3]);
+        if (!((first === main && second === opposite) || (first === opposite && second === main))) {
+            return;
+        }
+        if(isTrade) {
+            /*o[key].trades.push({
+                amountGive,
+                user: data[5]
+            });
+            o[key].amountGiveSum -= amountGive;*/
+            return;
+        }
+        var expires = parseInt(data[4]);
+        var nonce = parseInt(data[5]);
+        var user = data[6].toLowerCase();
+        if (blockNumber > expires) {
+            return;
+        }
+        var buy = first === main && second === opposite;
+        var key = user + '_' + Utils.numberToString(nonce) + '_' + Utils.numberToString(expires);
+        if (isCancel) {
+            delete o[key];
+            return;
+        }
+        var give = Utils.toEther(amountGive);
+        var get = Utils.toEther(amountGet);
+        var amount = (buy ? give : get) / (buy ? get : give);
+        amount = Utils.roundWei(Utils.toWei(amount));
+        o[key] = {
+            key,
+            buy,
+            user,
+            nonce,
+            expires,
+            first,
+            second,
+            amountGet,
+            amountGive,
+            amount,
+            trades: [],
+            amountGiveSum : amountGive
+        };
     };
 
     context.memberFunded = async function memberFunded(event, element, product, member) {
@@ -455,12 +561,10 @@ function ContractsManager() {
             if (client.userManager.user.wallet.toLowerCase() === investor.toLowerCase()) {
                 $('investment/mine', product);
             }
-        } catch (e) {
-        }
+        } catch (e) {}
     }
 
-    context['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'] = async function allowanceIncreased(event, element) {
-    };
+    context['0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'] = async function allowanceIncreased(event, element) {};
 
     context['0x28e958703d566ea9825155c28c95c3d92a2da219b51404343e4653bccd47525a'] = async function newFundingPanel(event, element) {
         var data = web3.eth.abi.decodeParameters(['address', 'address', 'address', 'address', 'uint'], event.data);
@@ -471,7 +575,7 @@ function ContractsManager() {
             return;
         }
         var element = {
-            factoryAddress : context.factoryAddress,
+            factoryAddress: context.factoryAddress,
             owner: data['0'],
             adminsToolsAddress: data['1'],
             tokenAddress: data['2'],
@@ -484,8 +588,7 @@ function ContractsManager() {
                 !client.userManager.user.list && (client.userManager.user.list = []);
                 client.userManager.user.list.push(position);
             }
-        } catch {
-        }
+        } catch {}
         $.publish('list/updated');
     };
 
@@ -534,7 +637,7 @@ function ContractsManager() {
             var index = missing[i];
             result = await context.Factory.getContractsByIndex(context.factoryAddress, index);
             var element = {
-                factoryAddress : context.factoryAddress,
+                factoryAddress: context.factoryAddress,
                 owner: result['0'],
                 adminsToolsAddress: result['1'],
                 tokenAddress: result['2'],
@@ -554,8 +657,7 @@ function ContractsManager() {
                     elements.push(element);
                 }
             }
-        } catch (e) {
-        }
+        } catch (e) {}
         $.publish('list/updated');
     };
     client.collaterateStart.push(context.checkBaskets);

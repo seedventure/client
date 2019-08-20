@@ -3,6 +3,12 @@
     .kt-grid {
         width: 100%;
     }
+    .row.bottom {
+        position: absolute;
+        bottom: 0;
+        right: 3%;
+        left: 2%;
+    }
     .searchBar {
         input {
             width: 100%;
@@ -16,26 +22,135 @@
             text-align: center;
         }
     }
-
-    ul.products {
-        min-height: 200px;
-        max-height: 200px;
+    ul {
         overflow-y: auto;
         overflow-x: hidden;
-        margin-block-start: 2em;
+        margin-block-start: 0.5em;
         padding-inline-start: 0px;
+        max-height: 150px;
         li {
-            list-style-type: disc;            
+            list-style-type: disc;
+            margin-bottom: 5px;
+            padding-left: 0.5em;
             &:hover {
                 border: 0.5px solid #6fd2fb;
                 cursor: pointer;
             }
+            a {
+                float: right;
+                margin-right: 0.5em;
+            }
         }
     }
-
     h3 {
         color: #fff !important;
-        background-color: #6fd2fb !important;
-        border-bottom: solid 5px #006b97 !important;
+        background-color: #006b97 !important;
+        border-bottom: solid 5px #6fd2fb !important;
+        padding-left: 3%;
+    }
+    .nav-tabs.nav.nav-tabs-line {
+        overflow: hidden;
+        margin: 0px;
+        .nav-item .nav-link {
+            padding: 5px;
+            font-size: 15px;
+        }
+    }
+    .label-general {
+        margin-top: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #68676e;
+        text-align: center;
+    }
+    #deposit,
+    #withdraw,
+    #transfer {
+        text-align: center;
+    }
+    .form-group {
+        .form-control {
+            height: 30px;
+            font-size: 15px;
+            margin-top: 2%;
+        }
+    }
+    .my-situation {
+        .btn {
+            font-size: 15px;
+            padding: 5%;
+            height: auto;
+        }
+    }
+    .buy-sell {
+        .nav-tabs.nav.nav-tabs-line .nav-item .nav-link {
+            padding: 0;
+            padding-left: 43%;
+            padding-right: 43%;
+            font-size: 20px;
+        }
+        .form-group {
+            margin-bottom: 1%;
+            h4 {
+                margin-top: 7%;
+                margin-bottom: 0;
+                line-height: 1;
+                &.tail {
+                    margin-top: 5%;
+                    .tiny {
+                        font-size: 17px;
+                    }
+                }
+            }
+            .btn {
+                font-size: 20px;
+                padding: 0;
+                padding-left: 10%;
+                padding-right: 10%;
+                height: auto;
+            }
+        }
+    }
+    .my-orders {
+        ul {
+            max-height: 183px;
+        }
+        li {
+            font-size: 0.95em;
+            &:hover {
+                border: none;
+                cursor: default;
+            }
+        }
+    }
+    .book {
+        .order-book {
+            height: calc(100% - 39px);
+            text-align: center;
+            .sell,
+            .buy {
+                height: 45%;
+                position: relative;
+                &>div {
+                    position: absolute;
+                    width: 100%;
+                    overflow-x: hidden;
+                    max-height: 100%;
+                }
+                .row.order {
+                    &:hover {
+                        border: 0.5px solid #6fd2fb;
+                        cursor: pointer;
+                    }
+                }
+            }
+            .sell>div {
+                bottom: 0;
+            }
+            .title {
+                height: 10%;
+                border-top: 1px solid #000;
+                border-bottom: 1px solid #000;
+            }
+        }
     }
 }

@@ -151,6 +151,14 @@ function BlockchainManager() {
         setTimeout(function(){context.provider.retrieveEvents(fromBlock, toBlock, address, context.getTopics()).then(context.onEvents)});
     };
 
+    context.fetchLastBlockNumber = function fetchLastBlockNumber() {
+        return context.provider.fetchLastBlockNumber();
+    };
+
+    context.retrieveEvents = function retrieveEvents(fromBlock, toBlock, address, topics) {
+        return context.provider.retrieveEvents(fromBlock, toBlock, address, topics);
+    };
+
     context.call = async function call(to, data) {
         return await context.provider.call(to, data);
     }

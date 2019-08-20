@@ -4,6 +4,18 @@ var Utils = function () {
 
   pageTitlePreamble = 'SEEDVenture - Platform';
 
+  var tokenSymbolLimit = 4;
+  var weiDecimals = '0000';
+
+  var cleanTokenSymbol = function cleanTokenSymbol(target) {
+    var value = target.value || target;
+      if(typeof value !== 'string') {
+        return value;
+      }
+      var maxLimit = Utils.tokenSymbolLimit + 2;
+      return value.length <= maxLimit ? value : (value.substring(0, Utils.tokenSymbolLimit) + '...');
+  };
+
   var parseNumber = function parseNumber(e, callback) {
     e && e.preventDefault();
     e && e.stopPropagation();
@@ -18,13 +30,13 @@ var Utils = function () {
           callback && callback();
           return;
         }
-        value = value.toLocaleString(value);
+        value = Utils.numberToString(value, true);
         target.value = value;
         callback && callback();
       } catch (e) {
         console.error(e);
       }
-    }, 900);
+    }, 1400);
   };
 
   var cleanNumber = function cleanNumber(target) {
@@ -150,7 +162,7 @@ var Utils = function () {
     window.location.href = url;
   }
 
-  numberToString = function numberToString(num) {
+  numberToString = function numberToString(num, locale) {
     if (num === undefined || num === null) {
       num = 0;
     }
@@ -175,33 +187,38 @@ var Utils = function () {
         numStr = num.toString() + (new Array(e + 1)).join('0');
       }
     }
+    if(locale === true) {
+      var numStringSplitted = numStr.split(' ').join('').split('.');
+      return parseInt(numStringSplitted[0]).toLocaleString() + (numStringSplitted.length === 1 ? '' : (Utils.decimalsSeparator + numStringSplitted[1]))
+    }
     return numStr;
   }
 
   roundWei = function (wei) {
     if (!wei) {
-      return '0' + Utils.decimalsSeparator + '00';
+      return '0' + Utils.decimalsSeparator + Utils.weiDecimals;
     }
+    var defaultFixed = Utils.weiDecimals.length;
     typeof wei === 'string' && (wei = Utils.cleanNumber(wei));
     typeof wei !== 'string' && (wei = Utils.numberToString(wei));
     var str = web3.utils.fromWei(wei, 'ether');
-    var fixed = 2;
+    var fixed = defaultFixed;
     if (str.indexOf('.') !== -1) {//DO NOT EDIT TO Utils.decimalsSeparator: web3 fromwei uses dots for decimals
       var n = str.split('.')[1];
-      fixed = parseInt(n) === 0 ? 2 : n.length;
+      fixed = parseInt(n) === 0 ? defaultFixed : n.length;
     }
     str = parseFloat(Utils.cleanNumber(str.split('.').join(Utils.decimalsSeparator)).toFixed(fixed)).toLocaleString();
-    fixed = 2;
+    fixed = defaultFixed;
     if (str.indexOf(Utils.decimalsSeparator) !== -1) {
       var n = str.split(Utils.decimalsSeparator)[1]
-      fixed = parseInt(n) === 0 ? 2 : n.length;
+      fixed = parseInt(n) === 0 ? defaultFixed : n.length;
     }
     var s = parseFloat(Utils.cleanNumber(str).toFixed(fixed)).toLocaleString();
     if (s.indexOf(Utils.decimalsSeparator) === -1) {
-      s += (Utils.decimalsSeparator + '00');
+      s += (Utils.decimalsSeparator + Utils.weiDecimals);
     }
-    if (s.indexOf(Utils.decimalsSeparator) < s.length - 3) {
-      s = s.split(Utils.decimalsSeparator)[0] + Utils.decimalsSeparator + s.split(Utils.decimalsSeparator)[1].substring(0, 2);
+    if (s.indexOf(Utils.decimalsSeparator) < s.length - (defaultFixed + 1)) {
+      s = s.split(Utils.decimalsSeparator)[0] + Utils.decimalsSeparator + s.split(Utils.decimalsSeparator)[1].substring(0, defaultFixed);
     }
     return s;
   }
@@ -209,8 +226,15 @@ var Utils = function () {
   var toWei = function toWei(v) {
     var value = v.value || v;
     typeof value === 'string' && (value = Utils.cleanNumber(value));
-    typeof value !== 'string' && (value = Utils.numberToString(value))
+    typeof value !== 'string' && (value = Utils.numberToString(value));
     return parseInt(web3.utils.toWei(value, 'ether'));
+  };
+
+  var toEther = function toEther(v) {
+    var value = v.value || v;
+    typeof value === 'string' && (value = Utils.cleanNumber(value));
+    typeof value !== 'string' && (value = Utils.numberToString(value));
+    return parseFloat(web3.utils.fromWei(value, 'ether'));
   };
 
   isEthereumAddress = function (ad) {
@@ -281,6 +305,10 @@ var Utils = function () {
     AJAXRequest,
     parseNumber,
     cleanNumber,
-    toWei
+    toWei,
+    toEther,
+    tokenSymbolLimit,
+    cleanTokenSymbol,
+    weiDecimals
   };
 }();
