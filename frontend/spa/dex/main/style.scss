@@ -75,6 +75,7 @@
         }
     }
     .my-situation {
+        min-height: 355px;
         .btn {
             font-size: 15px;
             padding: 5%;
@@ -82,6 +83,7 @@
         }
     }
     .buy-sell {
+        min-height: 200px;
         .nav-tabs.nav.nav-tabs-line .nav-item .nav-link {
             padding: 0;
             padding-left: 43%;
@@ -147,10 +149,18 @@
                 bottom: 0;
             }
             .title {
-                height: 10%;
                 border-top: 1px solid #000;
                 border-bottom: 1px solid #000;
             }
+        }
+    }
+    .last-trades {
+        text-align: center;
+        .title {
+            border-bottom: 1px solid #000;
+        }
+        .last-trades-list {
+            max-height: 300px;
         }
     }
 }

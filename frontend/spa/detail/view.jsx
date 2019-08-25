@@ -73,7 +73,7 @@ var Detail = React.createClass({
     investChanged() {
         var investment = Utils.cleanNumber(this.investment);
         if(isNaN(investment)) {
-            this.forYou.innerHTML = '0.00';
+            this.forYou.innerHTML = Utils.roundWei();
             return;
         }
         var product = this.getProduct();
@@ -121,9 +121,9 @@ var Detail = React.createClass({
                     <div className="progress">
                         <div className="progress-bar" role="progressbar" ref={ref => this.progressBar = $(ref)} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
                     </div>,
-                    <h3><strong>{product.totalUnlocked && product.totalUnlocked > 0 ? Utils.roundWei(product.totalUnlocked) : '0'}</strong>{" SEED Tokens " + (this.props.parent ? "Raised by this Startup" : "Unlocked for its Startups")}</h3>
+                    <h3><strong>{Utils.roundWei(product.totalUnlocked)}</strong>{" SEED Tokens " + (this.props.parent ? "Raised by this Startup" : "Unlocked for its Startups")}</h3>
                 ]}
-                {this.props.parent && product.productPosition !== undefined && <h3>This Startup raised <strong>{product.totalRaised && product.totalRaised > 0 ? Utils.roundWei(product.totalRaised) : '0'}</strong> SEED Tokens Unlocked from this Basket</h3>}
+                {this.props.parent && product.productPosition !== undefined && <h3>This Startup raised <strong>{Utils.roundWei(product.totalRaised)}</strong> SEED Tokens Unlocked from this Basket</h3>}
                 {full !== true && !client.configurationManager.hasUnlockedUser() && <div className="investments">
                     <h3>To invest in this Basket you need to <a href="#" onClick={() => this.emit('page/change', CreateConfiguration)}>create a new wallet</a> or <a href="#" onClick={() => this.emit('page/change', ImportConfiguration)}>import an existing one</a></h3>
                 </div>}
@@ -148,11 +148,11 @@ var Detail = React.createClass({
                         </div>
                         <div className='col-md-3'>
                             <div className="form-group">
-                                <input className="form-control form-control-last" type="text" onChange={this.onInvestChange} placeholder="0.00" ref={ref => this.investment = ref} />
+                                <input className="form-control form-control-last" type="text" onChange={this.onInvestChange} placeholder={Utils.roundWei()} ref={ref => this.investment = ref} />
                             </div>
                         </div>
                         <div className="col-md-6">
-                            <h3>SEEDS and will receive <strong ref={ref => this.forYou = ref}>0.00</strong> {product.symbol} tokens.</h3>
+                            <h3>SEEDS and will receive <strong ref={ref => this.forYou = ref}>{Utils.roundWei()}</strong> {product.symbol} tokens.</h3>
                         </div>
                         <div className="col-md-1">
                             <button className="btn btn-brand btn-pill" onClick={this.ok}>Invest</button>

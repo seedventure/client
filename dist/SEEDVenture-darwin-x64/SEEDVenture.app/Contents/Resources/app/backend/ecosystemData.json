@@ -1,5 +1,5 @@
 {
-    "factoryAddress": "0xd7f7c1206cf5dd94d6a2565dc1d078cdeaefb8c8",
+    "factoryAddress": "0xf5b5042766eeb6dfc5ba8ebbafc61df26f0901da",
     "web3Provider": "assets/scripts/blockchain.provider.web3.js",
     "etherscanURL": "https://ropsten.etherscan.io/",
     "web3URL": "wss://testnet.seedventure.io",
@@ -10,5 +10,5 @@
     "ipfsUrlTemplate": "https://ipfs.io/ipfs/",
     "gasPrice": 30,
     "gasLimit": 8000000,
-    "distDate": 1566287742720
+    "distDate": 1566750594534
 }

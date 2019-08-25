@@ -334,6 +334,15 @@ var EditFundingPool = React.createClass({
         }
         this.controller.setSingleWhitelist(address, whiteListAmount);
     },
+    parseWhitelistAmount(e) {
+        Utils.parseNumber(e, this.updateWhitelistTokenAmount)
+    },
+    updateWhitelistTokenAmount() {
+        var whitelistAmount = Utils.cleanNumber(this.whiteListAmount);
+        var rate = Utils.toEther(this.getProduct().seedRate);
+        var amount = whitelistAmount * rate;
+        this.whiteListTokenAmount.innerHTML = Utils.roundWei(Utils.toWei(amount));
+    },
     render() {
         var _this = this;
         var product = this.getProduct();
@@ -547,7 +556,7 @@ var EditFundingPool = React.createClass({
                             {!this.props.parent && <div className="tab-pane" id="whiteList" role="tabpanel">
                                 <form className="kt-form" action="">
                                     <div className="row">
-                                        <div className="col-md-6">
+                                        <div className="col-md-4">
                                             <h4>Wallet</h4>
                                             <p className="small">of the investor you want to whitelist</p>
                                             <div className="form-group">
@@ -556,9 +565,16 @@ var EditFundingPool = React.createClass({
                                         </div>
                                         <div className="col-md-4">
                                             <h4>Amount</h4>
-                                            <p className="small">the max amount of tokens that this investor can hold (expressed in SEED)</p>
+                                            <p className="small">the max amount of SEED tokens that this investor can hold for this basket</p>
                                             <div className="form-group">
-                                                <input className="form-control" type="text" placeholder="Amount" ref={ref => this.whiteListAmount = ref} onChange={Utils.parseNumber} />
+                                                <input className="form-control" type="text" placeholder="Amount" ref={ref => this.whiteListAmount = ref} onChange={this.parseWhitelistAmount} />
+                                            </div>
+                                        </div>
+                                        <div className="col-md-2">
+                                            <h4>{product.symbol}</h4>
+                                            <p className="small">the max amount of {product.symbol} tokens that this investor can hold</p>
+                                            <div className="form-group">
+                                                <span ref={ref => this.whiteListTokenAmount = ref}>{Utils.roundWei()}</span>
                                             </div>
                                         </div>
                                         <div className="col-md-2">

@@ -5,13 +5,14 @@ function ContractsManager() {
     context.factoryAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress);
     context.dexAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress);
     context.ethAddress = '0x0000000000000000000000000000000000000000';
+    context.addressTopicPrefix = '0x000000000000000000000000';
 
     context.orderEvent = '0x3f7f2eda73683c21a15f9435af1028c93185b5f1fa38270762dc32be606b3e85';
-    context.orderEventData = ['address', 'uint', 'address', 'uint', 'uint', 'uint', 'address'];
-    context.cancelEvent = '0x1e0b760c386003e9cb9bcf4fcf3997886042859d9b6ed6320e804597fcdb28b0';
-    context.cancelEventData = ['address', 'uint', 'address', 'uint', 'uint', 'uint', 'address', 'uint8', 'bytes32', 'bytes32'];
-    context.tradeEvent = '0x6effdda786735d5033bfad5f53e5131abcced9e52be6c507b62d639685fbed6d';
-    context.tradeEventData = ['address', 'uint', 'address', 'uint', 'address', 'address'];
+    context.orderEventData = ['uint', 'uint', 'uint', 'uint'];
+    context.cancelEvent = '0x23abf2ec32f342a8a69304f69761adc394b1915db95ad0cfff3772d9fb3ee3c8';
+    context.cancelEventData = ['uint', 'uint', 'uint', 'uint'];
+    context.tradeEvent = '0x104e5b93574c30c271d6ce9e81f0ddba1a5b8497ef698551564800d4f9a7ce73';
+    context.tradeEventData = ['uint', 'uint', 'uint', 'uint', 'uint', 'address'];
 
     context.productQueue = {};
 
@@ -413,15 +414,17 @@ function ContractsManager() {
         if (!client.userManager.user) {
             return;
         }
-        var topic = web3.eth.abi.decodeParameters(['address', 'address', 'uint', 'uint'], event.data);
-        if (topic[0].toLowerCase() !== client.userManager.user.wallet.toLowerCase()) {
+        var wallet = '0x' + event.topics[2].toLowerCase().split(context.addressTopicPrefix)[1];
+        if (wallet !== client.userManager.user.wallet.toLowerCase()) {
             return;
         }
-        var contractOrEth = topic[0].toLowerCase();
+        var contractOrEth = '0x' + event.topics[1].toLowerCase().split(context.addressTopicPrefix)[1];
         contractOrEth === context.ethAddress && $.publish('amount/eth');
         contractOrEth === context.SEEDTokenAddress && $.publish('amount/seed');
-        var product = Enumerable.From(context.getArray()).Where(it => it.tokenAddress.toLowerCase() === contractOrEth).First();
-        $.publish('fundingPanel/' + product.position + '/updated', product);
+        try {
+            var product = Enumerable.From(context.getArray()).Where(it => it.tokenAddress.toLowerCase() === contractOrEth).First();
+            $.publish('fundingPanel/' + product.position + '/updated', product);
+        } catch (e) {}
     };
 
     context['0xf341246adaac6f497bc2a656f546ab9e182111d630394f0c57c710a59a2cb567'] = function withdrawToDEX(event) {
@@ -436,8 +439,15 @@ function ContractsManager() {
         $.publish('dex/order', event);
     };
 
-    context[context.tradeEvent] = function dexTrade(event) {
-        $.publish('dex/order', event);
+    context[context.tradeEvent] = async function dexTrade(event) {
+        var first = '0x' + event.topics[1].toLowerCase().split(context.addressTopicPrefix)[1];
+        var second = '0x' + event.topics[2].toLowerCase().split(context.addressTopicPrefix)[1];
+        var tokenAddress = first === context.SEEDTokenAddress ? second : first;
+        var trade = context.elaborateSingleOrder(tokenAddress, context.SEEDTokenAddress, event);
+        var product = Enumerable.From(context.getArray()).Where(it => it.tokenAddress = tokenAddress).FirstOrDefault();
+        product && (product.value = trade.amountWei);
+        product && $.publish('fundingPanel/' + product.position + '/updated', product);
+        $.publish('dex/order', [event, trade]);
     };
 
     context['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'] = async function erc20Transfer(event, element) {
@@ -467,61 +477,115 @@ function ContractsManager() {
         } catch (e) {}
     };
 
-    context.getOrders = async function getOrders(a, events, event) {
-        !event && (events = await client.blockchainManager.retrieveEvents('0', 'latest', context.dexAddress, [[context.orderEvent, context.cancelEvent, context.tradeEvent]]));
-        if (!event && (!events || events.length === 0)) {
-            return;
-        }
+    context.getOrders = async function getOrders(a, evts, event) {
+        var events = (evts && JSON.parse(JSON.stringify(evts))) || [];
+        var trades = events.shift() || [];
         var main = (a || context.SEEDTokenAddress).toLowerCase();
         var opposite = (a ? context.SEEDTokenAddress : context.ethAddress).toLowerCase();
         var blockNumber = await client.blockchainManager.fetchLastBlockNumber();
-        var o = event ? events : {};
+        if (!event) {
+            events = [];
+            var a1 = context.addressTopicPrefix + main.split('0x')[1];
+            var a2 = context.addressTopicPrefix + opposite.split('0x')[1];
+            var topics = [
+                [context.orderEvent, context.cancelEvent, context.tradeEvent],
+                [a1, a2],
+                [a1, a2]
+            ];
+            var start = 0;
+            var end = context.deployBlock - 1;
+            while ((start = (end + 1)) <= blockNumber) {
+                end = start + client.blockchainManager.blockSequenceToCheck;
+                end = end > blockNumber ? blockNumber : end;
+                var evts = await client.blockchainManager.retrieveEvents(Utils.numberToString(start), Utils.numberToString(end), context.dexAddress, topics);
+                evts && (events = events.concat(evts));
+            }
+        };
+        if (!event && (!events || events.length === 0)) {
+            return;
+        }
+        var o = (event ? events : {}) || {};
         if (o.length !== undefined) {
             var obj = {};
             o.map(order => obj[order.key] = order);
             o = obj;
         }
-        event && context.elaborateSingleOrder(main, opposite, blockNumber, o, event);
-        !event && events.map(evt => context.elaborateSingleOrder(main, opposite, blockNumber, o, evt));
-        return Object.keys(o).map(k => o[k]);
+        event && context.elaborateSingleOrder(main, opposite, event, blockNumber, o, trades, true);
+        !event && events.map(evt => context.elaborateSingleOrder(main, opposite, evt, blockNumber, o, trades));
+        var orders = Object.keys(o).map(k => o[k]);
+        orders.unshift(trades);
+        return orders;
     };
 
-    context.elaborateSingleOrder = function elaborateSingleOrder(main, opposite, blockNumber, o, event) {
+    context.elaborateSingleOrder = function elaborateSingleOrder(main, opposite, event, blockNumber, o, trades, single) {
         var isOrder = event.topics[0].toLowerCase() === context.orderEvent.toLowerCase();
         var isCancel = event.topics[0].toLowerCase() === context.cancelEvent.toLowerCase();
         var isTrade = event.topics[0].toLowerCase() === context.tradeEvent.toLowerCase();
         var data = web3.eth.abi.decodeParameters(isOrder ? context.orderEventData : isCancel ? context.cancelEventData : context.tradeEventData, event.data);
-        var first = data[0].toLowerCase();
-        var amountGet = parseInt(data[1]);
-        var second = data[2].toLowerCase();
-        var amountGive = parseInt(data[3]);
+        var first = '0x' + event.topics[1].toLowerCase().split(context.addressTopicPrefix)[1];
+        var second = '0x' + event.topics[2].toLowerCase().split(context.addressTopicPrefix)[1];
         if (!((first === main && second === opposite) || (first === opposite && second === main))) {
             return;
         }
-        if(isTrade) {
-            /*o[key].trades.push({
-                amountGive,
-                user: data[5]
-            });
-            o[key].amountGiveSum -= amountGive;*/
-            return;
-        }
-        var expires = parseInt(data[4]);
-        var nonce = parseInt(data[5]);
-        var user = data[6].toLowerCase();
-        if (blockNumber > expires) {
-            return;
-        }
+        var amountGet = parseInt(data[0]);
+        var amountGive = parseInt(data[1]);
+        var expires = parseInt(data[2]);
+        var nonce = parseInt(data[3]);
+        var user = '0x' + event.topics[3].toLowerCase().split(context.addressTopicPrefix)[1];
         var buy = first === main && second === opposite;
         var key = user + '_' + Utils.numberToString(nonce) + '_' + Utils.numberToString(expires);
+        var give = Utils.toEther(amountGive);
+        var get = Utils.toEther(amountGet);
+        var amount = (buy ? give : get) / (buy ? get : give);
+        var amountNumber = amount;
+        var amountWei = Utils.toWei(amountNumber);
+        amount = Utils.roundWei(Utils.toWei(amount));
+        if (isTrade) {
+            var decursionAmount = parseInt(data[4]);
+            var oldAmountNumber = amountNumber;//TODO Remove after dex edit
+            amountNumber = Utils.toEther(data[4]);//TODO Remove after dex edit
+            decursionAmount = parseInt(data[0]);//TODO Remove after dex edit
+            var decursionAmountEther = Utils.toEther(decursionAmount);
+            var amountGiveDecursion = buy ? (amountNumber * decursionAmountEther) : decursionAmountEther;
+            var amountGetDecursion = buy ? decursionAmountEther : (amountNumber * decursionAmountEther);
+            var amountGiveDecursion = buy ? (amountNumber / decursionAmountEther) : decursionAmountEther;//TODO Remove after dex edit
+            var amountGetDecursion = buy ? decursionAmountEther : (amountNumber / decursionAmountEther);//TODO Remove after dex edit
+            amountNumber = oldAmountNumber;//TODO Remove after dex edit
+            var decursionUser = data[5].toLowerCase();
+            
+            var trade = {
+                buy,
+                orderKey: key,
+                decursionAmount,
+                amountGiveDecursion: Utils.toWei(amountGiveDecursion),
+                amountGetDecursion: Utils.toWei(amountGetDecursion),
+                user: decursionUser,
+                amount,
+                amountNumber,
+                amountWei,
+                transactionHash: event.transactionHash,
+                first,
+                second
+            };
+            trades && !Enumerable.From(trades).Any(it => it.transactionHash === trade.transactionHash) && trades.push(trade);
+            if (o) {
+                var orderToDecurt = o[key];
+                orderToDecurt.trades.push(trade);
+                orderToDecurt.amountGiveSum -= Utils.toWei(amountGiveDecursion);
+                orderToDecurt.amountGetSum -= Utils.toWei(amountGetDecursion);
+            }
+            try {
+                single === true && (client.usermanager.user.wallet.toLowerCase() === user || client.usermanager.user.wallet.toLowerCase() === decursionUser) && $.publish('amount/seed');
+            } catch (e) {}
+            return trade;
+        }
         if (isCancel) {
             delete o[key];
             return;
         }
-        var give = Utils.toEther(amountGive);
-        var get = Utils.toEther(amountGet);
-        var amount = (buy ? give : get) / (buy ? get : give);
-        amount = Utils.roundWei(Utils.toWei(amount));
+        if (blockNumber > expires) {
+            return;
+        }
         o[key] = {
             key,
             buy,
@@ -533,8 +597,12 @@ function ContractsManager() {
             amountGet,
             amountGive,
             amount,
+            amountWei,
+            amountNumber,
             trades: [],
-            amountGiveSum : amountGive
+            transactionHash: event.transactionHash,
+            amountGiveSum: amountGive,
+            amountGetSum: amountGet
         };
     };
 
@@ -599,6 +667,13 @@ function ContractsManager() {
         client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress, null);
         client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress, null);
         client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.lastCheckedBlockNumber, null);
+        await context.refreshContext(true);
+        await context.checkBaskets();
+        client.blockchainManager.resume();
+    };
+
+    context.refreshContext = async function refreshContext(cleanBlockNumber) {
+        var factoryAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress);
         var data = undefined;
         try {
             data = await context.Factory.getFactoryContext(factoryAddress);
@@ -608,14 +683,13 @@ function ContractsManager() {
         if (!data) {
             return;
         }
-        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress, data[0]);
-        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress, data[1]);
-        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.lastCheckedBlockNumber, parseInt(data[2]));
-        context.SEEDTokenAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress);
-        context.factoryAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress);
-        context.dexAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress);
-        await context.checkBaskets();
-        client.blockchainManager.resume();
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress, data[0].toLowerCase());
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress, data[1].toLowerCase());
+        cleanBlockNumber === true && client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.lastCheckedBlockNumber, parseInt(data[2]));
+        context.deployBlock = parseInt(data[2]);
+        context.SEEDTokenAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress).toLowerCase();
+        context.factoryAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress).toLowerCase();
+        context.dexAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.dexAddress).toLowerCase();
     };
 
     context.checkBaskets = async function checkBaskets() {
@@ -623,6 +697,7 @@ function ContractsManager() {
             await context.changeFactoryAddress(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress));
             return;
         }
+        await context.refreshContext();
         var result = parseInt(await context.Factory.getTotalFPContracts(context.factoryAddress));
         if (result === 0) {
             return;

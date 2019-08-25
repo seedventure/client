@@ -6,7 +6,7 @@ var Dex = React.createClass({
         return {
             'amount/eth': () => this.loadBalances(true),
             'amount/seed': () => this.loadBalances(true),
-            'dex/order': this.updateOrders
+            'dex/order': this.updateOrders,
         };
     },
     updateOrders(event) {
@@ -234,8 +234,11 @@ var Dex = React.createClass({
             return alert("Total must be greater than 0");
         }
         var expires = parseInt(this.buySellExpires.value);
-        if (isNaN(expires) || expires <= 1 || expires > this.maxBlockNumber) {
+        /*if (isNaN(expires) || expires <= 1 || expires > this.maxBlockNumber) {
             return alert("Blocks must be a number between 1 and " + Utils.numberToString(this.maxBlockNumber));
+        }*/
+        if (isNaN(expires) || expires <= 1) {
+            return alert("Blocks must be a number higher than 0");
         }
         this.controller.order(buy, amount, price, total, expires);
     },
@@ -258,16 +261,16 @@ var Dex = React.createClass({
     askTrade(e, order) {
         e && e.preventDefault() && e.stopPropagation();
         try {
-            if(order.user.toLowerCase() === client.userManager.user.wallet.toLowerCase()) {
+            if (order.user.toLowerCase() === client.userManager.user.wallet.toLowerCase()) {
                 //return alert('Cannot trade on your own order');
             }
-        } catch(e) {
+        } catch (e) {
         }
         this.order = order;
         this.tradeModalType1.html('<strong>' + (order.buy ? 'SELL' : 'BUY') + '</strong>');
         this.tradeModalType2.html('<strong>' + (order.buy ? 'BUY' : 'SELL') + '</strong>');
-        this.tradeModalAmount.value = Utils.roundWei(order.buy ? order.amountGet : order.amountGive);
-        this.tradeModalAvailable.innerHTML = ' of ' + Utils.roundWei(order.buy ? order.amountGet : order.amountGive);
+        this.tradeModalAmount.value = Utils.roundWei(order.buy ? order.amountGetSum : order.amountGiveSum);
+        this.tradeModalAvailable.innerHTML = ' of ' + Utils.roundWei(order.buy ? order.amountGetSum : order.amountGiveSum);
         this.tradeModalPrice.value = order.amount;
         this.updateTradeModal();
         this.tradeModal.show();
@@ -275,10 +278,10 @@ var Dex = React.createClass({
     trade(e) {
         e && e.preventDefault() && e.stopPropagation();
         var amount = Utils.toWei(this.tradeModalAmount);
-        if(amount <= 0) {
+        if (amount <= 0) {
             return alert('Amount must be anumber greater than 0');
         }
-        if(amount > (this.order.buy ? this.order.amountGet : this.order.amountGiveSum)) {
+        if (amount > (this.order.buy ? this.order.amountGetSum : this.order.amountGiveSum)) {
             return alert('Specified amount exceedes availability');
         }
         this.tradeModal.hide();
@@ -293,21 +296,47 @@ var Dex = React.createClass({
         }
         this.blocksToSeconds.innerHTML = Utils.numberToString(seconds);
     },
-    render() {
-        var _this = this;
-        var products = _this.getProductsArray();
-        var product = _this.getProductForView();
+    onOrderThresholdChange(e) {
+        Utils.parseNumber(e, this.updateOrderThreshold);
+    },
+    updateOrderThreshold() {
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.orderThreshold, Utils.toWei(this.orderThreshold));
+        this.forceUpdate();
+    },
+    getOrders(orderThreshold) {
         var buyOrders = [];
         var sellOrders = [];
         var myOrders = [];
+        var trades = [];
         try {
-            var orders = Enumerable.From(this.state.orders).Where(it => it.amountGiveSum > 0);
-            buyOrders = orders.Where(it => it.buy).OrderBy(it => it.amountGive).ToArray();
-            sellOrders = orders.Where(it => !it.buy).OrderByDescending(it => it.amountGet).ToArray();
+            var orders = JSON.parse(JSON.stringify(this.state.orders));
+            trades = Enumerable.From(orders[0]).Reverse().ToArray();
+            orders.shift();
+            orders = Enumerable.From(orders).Where(it => it.amountGiveSum > 0 && it.amountNumber >= orderThreshold);
+            buyOrders = orders.Where(it => it.buy).OrderBy(it => it.amountWei).ToArray();
+            sellOrders = orders.Where(it => !it.buy).OrderByDescending(it => it.amountWei).ToArray();
             var userWallet = client.userManager.user.wallet.toLowerCase();
             myOrders = orders.Where(it => it.user === userWallet).OrderByDescending().ToArray();
         } catch (e) {
         }
+        return {
+            buyOrders,
+            sellOrders,
+            myOrders,
+            trades
+        };
+    },
+    render() {
+        var _this = this;
+        var products = _this.getProductsArray();
+        var product = _this.getProductForView();
+        var orderThreshold = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.orderThreshold);
+        orderThreshold = orderThreshold || 0;
+        var orders = _this.getOrders(Utils.toEther(orderThreshold));
+        var buyOrders = orders.buyOrders;
+        var sellOrders = orders.sellOrders;
+        var myOrders = orders.myOrders;
+        var trades = orders.trades;
         return (
             <div className="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--ver kt-grid--stretch">
                 <div className="kt-container kt-body kt-grid kt-grid--ver" id="kt_body">
@@ -474,6 +503,21 @@ var Dex = React.createClass({
                                                 </form>
                                             </div>
                                         </div>]}
+                                        <div>
+                                            <div className="row">
+                                                <div className="col-md-12">
+                                                    Hide orders with price less than
+                                                </div>
+                                            </div>
+                                            <div className="row">
+                                                <div className="col-md-8 form-group">
+                                                    <input className="form-control" type="text" ref={ref => (this.orderThreshold = ref) && (ref.value = Utils.roundWei(orderThreshold))} onChange={this.onOrderThresholdChange} />
+                                                </div>
+                                                <div className="col-md-4">
+                                                    {product.symbol} / {product.otherSymbol}
+                                                </div>
+                                            </div>
+                                        </div>
                                 </div>
                                 <div className="col-md-6 book">
                                     <h3>Book</h3>
@@ -489,7 +533,7 @@ var Dex = React.createClass({
                                                             {Utils.roundWei(order.amountGiveSum)}
                                                         </div>
                                                         <div className="col-md-4">
-                                                            {Utils.roundWei(order.amountGet)}
+                                                            {Utils.roundWei(order.amountGetSum)}
                                                         </div>
                                                     </div>
                                                 )}
@@ -516,7 +560,7 @@ var Dex = React.createClass({
                                                             {order.amount}
                                                         </div>
                                                         <div className="col-md-4">
-                                                            {Utils.roundWei(order.amountGet)}
+                                                            {Utils.roundWei(order.amountGetSum)}
                                                         </div>
                                                         <div className="col-md-4">
                                                             {Utils.roundWei(order.amountGiveSum)}
@@ -529,6 +573,40 @@ var Dex = React.createClass({
                                 </div>
                                 <div className="col-md-3 last-trades">
                                     <h3>Last Trades</h3>
+                                    <div className="title">
+                                        <div className="row">
+                                            <div className="col-md-3">
+                                                {Utils.cleanTokenSymbol(product.symbol)} / {Utils.cleanTokenSymbol(product.otherSymbol)}
+                                            </div>
+                                            <div className="col-md-3">
+                                                {Utils.cleanTokenSymbol(product.symbol)}
+                                            </div>
+                                            <div className="col-md-3">
+                                                {Utils.cleanTokenSymbol(product.otherSymbol)}
+                                            </div>
+                                            <div className="col-md-3">
+                                                {'\u00A0'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="last-trades-list">
+                                        {trades.map(trade =>
+                                            <div key={trade.orderKey} className="trade row">
+                                                <div className={"col-md-3 color-" + (trade.buy ? 'green' : 'red')}>
+                                                    {trade.amount}
+                                                </div>
+                                                <div className="col-md-3">
+                                                    {Utils.roundWei(trade.buy ? trade.amountGiveDecursion : trade.amountGetDecursion)}
+                                                </div>
+                                                <div className="col-md-3">
+                                                    {Utils.roundWei(trade.buy ? trade.amountGetDecursion : trade.amountGiveDecursion)}
+                                                </div>
+                                                <div className="col-md-3">
+                                                    <a href={ecosystemData.etherscanURL + "tx/" + trade.transactionHash}>Detail</a>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div className="row bottom">
@@ -657,7 +735,7 @@ var Dex = React.createClass({
                                 <h4>{Utils.cleanTokenSymbol(product.symbol)}/{Utils.cleanTokenSymbol(product.otherSymbol)}</h4>
                             </div>
                             <div className="col-md-9 form-group">
-                                <input className="form-control" type="text" ref={ref => (this.tradeModalPrice = ref) && (ref.value = Utils.roundWei())} disabled/>
+                                <input className="form-control" type="text" ref={ref => (this.tradeModalPrice = ref) && (ref.value = Utils.roundWei())} disabled />
                             </div>
                         </div>
                         <div className="row">

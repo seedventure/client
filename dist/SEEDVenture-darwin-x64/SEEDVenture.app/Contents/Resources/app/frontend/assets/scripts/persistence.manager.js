@@ -10,7 +10,8 @@ function PersistenceManager() {
     'dexAddress',
     'lastCheckedBlockNumber',
     'documentsUploaderHost',
-    'documentsUploaderProviderSet'
+    'documentsUploaderProviderSet',
+    'orderThreshold'
   ];
   Object.keys(ecosystemData).map(function(key) {
       context.PERSISTENCE_PROPERTIES.push(key);

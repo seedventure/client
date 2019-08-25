@@ -3,7 +3,6 @@ var DexController = function (view) {
     context.view = view;
 
     context.ethAddress = '0x0000000000000000000000000000000000000000';
-    context.bytes32 = web3.utils.soliditySha3('');
 
     context.setBalances = function setBalances(balances) {
         delete context.balances;
@@ -182,7 +181,7 @@ var DexController = function (view) {
     };
 
     context.cancelOrder = async function cancelOrder(order) {
-        await client.contractsManager.SeedDex.cancelOrder(client.contractsManager.dexAddress, order.first, Utils.numberToString(order.amountGet), order.second, Utils.numberToString(order.amountGive), Utils.numberToString(order.expires), Utils.numberToString(order.nonce), context.bytes32, context.bytes32, context.bytes32, "Cancel " + (order.buy ? 'buy' : 'sell') + ' order');
+        await client.contractsManager.SeedDex.cancelOrder(client.contractsManager.dexAddress, order.first, Utils.numberToString(order.amountGet), order.second, Utils.numberToString(order.amountGive), Utils.numberToString(order.expires), Utils.numberToString(order.nonce), "Cancel " + (order.buy ? 'buy' : 'sell') + ' order');
     };
 
     context.trade = async function trade(order, amount) {
@@ -194,9 +193,8 @@ var DexController = function (view) {
         if(order.expires < (await client.blockchainManager.fetchLastBlockNumber())) {
             context.view.updateOrders();
             setTimeout(() => alert('Order expired'));
-            return;
+            return true;
         }
-
-        await client.contractsManager.SeedDex.trade(client.contractsManager.dexAddress, order.first, Utils.numberToString(order.amountGet), order.second, Utils.numberToString(order.amountGive), Utils.numberToString(order.expires), Utils.numberToString(order.nonce), order.user, context.bytes32, context.bytes32, context.bytes32, Utils.numberToString(amount), "Trade Order");
+        return await client.contractsManager.SeedDex.trade(client.contractsManager.dexAddress, order.first, Utils.numberToString(order.amountGet), order.second, Utils.numberToString(order.amountGive), Utils.numberToString(order.expires), Utils.numberToString(order.nonce), order.user, Utils.numberToString(amount), "Trade Order");
     };
 };

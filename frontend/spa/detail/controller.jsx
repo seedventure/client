@@ -65,16 +65,17 @@ var DetailController = function (view) {
         var newInvestment = parseFloat(web3.utils.fromWei(Utils.numberToString(basket.seedRate), 'ether')) * parseFloat(investment);
         newInvestment = parseFloat(web3.utils.toWei(Utils.numberToString(newInvestment), 'ether'));
         var whiteListThreshold = basket.whiteListThreshold;
-        if(actualInvestment + newInvestment > whiteListThreshold) {
-            if(!await client.contractsManager.call(contracts.AdminTools, basket.adminsToolsAddress, 'isWhitelisted', client.userManager.user.wallet)) {
-                alert("Your total investment amount exceeds the Whitelist threshold. You must be whitelisted to do this investment");
-                return;
-            }
-            var whiteListAmount = parseInt(await client.contractsManager.AdminTools.getMaxWLAmount(basket.adminsToolsAddress, client.userManager.user.wallet));
-            if(actualInvestment + newInvestment > whiteListAmount) {
-                alert("Your total investment amount exceeds your Whitelist limit.");
-                return;
-            }
+
+        var isWhiteListed = await client.contractsManager.AdminTools.isWhitelisted(basket.adminsToolsAddress, client.userManager.user.wallet);
+        var whiteListAmount = parseInt(await client.contractsManager.AdminTools.getMaxWLAmount(basket.adminsToolsAddress, client.userManager.user.wallet));
+        if(isWhiteListed && whiteListAmount === 0) {
+            return alert('Cannot invest in this basket, you are blakclisted');
+        }
+        if(isWhiteListed && (actualInvestment + newInvestment > whiteListAmount)) {
+            return alert("Your total investment amount exceeds your Whitelist limit.");
+        }
+        if(!isWhiteListed && (actualInvestment + newInvestment > whiteListThreshold)) {
+            return alert("Your total investment amount exceeds the Whitelist threshold. You must be whitelisted to do this investment");
         }
 
         var allowance = parseInt(await client.contractsManager.call(contracts.ERC20Seed, client.contractsManager.SEEDTokenAddress, 'allowance', client.userManager.user.wallet, basket.fundingPanelAddress));

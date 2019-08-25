@@ -234,9 +234,9 @@ var EditFundingPoolController = function (view) {
 
     context.setSingleWhitelist = async function setSingleWhitelist(address, whitelistAmount) {
         var product = context.view.getProduct();
-        var rate = parseInt(product.exchangeRateOnTop);
+        var rate = Utils.toEther(product.seedRate);
         var amount = whitelistAmount * rate;
-        amount = Utils.numberToString(amount);
+        amount = Utils.numberToString(Utils.toWei(amount));
         var isWhitelisted = await client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'isWhitelisted', address);
         await client.contractsManager.submit('Set whitelist', contracts.AdminTools, product.adminsToolsAddress, isWhitelisted ? 'changeMaxWLAmount' : 'addToWhitelist', address, amount);
     };

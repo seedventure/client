@@ -3,7 +3,8 @@ var Header = React.createClass({
         'spa/configuration/import',
         'spa/configuration/create',
         'spa/configuration/backup',
-        'spa/configuration/move',
+        'spa/configuration/move',,
+        'spa/detail',
         'spa/dex/main'
     ],
     getDefaultSubscriptions() {
