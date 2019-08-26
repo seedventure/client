@@ -11,8 +11,8 @@ function ContractsManager() {
     context.orderEventData = ['uint', 'uint', 'uint', 'uint'];
     context.cancelEvent = '0x23abf2ec32f342a8a69304f69761adc394b1915db95ad0cfff3772d9fb3ee3c8';
     context.cancelEventData = ['uint', 'uint', 'uint', 'uint'];
-    context.tradeEvent = '0x104e5b93574c30c271d6ce9e81f0ddba1a5b8497ef698551564800d4f9a7ce73';
-    context.tradeEventData = ['uint', 'uint', 'uint', 'uint', 'uint', 'address'];
+    context.tradeEvent = '0x74fe7e1f8cd2a8282b88fefc87ef874cc84ac7b165218719b0b646fb53497f32';
+    context.tradeEventData = ['uint', 'uint', 'uint', 'uint', 'uint', 'uint', 'address'];
 
     context.productQueue = {};
 
@@ -536,29 +536,20 @@ function ContractsManager() {
         var key = user + '_' + Utils.numberToString(nonce) + '_' + Utils.numberToString(expires);
         var give = Utils.toEther(amountGive);
         var get = Utils.toEther(amountGet);
-        var amount = (buy ? give : get) / (buy ? get : give);
-        var amountNumber = amount;
+        var amountNumber = (buy ? give : get) / (buy ? get : give);
         var amountWei = Utils.toWei(amountNumber);
-        amount = Utils.roundWei(Utils.toWei(amount));
+        var amount = Utils.roundWei(amountWei);
         if (isTrade) {
             var decursionAmount = parseInt(data[4]);
-            var oldAmountNumber = amountNumber;//TODO Remove after dex edit
-            amountNumber = Utils.toEther(data[4]);//TODO Remove after dex edit
-            decursionAmount = parseInt(data[0]);//TODO Remove after dex edit
-            var decursionAmountEther = Utils.toEther(decursionAmount);
-            var amountGiveDecursion = buy ? (amountNumber * decursionAmountEther) : decursionAmountEther;
-            var amountGetDecursion = buy ? decursionAmountEther : (amountNumber * decursionAmountEther);
-            var amountGiveDecursion = buy ? (amountNumber / decursionAmountEther) : decursionAmountEther;//TODO Remove after dex edit
-            var amountGetDecursion = buy ? decursionAmountEther : (amountNumber / decursionAmountEther);//TODO Remove after dex edit
-            amountNumber = oldAmountNumber;//TODO Remove after dex edit
-            var decursionUser = data[5].toLowerCase();
-            
+            var amountGetDecursion = buy ? (decursionAmount / amountNumber) : decursionAmount;
+            var amountGiveDecursion = buy ? decursionAmount : (decursionAmount / amountNumber);
+            var decursionUser = data[6].toLowerCase();
             var trade = {
                 buy,
                 orderKey: key,
                 decursionAmount,
-                amountGiveDecursion: Utils.toWei(amountGiveDecursion),
-                amountGetDecursion: Utils.toWei(amountGetDecursion),
+                amountGiveDecursion,
+                amountGetDecursion,
                 user: decursionUser,
                 amount,
                 amountNumber,
@@ -571,8 +562,8 @@ function ContractsManager() {
             if (o) {
                 var orderToDecurt = o[key];
                 orderToDecurt.trades.push(trade);
-                orderToDecurt.amountGiveSum -= Utils.toWei(amountGiveDecursion);
-                orderToDecurt.amountGetSum -= Utils.toWei(amountGetDecursion);
+                orderToDecurt.amountGiveSum -= amountGiveDecursion;
+                orderToDecurt.amountGetSum -= amountGetDecursion;
             }
             try {
                 single === true && (client.usermanager.user.wallet.toLowerCase() === user || client.usermanager.user.wallet.toLowerCase() === decursionUser) && $.publish('amount/seed');

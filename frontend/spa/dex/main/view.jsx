@@ -252,11 +252,8 @@ var Dex = React.createClass({
         Utils.parseNumber(e, this.updateTradeModal);
     },
     updateTradeModal() {
-        var amount = Utils.cleanNumber(this.tradeModalAmount);
-        var price = Utils.cleanNumber(this.tradeModalPrice);
-        var total = amount * price;
-        total = web3.utils.toWei(Utils.numberToString(total), 'ether');
-        this.tradeModalTotal.value = Utils.roundWei(total);
+        var amount = Utils.cleanNumber(this.tradeModalAmount) * Utils.cleanNumber(this.tradeModalPrice);
+        this.tradeModalTotal.value = Utils.numberToString(amount, true);
     },
     askTrade(e, order) {
         e && e.preventDefault() && e.stopPropagation();
@@ -267,17 +264,21 @@ var Dex = React.createClass({
         } catch (e) {
         }
         this.order = order;
+        var tradeTotalAmount = Utils.numberToString(order.buy ? order.amountGetSum : order.amountGiveSum);
+        tradeTotalAmount = web3.utils.fromWei(tradeTotalAmount, 'ether');
+        tradeTotalAmount = parseFloat(tradeTotalAmount);
+        tradeTotalAmount = Utils.numberToString(tradeTotalAmount, true)
         this.tradeModalType1.html('<strong>' + (order.buy ? 'SELL' : 'BUY') + '</strong>');
         this.tradeModalType2.html('<strong>' + (order.buy ? 'BUY' : 'SELL') + '</strong>');
-        this.tradeModalAmount.value = Utils.roundWei(order.buy ? order.amountGetSum : order.amountGiveSum);
-        this.tradeModalAvailable.innerHTML = ' of ' + Utils.roundWei(order.buy ? order.amountGetSum : order.amountGiveSum);
+        this.tradeModalAmount.value = tradeTotalAmount;
+        this.tradeModalAvailable.innerHTML = ' of ' + tradeTotalAmount;
         this.tradeModalPrice.value = order.amount;
         this.updateTradeModal();
         this.tradeModal.show();
     },
     trade(e) {
         e && e.preventDefault() && e.stopPropagation();
-        var amount = Utils.toWei(this.tradeModalAmount);
+        var amount = Utils.toWei(this.order.buy ? this.tradeModalAmount : this.tradeModalTotal);
         if (amount <= 0) {
             return alert('Amount must be anumber greater than 0');
         }
@@ -312,7 +313,7 @@ var Dex = React.createClass({
             var orders = JSON.parse(JSON.stringify(this.state.orders));
             trades = Enumerable.From(orders[0]).Reverse().ToArray();
             orders.shift();
-            orders = Enumerable.From(orders).Where(it => it.amountGiveSum > 0 && it.amountNumber >= orderThreshold);
+            orders = Enumerable.From(orders).Where(it => it.amountGiveSum > 0 && it.amountGetSum > 0 && it.amountNumber >= orderThreshold);
             buyOrders = orders.Where(it => it.buy).OrderBy(it => it.amountWei).ToArray();
             sellOrders = orders.Where(it => !it.buy).OrderByDescending(it => it.amountWei).ToArray();
             var userWallet = client.userManager.user.wallet.toLowerCase();
@@ -591,7 +592,7 @@ var Dex = React.createClass({
                                     </div>
                                     <div className="last-trades-list">
                                         {trades.map(trade =>
-                                            <div key={trade.orderKey} className="trade row">
+                                            <div key={trade.transactionHash} className="trade row">
                                                 <div className={"col-md-3 color-" + (trade.buy ? 'green' : 'red')}>
                                                     {trade.amount}
                                                 </div>

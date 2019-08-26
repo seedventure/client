@@ -208,7 +208,6 @@ var Utils = function() {
             while((ether = Math.round(ether * Number('1e+' + decimals)) / Number('1e+' + decimals)) === 0) {
                 decimals++;
             }
-            var oldStr = str;
             str = Utils.numberToString(ether);
             if (str.indexOf('.') === -1) {
                 str += '.0';
@@ -216,6 +215,7 @@ var Utils = function() {
             split = str.split('.');
             initialDecimals = 2;
         }
+        split[0] = parseInt(split[0]).toLocaleString();
         var dec = split[1];
         if (dec.length > Utils.weiDecimals) {
             var firstPart = dec.substring(0, Utils.weiDecimals);
@@ -256,8 +256,6 @@ var Utils = function() {
         var value = v.value || v;
         typeof value === 'string' && (value = Utils.cleanNumber(value));
         typeof value !== 'string' && (value = Utils.numberToString(value));
-        var l = value.length > 18 ? 18 : value.length;
-        value = value.substring(0, l);
         return parseFloat(web3.utils.fromWei(value, 'ether'));
     };
 
