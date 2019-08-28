@@ -7,6 +7,16 @@ var Utils = function() {
     var tokenSymbolLimit = 4;
     var weiDecimals = 8;
 
+    var getLastPartFile = function getLastPartFile(name) {
+        var name = document.link.split("\\").join("/");
+        name = name.split("/");
+        var l = name.length -1;
+        while(name[l].split(" ").join("") === '') {
+            l--;
+        }
+        return name[l].split(' ').join("");
+    };
+
     var cleanTokenSymbol = function cleanTokenSymbol(target) {
         if (!target) {
             return '';
@@ -331,6 +341,7 @@ var Utils = function() {
         toEther,
         tokenSymbolLimit,
         cleanTokenSymbol,
-        weiDecimals
+        weiDecimals,
+        getLastPartFile
     };
 }();

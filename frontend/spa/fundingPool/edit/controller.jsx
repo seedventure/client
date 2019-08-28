@@ -23,8 +23,12 @@ var EditFundingPoolController = function (view) {
                 if(document.link.indexOf('http') === 0) {
                     continue;
                 }
-                var link = await client.documentsUploaderManager.uploadFile(document.link);
-                documents[i].link = link;
+                try {
+                    var link = await client.documentsUploaderManager.uploadFile(document.link);
+                    documents[i].link = link;
+                } catch(e) {
+                    alert("Unable to upload file '" + Utils.getLastPartFile(document.link) + "'. Please try again later");
+                }
             }
         }
         var document = {
