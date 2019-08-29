@@ -257,11 +257,8 @@ var Dex = React.createClass({
     },
     askTrade(e, order) {
         e && e.preventDefault() && e.stopPropagation();
-        try {
-            if (order.user.toLowerCase() === client.userManager.user.wallet.toLowerCase()) {
-                //return alert('Cannot trade on your own order');
-            }
-        } catch (e) {
+        if(!client.userManager.user) {
+            return;
         }
         this.order = order;
         var tradeTotalAmount = Utils.numberToString(order.buy ? order.amountGetSum : order.amountGiveSum);

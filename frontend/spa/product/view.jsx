@@ -63,7 +63,7 @@ var Product = React.createClass({
                         <dd><h4>{product.url}</h4></dd>,
                         <br />]}
                         <dt>Latest Quotation:</dt>
-                        <dd className="text-cta">{product.value ? Utils.roundWei(product.value) : parseFloat((1/parseFloat(web3.utils.fromWei(Utils.numberToString(product.seedRate), 'ether'))).toFixed(2)).toLocaleString()} SEED</dd>
+                        <dd className="text-cta">{product.value && product.value > 0 ? Utils.roundWei(product.value) : Utils.numberToString(1/Utils.toEther(product.seedRate), true)} SEED</dd>
                         <br/>
                         <dt>Total Raised:</dt>
                         <dd className="text-cta">{Utils.roundWei(product.totalRaised)} SEED</dd>

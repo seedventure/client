@@ -444,7 +444,7 @@ function ContractsManager() {
         var second = '0x' + event.topics[2].toLowerCase().split(context.addressTopicPrefix)[1];
         var tokenAddress = first === context.SEEDTokenAddress ? second : first;
         var trade = context.elaborateSingleOrder(tokenAddress, context.SEEDTokenAddress, event);
-        var product = Enumerable.From(context.getArray()).Where(it => it.tokenAddress = tokenAddress).FirstOrDefault();
+        var product = Enumerable.From(context.getArray()).Where(it => it.tokenAddress.toLowerCase() === tokenAddress.toLowerCase()).FirstOrDefault();
         product && (product.value = trade.amountWei);
         product && $.publish('fundingPanel/' + product.position + '/updated', product);
         $.publish('dex/order', [event, trade]);
@@ -559,7 +559,7 @@ function ContractsManager() {
                 second
             };
             trades && !Enumerable.From(trades).Any(it => it.transactionHash === trade.transactionHash) && trades.push(trade);
-            if (o) {
+            if (o && o[key]) {
                 var orderToDecurt = o[key];
                 orderToDecurt.trades.push(trade);
                 orderToDecurt.amountGiveSum -= amountGiveDecursion;
