@@ -316,7 +316,7 @@ var Index = React.createClass({
                             client.updaterManager.download();
                         }
                     }]}>
-                    <h3>You can download it from <a href="https://github.com/seedventure/client/tree/master/dist" target="_blank">here</a>.</h3>
+                    <h3>It is recommended to always keep the client update. You can do in any moment.</h3>
                 </Modal>
             </div>
         );

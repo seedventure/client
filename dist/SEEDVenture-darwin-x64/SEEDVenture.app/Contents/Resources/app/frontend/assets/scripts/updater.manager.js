@@ -9,7 +9,7 @@ function UpdaterManager() {
     context.frontendPath = window.userDataPath + 'frontend/';
 
     context.popupTitle = 'Updating SEEDVenture Client';
-    context.popupFooter= '<br/><br/>Client will restart at the end of the operation';
+    context.popupFooter = '<br/><br/>Client will restart at the end of the operation';
 
     context.deleteFolderRecursive = async function(path, mustBeEmpty) {
         var remove = false;
@@ -49,59 +49,106 @@ function UpdaterManager() {
     };
 
     context.download = async function() {
-        context.showProgress('Preparing environment...');
-        if (!context.fs.existsSync(context.frontendPath)) {
-            context.fs.mkdirSync(context.frontendPath);
-        }
         try {
-            context.fs.unlinkSync(context.frontendPath + 'dist.zip');
-        } catch (e) {}
-        var path = context.frontendPath + context.distDate + '/';
-        try {
-            await context.deleteFolderRecursive(path);
-        } catch (e) {}
-        context.fs.writeFileSync(context.frontendPath + 'clear.all', 'clear.all');
-        await new Promise(function(ok) {
-            const file = context.fs.createWriteStream(context.frontendPath + 'dist.zip');
-            file.on('finish', function() {
-                context.showProgress('Installing new version...');
-                context.fs.mkdirSync(path);
-                context.fs.readFile(context.frontendPath + 'dist.zip', async function(err, data) {
-                    err && console.error(err);
-                    if (!err) {
-                        var zip = new context.JSZip();
-                        var contents = await zip.loadAsync(data);
-                        Object.keys(contents.files).forEach(async function(filename) {
-                            var dest = path + filename;
+            context.showProgress('Preparing environment...');
+            if (!context.fs.existsSync(context.frontendPath)) {
+                context.fs.mkdirSync(context.frontendPath);
+            }
+            try {
+                context.fs.unlinkSync(context.frontendPath + 'dist.zip');
+            } catch (e) {}
+            var path = context.frontendPath + context.distDate + '/';
+            try {
+                await context.deleteFolderRecursive(path);
+            } catch (e) {}
+            context.fs.writeFileSync(context.frontendPath + 'clear.all', 'clear.all');
+            await new Promise(function(ok, ko) {
+                const file = context.fs.createWriteStream(context.frontendPath + 'dist.zip');
+                file.on('finish', function() {
+                    try {
+                        context.showProgress('Installing new version...');
+                        context.fs.mkdirSync(path);
+                        context.fs.readFile(context.frontendPath + 'dist.zip', async function(err, data) {
+                            if (err) {
+                                ko(err);
+                                return;
+                            }
                             try {
-                                context.fs.writeFileSync(dest, await zip.file(filename).async('nodebuffer'));
-                            } catch(e) {
-                                context.fs.mkdirSync(dest);
+                                var zip = new context.JSZip();
+                                var contents = await zip.loadAsync(data);
+                                Object.keys(contents.files).forEach(async function(filename) {
+                                    var dest = path + filename;
+                                    try {
+                                        context.fs.writeFileSync(dest, await zip.file(filename).async('nodebuffer'));
+                                    } catch (e) {
+                                        context.fs.mkdirSync(dest);
+                                    }
+                                });
+                                ok();
+                            } catch (e) {
+                                ko(e);
+                                return;
                             }
                         });
+                    } catch (e) {
+                        ko(e);
                     }
-                    ok();
                 });
+                file.on('error', function(err) {
+                    ko(err);
+                });
+                file.on('close', function(err) {
+                    err && ko(err);
+                });
+                context.showProgress('Downloading Updates...');
+                try {
+                    var request = context.request.get(ecosystemData.distZip, function(response) {
+                        response.pipe(file);
+                    });
+                    request.on('error', function(err) {
+                        ko(err);
+                    });
+                    request.on('timeout', function(err) {
+                        ko(err);
+                    });
+                    request.on('abort', function(err) {
+                        ko(err);
+                    });
+                    request.end();
+                } catch (e) {
+                    ko(e);
+                }
             });
-            context.showProgress('Downloading Updates...');
-            context.request.get(ecosystemData.distZip, function(response) {
-                response.pipe(file);
-            });
-        });
-        context.showProgress('Cleaning temporary files...');
-        var files = context.fs.readdirSync(context.frontendPath);
-        for(var i in files) {
-            var file = files[i];
-            var isDirectory = context.fs.lstatSync(context.frontendPath + file).isDirectory();
-            if(file.indexOf('' + context.distDate) !== -1 && isDirectory) {
-                continue;
+            context.showProgress('Cleaning temporary files...');
+            var files = context.fs.readdirSync(context.frontendPath);
+            for (var i in files) {
+                var file = files[i];
+                var isDirectory = context.fs.lstatSync(context.frontendPath + file).isDirectory();
+                if (file.indexOf('' + context.distDate) !== -1 && isDirectory) {
+                    continue;
+                }!isDirectory && context.fs.unlinkSync(context.frontendPath + file);
+                isDirectory && (await context.deleteFolderRecursive(context.frontendPath + file));
             }
-            !isDirectory && context.fs.unlinkSync(context.frontendPath + file);
-            isDirectory && (await context.deleteFolderRecursive(context.frontendPath + file));
+            context.finish();
+        } catch (e) {
+            try {
+                context.fs.writeFileSync(context.frontendPath + 'clear.all', 'clear.all');
+            } catch (e1) {}
+            setTimeout(function() {
+                $.publish('loader/hide');
+            });
+            setTimeout(function() {
+                alert('An error occurred during the update and the client will be rollbacked to the previous version. Please try again later');
+                context.finish();
+            }, 700);
+            return;
         }
+    };
+
+    context.finish = function finish() {
         setTimeout(function() {
             context.app.relaunch();
-            context.app.quit();
-        }, 3000);
+            context.app.exit();
+        }, 1500);
     };
 };
