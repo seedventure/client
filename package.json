@@ -10,7 +10,8 @@
     "pack": "npm run pack:osx && npm run pack:win32 && npm run pack:win64",
     "minify": "node builder/app.js frontend spa dist",
     "dist": "node builder/dist.js",
-    "build": "npm run dist && npm run minify && npm run pack"
+    "zip": "node builder/zip.js",
+    "build": "npm run dist && npm run minify && npm run pack && npm run zip"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
     "electron-zip-packager": "^4.0.2"
   },
   "dependencies": {
-    "crypto-js": "^3.1.9-1"
+    "crypto-js": "^3.1.9-1",
+    "jszip": "^3.2.2"
   }
 }

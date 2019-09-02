@@ -28,6 +28,7 @@ function Client() {
         context.contractsManager = new ContractsManager();
         //context.localeManager = new LocaleManager();
         context.userManager = new UserManager();
+        context.updaterManager = new UpdaterManager();
         setTimeout(context.start);
     };
 }

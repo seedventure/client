@@ -187,6 +187,7 @@ var Index = React.createClass({
             return;
         }
         var distDate = window.distDate;
+        client.updaterManager.distDate = distDate;
         delete window.distDate;
         distDate && distDate > ecosystemData.distDate && setTimeout(() => newVersionAvailableModal.show(), 1200);
     },
@@ -305,7 +306,16 @@ var Index = React.createClass({
                 <Modal
                     title="New Version of the SEEDVenture Client is available!"
                     ref={this.checkDistDate}
-                    className="index newVersionAvailableModel">
+                    className="index newVersionAvailableModel"
+                    actions={[{
+                        text: "Update",
+                        className: "btn-brand btn-pill",
+                        onClick() {
+                            var _this = this;
+                            setTimeout(_this.hide);
+                            client.updaterManager.download();
+                        }
+                    }]}>
                     <h3>You can download it from <a href="https://github.com/seedventure/client/tree/master/dist" target="_blank">here</a>.</h3>
                 </Modal>
             </div>

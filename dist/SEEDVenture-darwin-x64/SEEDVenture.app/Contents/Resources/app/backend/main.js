@@ -7,7 +7,6 @@ try {
 } catch {
 }
 Object.keys(ecosystemDataLocal).map(key => ecosystemData[key] = ecosystemDataLocal[key]);
-ecosystemData = JSON.stringify(ecosystemData);
 
 app = app || remote.app;
 
@@ -45,6 +44,24 @@ const deleteFolderRecursive = async function (path) {
     }
 };
 
+if(fs.existsSync(userDataPath + 'frontend/')) {
+    if(fs.existsSync(userDataPath + 'frontend/clear.all')) {
+        deleteFolderRecursive(userDataPath + 'frontend/');
+    } else if(!debug) {
+        var files = fs.readdirSync(userDataPath + 'frontend/');
+        if(files && files.length > 0) {
+            for(var i = files.length - 1; i >= 0; i--) {
+                var file = userDataPath + 'frontend/' + files[i];
+                if(fs.lstatSync(file).isDirectory()) {
+                    ecosystemData.distDate = parseInt(files[i]);
+                    root = file + '/';
+                    break;
+                }
+            }
+        }
+    }
+}
+
 var loadURLOptions = {
     baseURLForDataURL: `file://${root}`
 };
@@ -52,6 +69,8 @@ var loadURLOptions = {
 var electronWindow = null;
 
 var distURL = (debug || test) ? '' : 'https://cdn.jsdelivr.net/gh/seedventure/client/frontend/';
+
+ecosystemData = JSON.stringify(ecosystemData);
 
 var lazyLoad = fs.readFileSync(__dirname + '/productionURL.js', 'UTF-8').split('\n').join('');
 
