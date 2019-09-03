@@ -10,6 +10,6 @@
     "ipfsUrlTemplate": "https://ipfs.io/ipfs/",
     "gasPrice": 30,
     "gasLimit": 8000000,
-    "distDate": 1567496534813,
+    "distDate": 1567529465138,
     "distZip": "https://raw.githubusercontent.com/seedventure/client/master/dist/dist.zip"
 }

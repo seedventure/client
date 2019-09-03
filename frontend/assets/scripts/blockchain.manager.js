@@ -9,7 +9,7 @@ function BlockchainManager() {
     context.run = true;
 
     context.getTopics = function getTopics() {
-        if(!context.topics) {
+        if (!context.topics) {
             context.topics = [];
             Object.keys(client.contractsManager).map(key => key.indexOf('0x') === 0 && context.topics.push(key));
             context.topics = [context.topics];
@@ -28,39 +28,50 @@ function BlockchainManager() {
         context.nextEventCheckTimeout = setTimeout(context.mainLoop, context.defaultTimeToNextEventsCheck);
     }
 
-    context.sendSignedTransaction = function sendSignedTransaction(signedTransaction, title) {
-        return new Promise(function(ok, ko) {
-            var txHash = web3.utils.sha3(signedTransaction);
-            var submit = async function(event, result) {
-                $.unsubscribe('transaction/submit', submit);
-                if(result !== true) {
-                    ok();
-                    return;
-                }
-                $.publish('transaction/lock', [title, txHash]);
-                var tx = undefined;
-                var error = undefined;
-                try {
-                    tx = await context.provider.sendSignedTransaction(signedTransaction);
-                } catch(e) {
-                    error = e;
-                }
-                $.publish('transaction/unlock');
-                client.userManager.getBalances();
-                var finalize = function() {
-                    $.unsubscribe('transaction/finalize', finalize);
-                    if(error) {
-                        ko(error);
+    context.sendSignedTransaction = async function sendSignedTransaction(signedTransaction, title) {
+        var result;
+        var error;
+        try {
+            result = await new Promise(function(ok, ko) {
+                var txHash = web3.utils.sha3(signedTransaction);
+                var submit = async function(event, result) {
+                    $.unsubscribe('transaction/submit', submit);
+                    if (result !== true) {
+                        ok();
                         return;
                     }
-                    ok(tx);
+                    $.publish('transaction/lock', [title, txHash]);
+                    var tx = undefined;
+                    var error = undefined;
+                    try {
+                        tx = await context.provider.sendSignedTransaction(signedTransaction);
+                    } catch (e) {
+                        error = e;
+                    }
+                    $.publish('transaction/unlock');
+                    client.userManager.getBalances();
+                    var finalize = function() {
+                        $.unsubscribe('transaction/finalize', finalize);
+                        if (error) {
+                            ko(error);
+                            return;
+                        }
+                        ok(tx);
+                    };
+                    $.subscribe('transaction/finalize', finalize);
+                    $.publish('transaction/submitted', [txHash, title, error, tx]);
                 };
-                $.subscribe('transaction/finalize', finalize);
-                $.publish('transaction/submitted', [txHash, title, error, tx]);
-            };
-            $.subscribe('transaction/submit', submit);
-            $.publish('transaction/ask', [txHash, title]);
-        });
+                $.subscribe('transaction/submit', submit);
+                $.publish('transaction/ask', [txHash, title]);
+            });
+        } catch (e) {
+            error = e;
+        }
+        await client.userManager.getBalances();
+        if(error) {
+            throw error;
+        }
+        return result;
     }
 
     context.getChainId = async function getChainId() {
@@ -80,12 +91,12 @@ function BlockchainManager() {
     };
 
     context.onEvents = async function onEvents(events) {
-        if(!context.run) {
+        if (!context.run) {
             return;
         }
         if (!context.addressesToCheck || context.addressesToCheck.length === 0) {
             var newBlockNumber = context.getLastCkeckedBlockNumber() + context.blockSequenceToCheck;
-            if(newBlockNumber > context.lastFetchedBlockNumber) {
+            if (newBlockNumber > context.lastFetchedBlockNumber) {
                 newBlockNumber = context.lastFetchedBlockNumber;
             }
             client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.lastCheckedBlockNumber, newBlockNumber);
@@ -111,7 +122,7 @@ function BlockchainManager() {
 
     context.scheduleNextEventCheckTimeout = function scheduleNextEventCheckTimeout(msec) {
         context.nextEventCheckTimeout && clearTimeout(context.nextEventCheckTimeout);
-        if(!context.run) {
+        if (!context.run) {
             return;
         }
         delete context.nextEventCheckTimeout;
@@ -121,7 +132,7 @@ function BlockchainManager() {
     };
 
     context.mainLoop = async function mainLoop() {
-        if(!context.run) {
+        if (!context.run) {
             return;
         }
         delete context.timeToNextEventCheck;
@@ -145,10 +156,10 @@ function BlockchainManager() {
         var address = context.addressesToCheck.shift();
         var fromBlock = lastCheckedBlockNumber + 1;
         var toBlock = fromBlock + context.blockSequenceToCheck;
-        if(toBlock > context.lastFetchedBlockNumber) {
+        if (toBlock > context.lastFetchedBlockNumber) {
             toBlock = context.lastFetchedBlockNumber;
         }
-        setTimeout(function(){context.provider.retrieveEvents(fromBlock, toBlock, address, context.getTopics()).then(context.onEvents)});
+        setTimeout(function() { context.provider.retrieveEvents(fromBlock, toBlock, address, context.getTopics()).then(context.onEvents) });
     };
 
     context.fetchLastBlockNumber = function fetchLastBlockNumber() {
@@ -172,16 +183,15 @@ function BlockchainManager() {
         return new Promise(async function(ok, ko) {
             try {
                 context.provider.stop();
-            } catch {
-            }
+            } catch {}
             ScriptLoader.load({
                 script: client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3Provider),
-                callback: async function () {
+                callback: async function() {
                     context.provider = new BlockchainProvider(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL));
                     try {
                         await context.provider.fetchLastBlockNumber();
-                    } catch(error) {
-                        if(stop === true) {
+                    } catch (error) {
+                        if (stop === true) {
                             ko(error);
                             return;
                         }
