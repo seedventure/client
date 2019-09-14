@@ -343,6 +343,11 @@ var EditFundingPool = React.createClass({
         var amount = whitelistAmount * rate;
         this.whiteListTokenAmount.innerHTML = Utils.roundWei(Utils.toWei(amount));
     },
+    newWhitelistAddress(e) {
+        e && e.preventDefault() && e.stopPropagation();
+        this.newWhitelistAddressTimeout && clearTimeout(this.newWhitelistAddressTimeout);
+        this.newWhitelistAddressTimeout = setTimeout(this.controller.newWhitelistAddress, 350);
+    },
     render() {
         var _this = this;
         var product = this.getProduct();
@@ -560,7 +565,7 @@ var EditFundingPool = React.createClass({
                                             <h4>Wallet</h4>
                                             <p className="small">of the investor you want to whitelist</p>
                                             <div className="form-group">
-                                                <input className="form-control" type="text" placeholder="Address" ref={ref => this.whiteListWallet = ref} />
+                                                <input className="form-control" type="text" placeholder="Address" ref={ref => this.whiteListWallet = ref} onChange={this.newWhitelistAddress}/>
                                             </div>
                                         </div>
                                         <div className="col-md-4">

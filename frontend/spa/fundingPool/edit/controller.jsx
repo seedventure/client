@@ -17,25 +17,25 @@ var EditFundingPoolController = function (view) {
     context.saveDoc = async function saveDoc(data, isStartup) {
         context.view.emit('loader/show', '', 'Uploading document...');
         var documents = data && data.documents;
-        if(documents && documents.length > 0) {
-            for(var i = 0; i < documents.length; i++) {
+        if (documents && documents.length > 0) {
+            for (var i = 0; i < documents.length; i++) {
                 var document = documents[i];
-                if(document.link.indexOf('http') === 0) {
+                if (document.link.indexOf('http') === 0) {
                     continue;
                 }
                 try {
                     var link = await client.documentsUploaderManager.uploadFile(document.link);
                     documents[i].link = link;
-                } catch(e) {
+                } catch (e) {
                     alert("Unable to upload file '" + Utils.getLastPartFile(document.link) + "'. Please try again later");
                 }
             }
         }
         var document = {
-            name : data.name,
-            description : data.description,
-            url : data.url,
-            image : data.image,
+            name: data.name,
+            description: data.description,
+            url: data.url,
+            image: data.image,
             documents,
             tags: data.tags
         };
@@ -47,7 +47,7 @@ var EditFundingPoolController = function (view) {
             web3.utils.soliditySha3(JSON.stringify(document))
         );
         var fundingPanelAddress = context.view.getProduct().fundingPanelAddress;
-        if(isStartup === true) {
+        if (isStartup === true) {
             method = contract.methods.changeMemberData(
                 context.view.getProduct().address,
                 url,
@@ -155,7 +155,7 @@ var EditFundingPoolController = function (view) {
         return result['0'] === true ? 'YES' : 'NO';
     };
 
-    context.grantFundsUnlockOperator  = async function grantFundsUnlockOperator(address) {
+    context.grantFundsUnlockOperator = async function grantFundsUnlockOperator(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.addFundsUnlockerOperators(address);
         return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
@@ -179,7 +179,7 @@ var EditFundingPoolController = function (view) {
         return result['0'] === true ? 'YES' : 'NO';
     };
 
-    context.grantWhiteListManager  = async function grantWhiteListManager(address) {
+    context.grantWhiteListManager = async function grantWhiteListManager(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.addWLManagers(address);
         return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
@@ -203,7 +203,7 @@ var EditFundingPoolController = function (view) {
         return result['0'] === true ? 'YES' : 'NO';
     };
 
-    context.grantWhiteListOperator  = async function grantWhiteListOperator(address) {
+    context.grantWhiteListOperator = async function grantWhiteListOperator(address) {
         var contract = new web3.eth.Contract(contracts.AdminTools);
         var method = contract.methods.addWLOperators(address);
         return await context.sendTransactionTo(context.view.getProduct().adminsToolsAddress, method.encodeABI());
@@ -230,7 +230,7 @@ var EditFundingPoolController = function (view) {
     context.changeWalletOnTop = async function changeWalletOnTop(address) {
         var product = context.view.getProduct();
         var oldAddress = await client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'getWalletOnTopAddress');
-        if(address === oldAddress) {
+        if (address === oldAddress) {
             return;
         }
         await client.contractsManager.submit('Change Wallet on top', contracts.AdminTools, product.adminsToolsAddress, 'setWalletOnTopAddress', address);
@@ -243,5 +243,18 @@ var EditFundingPoolController = function (view) {
         amount = Utils.numberToString(Utils.toWei(amount));
         var isWhitelisted = await client.contractsManager.call(contracts.AdminTools, product.adminsToolsAddress, 'isWhitelisted', address);
         await client.contractsManager.submit('Set whitelist', contracts.AdminTools, product.adminsToolsAddress, isWhitelisted ? 'changeMaxWLAmount' : 'addToWhitelist', address, amount);
+    };
+
+    context.newWhitelistAddress = async function newWhitelistAddress() {
+        var amount = 0;
+        try {
+            var address = context.view.whiteListWallet.value.toLowerCase();
+            var product = context.view.getProduct();
+            await client.contractsManager.AdminTools.isWhitelisted(product.adminsToolsAddress, address)
+            && (amount = await client.contractsManager.AdminTools.getMaxWLAmount(product.adminsToolsAddress, address))
+        } catch (e) {
+        }
+        context.view.whiteListAmount.value = Utils.roundWei(amount);
+        context.view.updateWhitelistTokenAmount();
     };
 };

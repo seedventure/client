@@ -31,7 +31,13 @@ var DocumentUploader = React.createClass({
                 return;
             }
         }
-        this.controller.changeDocumentUploader(type, url);
+        var _this = this;
+        _this.controller.changeDocumentUploader(type, url).then(_this.showUpdated);
+    },
+    showUpdated() {
+        var _this = this;
+        setTimeout(() => _this.updateNotification.show());
+        setTimeout(() => _this.updateNotification.hide(), 2000);
     },
     componentDidMount() {
         try {
@@ -53,7 +59,7 @@ var DocumentUploader = React.createClass({
                     <input className="form-control form-control-last" type="text" placeholder="Link must start with http:// or https://" ref={ref => (this.documentUploaderLink = ref) && (this.documentUploaderLink.value = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.documentsUploaderHost))} />
                 </div>
                 <div className="form-group mb-5">
-                    <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.changeDocumentUploader}>Change Document Uploader</button>
+                    <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.changeDocumentUploader}>Change Document Uploader</button>{"\u00A0"}{"\u00A0"}{"\u00A0"}<span ref={ref => (this.updateNotification = $(ref)).hide()}>Changes Updated</span>
                 </div>
             </form>
         );
