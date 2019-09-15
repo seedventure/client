@@ -36,6 +36,19 @@ var Preferences = React.createClass({
             $(this).addClass('active');
         });
         this.domRoot.children().find('ul.nav-tabs').children('li.nav-item:first-of-type').children('a.nav-link').click();
+        var all = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.notifyAll) === true;
+        this.domRoot.children().find('input[name="all"][value="' + all + '"]').prop('checked', true);
+    },
+    notificationSettingsChanged(e) {
+        e && e.preventDefault() && e.stopPropagation();
+        var _this = this;
+        _this.domRoot.children().find('input[name="all"]').prop('checked', false);
+        var _last = $(e.target).prop('checked', true);
+        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.notifyAll, e.target.value === 'true');
+        setTimeout(function() {
+            _this.domRoot.children().find('input[name="all"]').prop('checked', false);
+            _last.prop('checked', true);
+        });
     },
     render() {
         return (
@@ -49,10 +62,13 @@ var Preferences = React.createClass({
                             <li className="nav-item">
                                 <a className="nav-link" data-toggle="tab" href="#blockchain" role="tab"><i className="far fa-ethereum mr-2"></i>Blockchain</a>
                             </li>
+                            {client.configurationManager.hasUnlockedUser() && <li className="nav-item">
+                                <a className="nav-link" data-toggle="tab" href="#notifications" role="tab"><i className="far fa-bell mr-2"></i>Notifications</a>
+                            </li>}
                         </ul>
                         <div className="tab-content">
                             {client.configurationManager.hasUnlockedUser() && <div className="tab-pane" id="documents" role="tabpanel">
-                                <DocumentUploader/>
+                                <DocumentUploader />
                             </div>}
                             <div className="tab-pane" id="blockchain" role="tabpanel">
                                 <form className="kt-form" action="">
@@ -64,6 +80,11 @@ var Preferences = React.createClass({
                                         <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.changeFactoryAddress}>Change Factory Address</button>{"\u00A0"}{"\u00A0"}{"\u00A0"}<span ref={ref => (this.updateNotification = $(ref)).hide()}>Changes Updated</span>
                                     </div>
                                 </form>
+                            </div>
+                            <div className="tab-pane" id="notifications" role="tabpanel">
+                                <legend>Receive Notifications</legend>
+                                <h3><label><input name="all" type="radio" value="true" onChange={this.notificationSettingsChanged}/> {'\u00A0'} For every incubator</label></h3>
+                                <h3><label><input name="all" type="radio" value="false" onChange={this.notificationSettingsChanged}/> {'\u00A0'} Just for incubators I starred or I've invested in</label></h3>
                             </div>
                         </div>
                     </div>

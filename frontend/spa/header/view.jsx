@@ -3,9 +3,10 @@ var Header = React.createClass({
         'spa/configuration/import',
         'spa/configuration/create',
         'spa/configuration/backup',
-        'spa/configuration/move',,
+        'spa/configuration/move',
         'spa/detail',
-        'spa/dex/main'
+        'spa/dex',
+        'spa/notification/header'
     ],
     getDefaultSubscriptions() {
         return {
@@ -43,25 +44,35 @@ var Header = React.createClass({
         this.emit('page/change', Preferences);
     },
     componentDidUpdate() {
-        if(client.userManager.user && (new Date().getTime() - this.lastBalanceCheck) > 50000) {
+        if (client.userManager.user && (new Date().getTime() - this.lastBalanceCheck) > 50000) {
             this.lastBalanceCheck = new Date().getTime();
             client.userManager.getBalances();
         }
     },
     componentDidMount() {
-        if(!client.userManager.user) {
+        if (!client.userManager.user) {
             return;
         }
         this.lastBalanceCheck = new Date().getTime();
         client.userManager.getBalances();
     },
     renderTitle() {
-        if(!this.props.title || typeof this.props.title === 'string') {
+        if (!this.props.title || typeof this.props.title === 'string') {
             return (<span className="mr-4">
                 <strong>{this.props.title || ((this.props.view === 'mine' ? 'My ' : '') + 'Baskets')}</strong>
             </span>);
         }
         return this.props.title;
+    },
+    markAllNotificationsAsRead(e) {
+        e && e.preventDefault() && e.stopPropagation();
+        var _this = this;
+        setTimeout(() => _this.notificationIncon.click());
+    },
+    readNotification(e) {
+        e && e.preventDefault() && e.stopPropagation();
+        var _this = this;
+        setTimeout(() => _this.notificationIncon.click());
     },
     render() {
         var selected = null;
@@ -73,18 +84,19 @@ var Header = React.createClass({
                 <div className="kt-header__top col-12 py-3 bg-primary">
                     <div className="kt-container">
                         <div className="kt-header__topbar header-left back-title">
-                            {this.props.title && this.props.element !== Dex && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Back" className="back" onClick={e => this.props.back ? this.props.back(e) : this.emit('page/change', Products, {view : this.props.view})}>
+                            {this.props.title && this.props.element !== Dex && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Back" className="back" onClick={e => this.props.back ? this.props.back(e) : this.emit('page/change', Products, { view: this.props.view })}>
                                 <i className="fas fa-arrow-left"></i>
                             </a>}
                             <span>{'\u00A0'}{'\u00A0'}</span>
                             {this.renderTitle()}
                             {'\u00A0'}
-                            {this.props.view === 'mine' && <a href="javascript:;" onClick={() => this.emit('page/change', CreateFundingPool, {view : 'mine'})} className="kt-subheader__breadcrumbs-home"><i className="fas fa-plus"></i></a>}
+                            {this.props.view === 'mine' && <a href="javascript:;" onClick={() => this.emit('page/change', CreateFundingPool, { view: 'mine' })} className="kt-subheader__breadcrumbs-home"><i className="fas fa-plus"></i></a>}
                         </div>
                         <div className="kt-header__topbar justify-content-end header-right">
-                            <span className="mr-4">Welcome <strong>{client.userManager.user ? (client.userManager.user.wallet.substring(0,9) + "...") : client.configurationManager.hasUser() ? "" : "Guest"}</strong></span>
+                            <span className="mr-4">Welcome <strong>{client.userManager.user ? (client.userManager.user.wallet.substring(0, 9) + "...") : client.configurationManager.hasUser() ? "" : "Guest"}</strong></span>
                             {client.userManager.user && this.state && this.state.eth && <span className="mr-4">(<strong>{Utils.roundWei(this.state.eth)} eth</strong>)</span>}
                             {client.userManager.user && this.state && this.state.seed && <span className="mr-4">(<strong>{Utils.roundWei(this.state.seed)} SEED</strong>)</span>}
+                            {client.userManager.user && <NotificationHeader/>}
                             {client.userManager.user && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Wallet" onClick={() => this.emit('wallet/show')}>
                                 <i className="fas fa-wallet"></i>
                             </a>}
@@ -125,7 +137,7 @@ var Header = React.createClass({
                                         </a>
                                     </li>
                                     {client.configurationManager.hasUnlockedUser() && <li className={"kt-menu__item" + (selected === 'My Baskets' ? " kt-menu__item--open kt-menu__item--here" : "")}>
-                                        <a href="javascript:;" onClick={() => this.emit('page/change', Products, {view : 'mine'})}>
+                                        <a href="javascript:;" onClick={() => this.emit('page/change', Products, { view: 'mine' })}>
                                             My Baskets
                                         </a>
                                     </li>}
@@ -134,7 +146,7 @@ var Header = React.createClass({
                         </div>
                     </div>
                 </div>
-            </header>
+            </header >
         );
     }
 });

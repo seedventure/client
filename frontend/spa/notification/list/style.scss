@@ -1,0 +1,10 @@
+.notificationList {
+    ul.notifications {
+        list-style-type: none;
+        padding-left: 0;
+        li {
+            font-weight: bold;
+            color: #006b97 !important;
+        }
+    }
+}

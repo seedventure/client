@@ -27,4 +27,17 @@
     .investments {
         float: right;
     }
+
+    .fa-star {
+        color: darkgray;
+        &:hover {
+            color: lightgoldenrodyellow;
+        }
+        &.favorite {
+            color: yellow;
+            &:hover {
+                color: goldenrod;
+            }
+        }
+    }
 }

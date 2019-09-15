@@ -350,16 +350,16 @@ function ContractsManager() {
     };
 
     context.manageFundingPanelChanged = function manageFundingPanelChanged(element) {
-        if (!client.configurationManager.hasUnlockedUser()) {
+        var product = element.element || element;
+        if (!client.configurationManager.hasUnlockedUser() || !product.name) {
             return;
         }
-        var product = element.element || element;
         !context.changesWaiter && (context.changesWaiter = {});
         if (context.changesWaiter[product.position]) {
             return;
         }
         context.changesWaiter[product.position] = true;
-        var copy = JSON.parse(JSON.stringify(product));
+        var old = JSON.parse(JSON.stringify(product));
         product.pendingNotications = true;
         product.unavailable = true;
         try {
@@ -368,18 +368,140 @@ function ContractsManager() {
             }
         } catch (e) {}
         $.publish('fundingPanel/' + product.position + '/updated', product);
-        var subscripted = function(event, product) {
+        var subscripted = async function(event, product) {
             $.unsubscribe('fundingPanel/' + product.position + '/updated', subscripted);
             delete product.pendingNotications;
-            context.notifyPotentialFundingPanelChanges(product, copy);
+            await context.notifyPotentialFundingPanelChanges(product, old);
             delete context.changesWaiter[product.position];
         };
         $.subscribe('fundingPanel/' + product.position + '/updated', subscripted);
         context.getFundingPanelData(product);
     };
 
-    context.notifyPotentialFundingPanelChanges = function notifyPotentialFundingPanelChanges(product, copy) {
-        console.log({ product, copy });
+    context.notifyPotentialFundingPanelChanges = async function notifyPotentialFundingPanelChanges(product, old) {
+        if(!client.userManager.user || !old.name) {
+            return;
+        }
+        var notification = {
+            blockNumber : new Date().getTime(),
+            productPosition : product.position,
+            texts : []
+        }
+        try {
+            if(old.name.toLowerCase().trim() !== product.name.toLowerCase().trim()) {
+                notification.texts.push('Incubator ' + old.name + ' (' + product.symbol + ') changed its name to ' + product.name);
+            }
+        } catch(e) {
+        }
+        var name = (product && product.name) || old.name;
+        try {
+            if((!old.description && product.description) || (old.description.toLowerCase().trim() !== product.description.toLowerCase().trim())) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new Description');
+            }
+        } catch(e) {
+        }
+        try {
+            if(old.description && !product.description) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') removed its Description');
+            }
+        } catch(e) {
+        }
+        try {
+            if((!old.url && product.url) || (old.url.toLowerCase().trim() !== product.url.toLowerCase().trim())) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new URL');
+            }
+        } catch(e) {
+        }
+        try {
+            if(old.url && !product.url) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') removed its URL');
+            }
+        } catch(e) {
+        }
+        try {
+            if((!old.logo && product.logo) || (old.logo.toLowerCase().trim() !== product.logo.toLowerCase().trim())) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new Logo');
+            }
+        } catch(e) {
+        }
+        try {
+            if(old.logo && !product.logo) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') removed its Logo');
+            }
+        } catch(e) {
+        }
+        try {
+            if((!old.logo && product.logo) || (old.logo.toLowerCase().trim() !== product.logo.toLowerCase().trim())) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new Logo');
+            }
+        } catch(e) {
+        }
+        try {
+            if(old.logo && !product.logo) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') removed its Logo');
+            }
+        } catch(e) {
+        }
+        var oldTags = old.tags || [];
+        var newTags = product.tags || [];
+        try {
+            if(JSON.stringify(Enumerable.From(oldTags).OrderBy(it => it).ToArray()) !== JSON.stringify(Enumerable.From(newTags).OrderBy(it => it).ToArray())) {
+                notification.texts.push('Incubator ' + name + ' updated its tags');
+            }
+        } catch(e) {
+        }
+        var oldDocuments = old.documents || [];
+        var newDocuments = product.documents || [];
+        try {
+            if(JSON.stringify(Enumerable.From(oldDocuments).OrderBy(it => it).ToArray()) !== JSON.stringify(Enumerable.From(newDocuments).OrderBy(it => it).ToArray())) {
+                notification.texts.push('Incubator ' + name + ' updated its documents');
+            }
+        } catch(e) {
+        }
+        try {
+            if(old.walletOnTop.toLowerCase() !== product.walletOnTop.toLowerCase()) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new Wallet On Top');
+            }
+        } catch(e) {
+        }
+        try {
+            if(old.totalSupply !== product.totalSupply) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its total supply from ' + Utils.roundWei(old.totalSupply)  + ' SEED to ' + Utils.roundWei(product.totalSupply)  + ' SEED');
+            }
+        } catch(e) {
+        }
+        try {
+            if(product.totalSupply === 0) {
+                notification.forAll = true;
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has chosen to stop its activity (changing its total supply to ' + Utils.roundWei(0)  + ' SEED)');
+            }
+        } catch(e) {
+        }
+        try {
+            if(old.exchangeRateOnTop !== product.exchangeRateOnTop) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Exchange Rate on Top ' + Utils.roundWei(old.exchangeRateOnTop)  + ' ' + product.symbol + ' to ' + Utils.roundWei(product.exchangeRateOnTop)  + ' ' + product.symbol);
+            }
+        } catch(e) {
+        }
+        try {
+            if(old.seedRate !== product.seedRate) {
+                notification.forAll = true;
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Exchange Rate ' + Utils.roundWei(old.seedRate)  + ' ' + product.symbol + ' to ' + Utils.roundWei(product.seedRate)  + ' ' + product.symbol);
+            }
+        } catch(e) {
+        }
+        try {
+            if(old.whiteListThreshold !== product.whiteListThreshold) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Whitelist Threshold ' + Utils.roundWei(old.whiteListThreshold)  + ' ' + product.symbol + ' to ' + Utils.roundWei(product.whiteListThreshold)  + ' ' + product.symbol);
+            }
+        } catch(e) {
+        }
+        if(notification.texts.length === 0) {
+            return;
+        }
+        !product.notifications && (product.notifications = []);
+        product.notifications.push(notification);
+        $.publish('notifications/new');
     };
 
     context['0x10b2a5b108c7f1e07744f78d98a096424f89c30fca6176cb114052d552ea4650'] = function whiteListThresholdChanged(event, element) {
@@ -403,11 +525,15 @@ function ContractsManager() {
     };
 
     context['0xb4630f894cab42818aa587f8d4fc219b8472578638e808b23df12161ad730af6'] = function fundingPanelDataChanged(event, element) {
-        context.manageFundingPanelChanged(element);
+        context.manageFundingPanelChanged(element.element || element);
+    };
+
+    context['0xb792dd6e47b66c5563daf80ac4dacdf75cd44b0924c6533f71f2498a114ac0ea'] = function fundingPanelDataChanged(event, element) {
+        context.manageFundingPanelChanged(element.element || element);
     };
 
     context['0x6c0400aaf859104057a4afd47301bdc6ac1829e4fd0b02292b6287ea761862e7'] = function totalSupplyChanged(event, element) {
-        context.manageFundingPanelChanged(element);
+        context.manageFundingPanelChanged(element.element || element);
     };
 
     context['0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7'] = function depositToDEX(event) {

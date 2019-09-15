@@ -7,11 +7,11 @@
     "pack:osx": "./node_modules/.bin/electron-zip-packager . SEEDVenture --out=dist --platform=darwin --arch=x64 --overwrite --icon=frontend/assets/favicon.icns --ignore=\"(.vscode|\\.gitignore|LICENSE|builder|README.md|package-lock.json|dist)\" --ignore=\"spa(\\/|\\\\)(?!(boot\\.js)).*\"",
     "pack:win32": "./node_modules/.bin/electron-zip-packager . SEEDVenture --out=dist --platform=win32 --arch=ia32 --overwrite --icon=frontend/assets/favicon.ico --ignore=\"(.vscode|\\.gitignore|LICENSE|builder|README.md|package-lock.json|dist)\" --ignore=\"spa(\\/|\\\\)(?!(boot\\.js)).*\"",
     "pack:win64": "./node_modules/.bin/electron-zip-packager . SEEDVenture --out=dist --platform=win32 --arch=x64 --overwrite --icon=frontend/assets/favicon.ico  --ignore=\"(.vscode|\\.gitignore|LICENSE|builder|README.md|package-lock.json|dist)\" --ignore=\"spa(\\/|\\\\)(?!(boot\\.js)).*\"",
+    "zip": "node builder/zip.js",
     "pack": "npm run pack:win32 && npm run pack:win64",
     "minify": "node builder/app.js frontend spa dist",
     "dist": "node builder/dist.js",
-    "zip": "node builder/zip.js",
-    "build": "npm run dist && npm run minify && npm run pack && npm run zip"
+    "build": "npm run dist && npm run minify && npm run zip && npm run pack"
   },
   "repository": {
     "type": "git",

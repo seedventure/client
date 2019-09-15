@@ -1,0 +1,61 @@
+.notificationHeader {
+    span:not(.kt-badge) {
+        display: inline-block;
+        padding: 20px 0;
+    }
+    .kt-notification__item {
+        padding: 0 10px;
+    }
+    .kt-notification__item::after {
+        display: none;
+    }
+    a {
+        display: inline-block;
+        padding: 20px 10px;
+        color: #006b97 !important;
+    }
+    i {
+        font-size: 22px;
+        color: #6fd2fb;
+    }
+    span.kt-badge {
+        top: 30px !important;
+        margin-left: 0 !important;
+        color: red;
+        font-weight: bold;
+        width: 20px;
+        font-size: 12px;
+        padding: 10px 0 !important;
+    }
+    a.mark-all-as-read {
+        float: right;
+        padding: 0 15px 0 0;
+    }
+    span.notifications-title {
+        color: #006b97;
+        font-size: 1.4em;
+        float: left;
+        padding: 0 0 0 15px;
+        font-weight: bold;
+    }
+    a.view-all {
+        text-align: center;
+        padding: 0 0 0 15px;
+    }
+    ul.notifications {
+        list-style-type: none;
+        padding-left: 0;
+        li {
+            font-weight: bold;
+            color: #006b97 !important;
+        }
+    }
+    .kt-notification.bottom {
+        text-align: center;
+        border-top: 1px solid lightgray;
+        padding: 5px 0 5px 0;
+    }
+    .kt-notification.top {
+        border-bottom: 1px solid lightgray;
+    }
+}

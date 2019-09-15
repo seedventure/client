@@ -13,7 +13,7 @@ var Detail = React.createClass({
     },
     trade(e) {
         e && e.preventDefault() && e.stopPropagation();
-        this.emit('page/change', Dex, {element: this.getProduct()});
+        this.emit('page/change', Dex, { element: this.getProduct() });
     },
     getProduct() {
         return this.state && this.state.product ? this.state.product : this.props.element;
@@ -72,7 +72,7 @@ var Detail = React.createClass({
     },
     investChanged() {
         var investment = Utils.cleanNumber(this.investment);
-        if(isNaN(investment)) {
+        if (isNaN(investment)) {
             this.forYou.innerHTML = Utils.roundWei();
             return;
         }
@@ -95,8 +95,45 @@ var Detail = React.createClass({
         }
         this.controller.invest(investment);
     },
+    toggleFavorite(e) {
+        e && e.preventDefault() && e.stopPropagation();
+        var product = this.getProduct();
+        try {
+            if(product.investors[client.userManager.user.wallet.toLowerCase()] && product.investors[client.userManager.user.wallet.toLowerCase()] > 0) {
+                return;
+            }
+        } catch (e) {
+        }
+        var add = $(e.target).toggleClass('favorite').hasClass('favorite');
+        try {
+            client.userManager.user.list = Enumerable.From(client.userManager.user.list).Distinct().OrderBy(it => it).ToArray();
+            if (add) {
+                client.userManager.user.list.push(product.position);
+                return;
+            }
+            for(var i in client.userManager.user.list) {
+                var position = client.userManager.user.list[i];
+                if(position === product.position) {
+                    client.userManager.user.list.splice(i, 1);
+                    return;
+                }
+            }
+        } catch (e) {
+        }
+    },
     render() {
         var product = this.getProduct();
+        var favorite = false;
+        try {
+            favorite = Enumerable.From(client.userManager.user.list).Any(it => product.position === it);
+        } catch (e) {
+        }
+        if (!favorite) {
+            try {
+                favorite = (product.investors[client.userManager.user.wallet.toLowerCase()] && product.investors[client.userManager.user.wallet.toLowerCase()] > 0);
+            } catch (e) {
+            }
+        }
         var description = '';
         try {
             description = $.base64.decode(product.description);
@@ -132,7 +169,7 @@ var Detail = React.createClass({
                         <h3>You already invested <strong><span ref={ref => this.seeds = ref}>0.00</span> SEEDS</strong> in this Basket and actually hold <strong><span ref={ref => this.tokens = ref}>0.00</span> {product.symbol}</strong> tokens.</h3>
                     </div>
                 </div>}
-                {full !== true && client.configurationManager.hasUnlockedUser() && 
+                {full !== true && client.configurationManager.hasUnlockedUser() &&
                     <div className="row" ref={ref => this.whiteList = ref}>
                         <div className="col-md-12">
                             <br />
@@ -159,8 +196,15 @@ var Detail = React.createClass({
                         </div>
                     </div>
                 </form>}
-                {!this.props.parent && [<br />,
-                <h3><a href="javascript:;" onClick={this.trade}>Trade</a></h3>]}
+                {!this.props.parent &&
+                    <div className="row">
+                        <div className="col-md-10 mt-5">
+                            <h3><a href="javascript:;" onClick={this.trade}>Trade</a></h3>
+                        </div>
+                        <div className="col-md-2 mt-5">
+                            {client.configurationManager.hasUnlockedUser() && <h2><a href="javascript:;" onClick={this.toggleFavorite} ><i className={"fa fa-star" + (favorite ? " favorite" : "")} aria-hidden="true"></i></a></h2>}
+                        </div>
+                    </div>}
                 <br />
                 <br />
                 <div className="row">

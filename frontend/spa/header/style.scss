@@ -1,35 +1,17 @@
 .header {
-
     .header-left {
         float: left;
         width: 30%;
-
         .back {
             color: #fff;
         }
     }
-
     .header-right {
         float: left;
         width: 70%;
     }
-
     .back-title {
         font-size: 25px;
-    }
-}
-
-.kt-header__topbar {
-    span {
-        display: inline-block;
-        padding: 20px 0;
-    }
-    a {
-        display: inline-block;
-        padding: 20px 10px;
-    }
-    i {
-        font-size: 22px;
     }
 }
 
@@ -77,6 +59,14 @@
     .kt-subheader__title {
         font-size: 2.2rem;
     }
+}
+
+.dropdown-menu {
+    position: absolute;
+    will-change: transform;
+    top: 0px;
+    left: 0px;
+    transform: translate3d(-255px, 65px, 0px);
 }
 
 @media (min-width: 1025px) {

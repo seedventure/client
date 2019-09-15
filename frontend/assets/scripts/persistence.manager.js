@@ -11,7 +11,8 @@ function PersistenceManager() {
     'lastCheckedBlockNumber',
     'documentsUploaderHost',
     'documentsUploaderProviderSet',
-    'orderThreshold'
+    'orderThreshold',
+    'notifyAll'
   ];
   Object.keys(ecosystemData).map(function(key) {
       context.PERSISTENCE_PROPERTIES.push(key);
