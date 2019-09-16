@@ -79,18 +79,18 @@ var NotificationHeader = React.createClass({
                     <span className="kt-badge kt-badge--dot kt-badge--notify bg-secondary">{count}</span>
                 </div>
                 <div className="dropdown-menu dropdown-menu-fit dropdown-menu-right dropdown-menu-anim dropdown-menu-top-unround dropdown-menu-lg" x-placement="bottom-end">
-                    {notifications.length > 0 && <div className="kt-notification kt-margin-t-10 kt-scroll ps top">
+                    {notifications && notifications.length > 0 && <div className="kt-notification kt-margin-t-10 kt-scroll ps top">
                         <span className="notifications-title">Notifications</span>
                         <a href="javascript:;" className="mark-all-as-read" onClick={this.markAllNotificationsAsRead}>Mark all as read</a>
                     </div>}
-                    {notifications.length === 0 && <span>{'\u00A0'}{'\u00A0'}{'\u00A0'}No new notifications to show right now</span>}
-                    {notifications.length > 0 && notifications.map(it =>
+                    {notifications && notifications.length === 0 && <span>{'\u00A0'}{'\u00A0'}{'\u00A0'}No new notifications to show right now</span>}
+                    {notifications && notifications.length > 0 && notifications.map(it =>
                         <div key={it.blockNumber} className="kt-notification kt-margin-t-10 kt-scroll ps">
                             <a href="#" data-position={it.productPosition} className="kt-notification__item" onClick={this.select}>
                                 <div data-position={it.productPosition} className="kt-notification__item-details">
                                     <div data-position={it.productPosition} className="kt-notification__item-title">
                                         <ul className="notifications" data-position={it.productPosition}>
-                                            {it.texts.map(text =>
+                                            {it.texts && it.texts.length > 0 && it.texts.map(text =>
                                                 <li data-position={it.productPosition}>{text}</li>
                                             )}
                                         </ul>
@@ -102,7 +102,7 @@ var NotificationHeader = React.createClass({
                             </a>
                         </div>
                     )}
-                    {notifications.length > 0 && <div className="kt-notification kt-margin-t-10 kt-scroll ps bottom">
+                    {notifications && notifications.length > 0 && <div className="kt-notification kt-margin-t-10 kt-scroll ps bottom">
                         <a href="javascript:;" className="view-all" onClick={() => this.emit('page/change', NotificationList)}>View All</a>
                     </div>}
                 </div>

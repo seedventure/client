@@ -6,7 +6,6 @@ var Header = React.createClass({
         'spa/configuration/move',
         'spa/detail',
         'spa/dex',
-        'spa/dex/main',
         'spa/notification/header'
     ],
     getDefaultSubscriptions() {

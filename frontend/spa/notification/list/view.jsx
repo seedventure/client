@@ -67,7 +67,7 @@ var NotificationList = React.createClass({
         return (
             <div className="row">
                 <div className="col-md-12">
-                    {notifications.length > 0 && <div className="row">
+                    {notifications && notifications.length > 0 && <div className="row">
                         <div className="col-md-8">
                             <h3><strong>{Enumerable.From(notifications).Count(it => it.read !== true)}</strong> New notifications to read</h3>
                         </div>
@@ -87,12 +87,12 @@ var NotificationList = React.createClass({
                     </div>
                     <div className="row">
                         <div className="col-md-12">
-                            {notifications.length === 0 && <h3>No new notifications to show right now</h3>}
-                            {notifications.length > 0 && notifications.map(it =>
+                            {notifications && notifications.length === 0 && <h3>No new notifications to show right now</h3>}
+                            {notifications && notifications.length > 0 && notifications.map(it =>
                                 <div key={it.blockNumber} className="row">
                                     <div data-position={it.productPosition} className="col-md-10">
                                         <ul className="notifications" data-position={it.productPosition}>
-                                            {it.texts.map(text =>
+                                            {it.texts && it.texts.length > 0 && it.texts.map(text =>
                                                 <li data-position={it.productPosition}>
                                                     <a href="javascript:;" data-position={it.productPosition} onClick={this.select}>
                                                         <h3 data-position={it.productPosition}>{text}</h3>
