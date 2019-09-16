@@ -6,6 +6,7 @@ var Header = React.createClass({
         'spa/configuration/move',
         'spa/detail',
         'spa/dex',
+        'spa/dex/main',
         'spa/notification/header'
     ],
     getDefaultSubscriptions() {
@@ -96,7 +97,7 @@ var Header = React.createClass({
                             <span className="mr-4">Welcome <strong>{client.userManager.user ? (client.userManager.user.wallet.substring(0, 9) + "...") : client.configurationManager.hasUser() ? "" : "Guest"}</strong></span>
                             {client.userManager.user && this.state && this.state.eth && <span className="mr-4">(<strong>{Utils.roundWei(this.state.eth)} eth</strong>)</span>}
                             {client.userManager.user && this.state && this.state.seed && <span className="mr-4">(<strong>{Utils.roundWei(this.state.seed)} SEED</strong>)</span>}
-                            {client.userManager.user && <NotificationHeader/>}
+                            {window['NotificationHeader'] !== undefined && client.userManager.user && <NotificationHeader/>}
                             {client.userManager.user && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Wallet" onClick={() => this.emit('wallet/show')}>
                                 <i className="fas fa-wallet"></i>
                             </a>}
