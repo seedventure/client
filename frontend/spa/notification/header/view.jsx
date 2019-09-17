@@ -71,7 +71,10 @@ var NotificationHeader = React.createClass({
     render() {
         var notifications = (this.getNotifications() || []);
         var count = Enumerable.From(notifications).Count(it => it.read !== true);
-        notifications = notifications.splice(0, 5);
+        var spliceNotifications = function() {
+            notifications = notifications.splice(0, 5);
+        };
+        spliceNotifications();
         return (
             <div className="kt-header__topbar-item dropdown">
                 <div ref={ref => this.notificationIcon = $(ref)} className="kt-header__topbar-wrapper px-2" data-toggle="dropdown" data-offset="10px,0px" aria-expanded="true">
