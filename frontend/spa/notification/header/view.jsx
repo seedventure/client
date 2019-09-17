@@ -42,7 +42,11 @@ var NotificationHeader = React.createClass({
         if (!client.userManager.user) {
             return notifications;
         }
-        var all = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.notifyAll) === true;
+        var all = false;
+        try {
+            all = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.notifyAll) === true;
+        } catch(e) {
+        }
         var userWallet = client.userManager.user.wallet.toLowerCase();
         var products = client.contractsManager.getArray();
         for (var i in products) {
