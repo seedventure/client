@@ -1,0 +1,19 @@
+.choose {
+    h1 {
+        text-align: center;
+    }
+    h2 {
+        &.first {
+            button {
+                float: right;
+            }
+        }
+        &:not(.first) {
+          button {
+            &:hover {
+              background-color: #006b97 !important;
+            }
+          }
+        }
+    }
+}

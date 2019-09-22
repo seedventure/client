@@ -349,12 +349,11 @@ function ContractsManager() {
         return product;
     };
 
-    context.manageFundingPanelChanged = function manageFundingPanelChanged(element) {
+    context.manageFundingPanelChanged = function manageFundingPanelChanged(element, created) {
         var product = element.element || element;
-        if (!client.configurationManager.hasUnlockedUser() || !product.name) {
+        if (!client.configurationManager.hasUnlockedUser() || (!product.name && created !== true)) {
             return;
-        }
-        !context.changesWaiter && (context.changesWaiter = {});
+        }!context.changesWaiter && (context.changesWaiter = {});
         if (context.changesWaiter[product.position]) {
             return;
         }
@@ -371,7 +370,7 @@ function ContractsManager() {
         var subscripted = async function(event, product) {
             $.unsubscribe('fundingPanel/' + product.position + '/updated', subscripted);
             delete product.pendingNotications;
-            await context.notifyPotentialFundingPanelChanges(product, old);
+            await context.notifyPotentialFundingPanelChanges(product, created === true ? product : old);
             delete context.changesWaiter[product.position];
         };
         $.subscribe('fundingPanel/' + product.position + '/updated', subscripted);
@@ -379,129 +378,149 @@ function ContractsManager() {
     };
 
     context.notifyPotentialFundingPanelChanges = async function notifyPotentialFundingPanelChanges(product, old) {
-        if(!client.userManager.user || !old.name) {
+        if (!client.userManager.user || (!old.name && product != old)) {
             return;
         }
         var notification = {
-            blockNumber : new Date().getTime(),
-            productPosition : product.position,
-            texts : []
+            blockNumber: new Date().getTime(),
+            productPosition: product.position,
+            texts: []
+        }
+        var finalize = function finalize() {
+            if (notification.texts.length === 0) {
+                return;
+            }
+            !product.notifications && (product.notifications = []);
+            product.notifications.push(notification);
+            $.publish('notifications/new');
         }
         try {
-            if(old.name.toLowerCase().trim() !== product.name.toLowerCase().trim()) {
+            if (old == product) {
+                for(var x = 0; x < 3; x++) {
+                    try {
+                        if(product.name) {
+                            break;
+                        }
+                        product = await getFundingPanelData(product);
+                    } catch(e) {
+                    }
+                }
+                notification.forAll = true;
+                notification.texts.push('New Incubator: ' + (product.name ? (product.name + ' (' + product.symbol + ')') : product.symbol) + '.');
+                return finalize();
+            }
+        } catch (e) {}
+        try {
+            if (old.name.toLowerCase().trim() !== product.name.toLowerCase().trim()) {
                 notification.texts.push('Incubator ' + old.name + ' (' + product.symbol + ') changed its name to ' + product.name);
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         var name = (product && product.name) || old.name;
         try {
-            if((!old.description && product.description) || (old.description.toLowerCase().trim() !== product.description.toLowerCase().trim())) {
+            if ((!old.description && product.description) || (old.description.toLowerCase().trim() !== product.description.toLowerCase().trim())) {
                 notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new Description');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if(old.description && !product.description) {
+            if (old.description && !product.description) {
                 notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') removed its Description');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if((!old.url && product.url) || (old.url.toLowerCase().trim() !== product.url.toLowerCase().trim())) {
+            if ((!old.url && product.url) || (old.url.toLowerCase().trim() !== product.url.toLowerCase().trim())) {
                 notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new URL');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if(old.url && !product.url) {
+            if (old.url && !product.url) {
                 notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') removed its URL');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if((!old.logo && product.logo) || (old.logo.toLowerCase().trim() !== product.logo.toLowerCase().trim())) {
+            if ((!old.logo && product.logo) || (old.logo.toLowerCase().trim() !== product.logo.toLowerCase().trim())) {
                 notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new Logo');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if(old.logo && !product.logo) {
+            if (old.logo && !product.logo) {
                 notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') removed its Logo');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if((!old.logo && product.logo) || (old.logo.toLowerCase().trim() !== product.logo.toLowerCase().trim())) {
+            if ((!old.logo && product.logo) || (old.logo.toLowerCase().trim() !== product.logo.toLowerCase().trim())) {
                 notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new Logo');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if(old.logo && !product.logo) {
+            if (old.logo && !product.logo) {
                 notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') removed its Logo');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         var oldTags = old.tags || [];
         var newTags = product.tags || [];
         try {
-            if(JSON.stringify(Enumerable.From(oldTags).OrderBy(it => it).ToArray()) !== JSON.stringify(Enumerable.From(newTags).OrderBy(it => it).ToArray())) {
+            if (JSON.stringify(Enumerable.From(oldTags).OrderBy(it => it).ToArray()) !== JSON.stringify(Enumerable.From(newTags).OrderBy(it => it).ToArray())) {
                 notification.texts.push('Incubator ' + name + ' updated its tags');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         var oldDocuments = old.documents || [];
         var newDocuments = product.documents || [];
         try {
-            if(JSON.stringify(Enumerable.From(oldDocuments).OrderBy(it => it).ToArray()) !== JSON.stringify(Enumerable.From(newDocuments).OrderBy(it => it).ToArray())) {
+            if (JSON.stringify(Enumerable.From(oldDocuments).OrderBy(it => it).ToArray()) !== JSON.stringify(Enumerable.From(newDocuments).OrderBy(it => it).ToArray())) {
                 notification.texts.push('Incubator ' + name + ' updated its documents');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if(old.walletOnTop.toLowerCase() !== product.walletOnTop.toLowerCase()) {
+            if (old.walletOnTop.toLowerCase() !== product.walletOnTop.toLowerCase()) {
                 notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new Wallet On Top');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if(old.totalSupply !== product.totalSupply) {
-                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its total supply from ' + Utils.roundWei(old.totalSupply)  + ' SEED to ' + Utils.roundWei(product.totalSupply)  + ' SEED');
+            if (old.totalSupply !== product.totalSupply) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its total supply from ' + Utils.roundWei(old.totalSupply) + ' SEED to ' + Utils.roundWei(product.totalSupply) + ' SEED');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if(product.totalSupply === 0) {
+            if (product.totalSupply === 0) {
                 notification.forAll = true;
-                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has chosen to stop its activity (changing its total supply to ' + Utils.roundWei(0)  + ' SEED)');
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has chosen to stop its activity (changing its total supply to ' + Utils.roundWei(0) + ' SEED)');
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if(old.exchangeRateOnTop !== product.exchangeRateOnTop) {
-                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Exchange Rate on Top ' + Utils.roundWei(old.exchangeRateOnTop)  + ' ' + product.symbol + ' to ' + Utils.roundWei(product.exchangeRateOnTop)  + ' ' + product.symbol);
+            if (old.exchangeRateOnTop !== product.exchangeRateOnTop) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Exchange Rate on Top ' + Utils.roundWei(old.exchangeRateOnTop) + ' ' + product.symbol + ' to ' + Utils.roundWei(product.exchangeRateOnTop) + ' ' + product.symbol);
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if(old.seedRate !== product.seedRate) {
+            if (old.seedRate !== product.seedRate) {
                 notification.forAll = true;
-                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Exchange Rate ' + Utils.roundWei(old.seedRate)  + ' ' + product.symbol + ' to ' + Utils.roundWei(product.seedRate)  + ' ' + product.symbol);
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Exchange Rate ' + Utils.roundWei(old.seedRate) + ' ' + product.symbol + ' to ' + Utils.roundWei(product.seedRate) + ' ' + product.symbol);
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         try {
-            if(old.whiteListThreshold !== product.whiteListThreshold) {
-                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Whitelist Threshold ' + Utils.roundWei(old.whiteListThreshold)  + ' ' + product.symbol + ' to ' + Utils.roundWei(product.whiteListThreshold)  + ' ' + product.symbol);
+            if (old.whiteListThreshold !== product.whiteListThreshold) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Whitelist Threshold ' + Utils.roundWei(old.whiteListThreshold) + ' ' + product.symbol + ' to ' + Utils.roundWei(product.whiteListThreshold) + ' ' + product.symbol);
             }
-        } catch(e) {
-        }
-        if(notification.texts.length === 0) {
-            return;
-        }
-        !product.notifications && (product.notifications = []);
-        product.notifications.push(notification);
-        $.publish('notifications/new');
+        } catch (e) {}
+        try {
+            var oldMembers = old.members ? Object.keys(old.members) : [];
+            var newMembers = product.members ? Object.keys(product.members) : [];
+            if (oldMembers.length < newMembers.length) {
+                var member = product.members[Enumerable.From(newMembers).OrderByDescending(it => it).First()];
+                for(var x = 0; x < 3; x++) {
+                    try {
+                        if(member.name) {
+                            break;
+                        }
+                        member = await getFundingPanelMemberData(member);
+                    } catch(e) {
+                    }
+                }
+                notification.forAll = true;
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new Startup' + (!member.name ? '' : (' ' + member.name)) + '.');
+            }
+        } catch (e) {}
+        return finalize();
     };
 
     context['0x10b2a5b108c7f1e07744f78d98a096424f89c30fca6176cb114052d552ea4650'] = function whiteListThresholdChanged(event, element) {
@@ -775,6 +794,7 @@ function ContractsManager() {
             }
         } catch {}
         $.publish('list/updated');
+        context.getFundingPanelData(element).then(product => context.manageFundingPanelChanged(product, true));
     };
 
     context.changeFactoryAddress = async function changeFactoryAddress(factoryAddress) {

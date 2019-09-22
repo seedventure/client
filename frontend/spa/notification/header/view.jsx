@@ -30,11 +30,19 @@ var NotificationHeader = React.createClass({
     },
     select(e) {
         e && e.preventDefault() && e.stopPropagation();
-        if (!isNaN(parseInt($(e.target).attr('data-key')))) {
+        if ($(e.target).attr('data-return') === 'true') {
             return;
         }
         var position = $(e.target).attr('data-position');
         var element = client.contractsManager.getList()[position];
+        if(!element.name) {
+            return alert('Please wait until data has been downloaded');
+        }
+        var blockNumber = parseInt($(e.target).attr('data-key'));
+        try {
+            Enumerable.From(element.notifications).Where(it => it.blockNumber === blockNumber).First().read = true;
+        } catch (e) {
+        }
         this.emit('page/change', Detail, { element });
     },
     getNotifications() {
@@ -53,7 +61,7 @@ var NotificationHeader = React.createClass({
             var product = products[i];
             try {
                 if (product.walletOnTop.toLowerCase() === userWallet) {
-                    continue;
+                    //continue;
                 }
                 var favorite = false;
                 try {
@@ -90,18 +98,18 @@ var NotificationHeader = React.createClass({
                     {notifications && notifications.length === 0 && <span>{'\u00A0'}{'\u00A0'}{'\u00A0'}No new notifications to show right now</span>}
                     {notifications && notifications.length > 0 && notifications.map(it =>
                         <div key={it.blockNumber} className="kt-notification kt-margin-t-10 kt-scroll ps">
-                            <a href="#" data-position={it.productPosition} className="kt-notification__item" onClick={this.select}>
-                                <div data-position={it.productPosition} className="kt-notification__item-details">
-                                    <div data-position={it.productPosition} className="kt-notification__item-title">
-                                        <ul className="notifications" data-position={it.productPosition}>
+                            <a href="#" data-position={it.productPosition} data-key={it.blockNumber} className="kt-notification__item" onClick={this.select}>
+                                <div data-position={it.productPosition} data-key={it.blockNumber} className="kt-notification__item-details">
+                                    <div data-position={it.productPosition} data-key={it.blockNumber} className="kt-notification__item-title">
+                                        <ul className="notifications" data-position={it.productPosition} data-key={it.blockNumber}>
                                             {it.texts && it.texts.length > 0 && it.texts.map(text =>
-                                                <li data-position={it.productPosition}>{text}</li>
+                                                <li data-position={it.productPosition} data-key={it.blockNumber}>{text}</li>
                                             )}
                                         </ul>
                                     </div>
                                 </div>
                                 <div className="kt-notification__item-icon">
-                                    {it.read !== true && <a href="javascript:;" data-position={it.productPosition} data-key={it.blockNumber} onClick={this.markAsReadNotification}><i data-key={it.blockNumber} data-position={it.productPosition} className="fa fa-check"></i></a>}
+                                    {it.read !== true && <a href="javascript:;" data-position={it.productPosition} data-key={it.blockNumber} data-return="true" onClick={this.markAsReadNotification}><i data-key={it.blockNumber} data-position={it.productPosition} data-return="true" className="fa fa-check"></i></a>}
                                 </div>
                             </a>
                         </div>

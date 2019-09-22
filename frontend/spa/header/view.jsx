@@ -5,7 +5,6 @@ var Header = React.createClass({
         'spa/configuration/backup',
         'spa/configuration/move',
         'spa/detail',
-        'spa/dex',
         'spa/notification/header'
     ],
     getDefaultSubscriptions() {
@@ -25,23 +24,23 @@ var Header = React.createClass({
     },
     importConfiguration(e) {
         e && e.preventDefault() && e.stopPropagation();
-        this.emit('page/change', ImportConfiguration);
+        this.emit('page/change', ImportConfiguration, {view: this.props.view});
     },
     createConfiguration(e) {
         e && e.preventDefault() && e.stopPropagation();
-        this.emit('page/change', CreateConfiguration);
+        this.emit('page/change', CreateConfiguration, {view: this.props.view});
     },
     backupConfiguration(e) {
         e && e.preventDefault() && e.stopPropagation();
-        this.emit('page/change', BackupConfiguration);
+        this.emit('page/change', BackupConfiguration, {view: this.props.view});
     },
     moveConfiguration(e) {
         e && e.preventDefault() && e.stopPropagation();
-        this.emit('page/change', MoveConfiguration);
+        this.emit('page/change', MoveConfiguration, {view: this.props.view});
     },
     openPreferences(e) {
         e && e.preventDefault() && e.stopPropagation();
-        this.emit('page/change', Preferences);
+        this.emit('page/change', Preferences, {view: this.props.view});
     },
     componentDidUpdate() {
         if (client.userManager.user && (new Date().getTime() - this.lastBalanceCheck) > 50000) {
@@ -96,7 +95,7 @@ var Header = React.createClass({
                             <span className="mr-4">Welcome <strong>{client.userManager.user ? (client.userManager.user.wallet.substring(0, 9) + "...") : client.configurationManager.hasUser() ? "" : "Guest"}</strong></span>
                             {client.userManager.user && this.state && this.state.eth && <span className="mr-4">(<strong>{Utils.roundWei(this.state.eth)} eth</strong>)</span>}
                             {client.userManager.user && this.state && this.state.seed && <span className="mr-4">(<strong>{Utils.roundWei(this.state.seed)} SEED</strong>)</span>}
-                            {window['NotificationHeader'] !== undefined && client.userManager.user && <NotificationHeader/>}
+                            {window['NotificationHeader'] !== undefined && client.userManager.user && this.props.view !== 'mine' && <NotificationHeader/>}
                             {client.userManager.user && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Wallet" onClick={() => this.emit('wallet/show')}>
                                 <i className="fas fa-wallet"></i>
                             </a>}
@@ -115,6 +114,9 @@ var Header = React.createClass({
                             <a href="javascript:;" onClick={this.openPreferences} data-toggle="kt-tooltip" data-placement="bottom" title="Preferences">
                                 <i className="fas fa-cog"></i>
                             </a>
+                            {client.configurationManager.hasUnlockedUser() && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Choose Identity" onClick={() => this.emit('page/change', Choose)}>
+                                <i className="fas fa-user-alt"></i>
+                            </a>}
                             {client.configurationManager.hasUnlockedUser() && <a href="javascript:;" data-toggle="kt-tooltip" data-placement="bottom" title="Forget Me" onClick={() => this.emit('user/askForget')}>
                                 <i className="fas fa-sign-out-alt"></i>
                             </a>}
@@ -126,17 +128,17 @@ var Header = React.createClass({
                         <div className="kt-header-menu-wrapper" id="kt_header_menu_wrapper">
                             <div id="kt_header_menu" className="kt-header-menu">
                                 <ul className="kt-menu__nav">
-                                    <li className={"kt-menu__item" + (selected === 'Baskets' ? " kt-menu__item--open kt-menu__item--here" : "")}>
+                                    {this.props.view !== 'mine' && [<li className={"kt-menu__item" + (selected === 'Baskets' ? " kt-menu__item--open kt-menu__item--here" : "")}>
                                         <a href="javascript:;" onClick={() => this.emit('page/change', Products)}>
                                             Baskets
                                         </a>
-                                    </li>
+                                    </li>,
                                     <li className={"kt-menu__item" + (selected === 'Trade' ? " kt-menu__item--open kt-menu__item--here" : "")}>
                                         <a href="javascript:;" onClick={() => this.emit('page/change', Dex)}>
                                             Trade
                                         </a>
-                                    </li>
-                                    {client.configurationManager.hasUnlockedUser() && <li className={"kt-menu__item" + (selected === 'My Baskets' ? " kt-menu__item--open kt-menu__item--here" : "")}>
+                                    </li>]}
+                                    {client.configurationManager.hasUnlockedUser() && this.props.view === 'mine' && <li className={"kt-menu__item" + (selected === 'My Baskets' ? " kt-menu__item--open kt-menu__item--here" : "")}>
                                         <a href="javascript:;" onClick={() => this.emit('page/change', Products, { view: 'mine' })}>
                                             My Baskets
                                         </a>

@@ -4,7 +4,9 @@ var Index = React.createClass({
         'spa/header',
         'spa/products',
         'spa/fundingPool/create',
-        'spa/preferences'
+        'spa/preferences',
+        'spa/dex',
+        'spa/choose'
     ],
     requiredScripts: [
         'spa/modal.jsx'
@@ -141,7 +143,7 @@ var Index = React.createClass({
         this.emit('products/search');
     },
     renderOwnedToken(product, consume) {
-        if (!product || !product.name) {
+        if (!product || !product.tokenAddress || !product.symbol) {
             typeof consume === 'function' && setTimeout(consume);
             return;
         }
@@ -158,12 +160,15 @@ var Index = React.createClass({
                 <div class="col-md-12">
                     <div class="row token">
                         <div class="col-md-2">${product.image ? `<img width="40" height="40" src="data:image/png;base64, ${product.image}" />` : '&nbsp;'}</div>
-                        <div class="col-md-3"><h3>${product.name}</h3></div>
-                        <div class="col-md-7 amount"><h3>${result} ${product.symbol}</h3></div>
+                        <div class="col-md-5"><h3>${product.name || product.symbol}</h3></div>
+                        <div class="col-md-5 amount"><h3>${result} ${product.symbol}</h3></div>
                     </div>
                 </div>
             </div>`).click(e => {
                 e && e.preventDefault() && e.stopPropagation();
+                if(!product.name) {
+                    return alert('Please wait until data has been downloaded');
+                }
                 _this.walletModal.hide();
                 _this.emit('page/change', Detail, { element: product });
             }).appendTo(_this.ownedTokens));
@@ -215,8 +220,8 @@ var Index = React.createClass({
             <div className="kt-grid kt-grid--hor kt-grid--root">
                 <div className="kt-grid__item kt-grid__item--fluid kt-grid kt-grid--ver kt-page">
                     <div className={"kt-grid__item kt-grid__item--fluid kt-grid kt-grid--hor kt-wrapper" + (client.userManager.user ? "" : " guest")} id="kt_wrapper">
-                        <Header title={this.state && this.state.title ? this.state.title : ''} element={rendered} view={props.view} back={this.state && this.state.back} />
-                        <br />
+                        {(!this.state || !this.state.element || this.state.element !== Choose) && [<Header title={this.state && this.state.title ? this.state.title : ''} element={rendered} view={props.view} back={this.state && this.state.back} />,
+                        <br />]}
                         {!client.configurationManager.hasUnlockedUser() && [<br />, <br />,<br />, <br />,<br />]}
                         {(!this.state || !this.state.element || this.state.element === Products) && [<div className="kt-subheader kt-grid__item" id="kt_subheader">
                             <div className="kt-subheader__main">

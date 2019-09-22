@@ -25,7 +25,8 @@ function UserManager() {
                 .Distinct().ToArray()
         };
         client.configurationManager.save(context.user, pass, true);
-        $.publish('wallet/show');
+        context.init();
+        setTimeout(() => $.publish('wallet/show'));
     };
 
     context.forget = function forget() {
@@ -84,7 +85,7 @@ function UserManager() {
 
     context.init = function init() {
         context.user = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.user);
-        $.publish('page/change');
+        $.publish('page/change', Choose);
     };
     $.subscribe('configuration/unlocked', context.init);
 }

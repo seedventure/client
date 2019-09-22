@@ -1,4 +1,7 @@
 var Unlock = React.createClass({
+    requiredModules: [
+        'spa/choose'
+    ],
     unlock(e) {
         e && e.preventDefault() && e.stopPropagation();
         var password = this.password.value;

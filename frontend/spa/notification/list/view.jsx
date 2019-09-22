@@ -29,6 +29,14 @@ var NotificationList = React.createClass({
         e && e.preventDefault() && e.stopPropagation();
         var position = $(e.target).attr('data-position');
         var element = client.contractsManager.getList()[position];
+        if(!element.name) {
+            return alert('Please wait until data has been downloaded');
+        }
+        var blockNumber = parseInt($(e.target).attr('data-key'));
+        try {
+            Enumerable.From(element.notifications).Where(it => it.blockNumber === blockNumber).First().read = true;
+        } catch (e) {
+        }
         this.emit('page/change', Detail, { element });
     },
     getNotifications() {
@@ -90,12 +98,12 @@ var NotificationList = React.createClass({
                             {notifications && notifications.length === 0 && <h3>No new notifications to show right now</h3>}
                             {notifications && notifications.length > 0 && notifications.map(it =>
                                 <div key={it.blockNumber} className="row">
-                                    <div data-position={it.productPosition} className="col-md-10">
-                                        <ul className="notifications" data-position={it.productPosition}>
+                                    <div data-position={it.productPosition} data-key={it.blockNumber} className="col-md-10">
+                                        <ul className="notifications" data-position={it.productPosition} data-key={it.blockNumber}>
                                             {it.texts && it.texts.length > 0 && it.texts.map(text =>
-                                                <li data-position={it.productPosition}>
-                                                    <a href="javascript:;" data-position={it.productPosition} onClick={this.select}>
-                                                        <h3 data-position={it.productPosition}>{text}</h3>
+                                                <li data-position={it.productPosition} data-key={it.blockNumber}>
+                                                    <a href="javascript:;" data-position={it.productPosition} data-key={it.blockNumber} onClick={this.select}>
+                                                        <h3 data-position={it.productPosition} data-key={it.blockNumber}>{text}</h3>
                                                     </a>
                                                 </li>
                                             )}
