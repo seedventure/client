@@ -61,7 +61,7 @@ var NotificationHeader = React.createClass({
             var product = products[i];
             try {
                 if (product.walletOnTop.toLowerCase() === userWallet) {
-                    //continue;
+                    continue;
                 }
                 var favorite = false;
                 try {
