@@ -600,7 +600,7 @@ var Dex = React.createClass({
                                                     {Utils.roundWei(trade.buy ? trade.amountGetDecursion : trade.amountGiveDecursion)}
                                                 </div>
                                                 <div className="col-md-3">
-                                                    <a href={ecosystemData.etherscanURL + "tx/" + trade.transactionHash}>Detail</a>
+                                                    <a href={client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL) + "tx/" + trade.transactionHash}>Detail</a>
                                                 </div>
                                             </div>
                                         )}

@@ -262,7 +262,7 @@ var Detail = React.createClass({
                                             <p className="small">{"The Ethereum wallet which will " + (this.props.parent ? "store the unlocked" : "raise the") + " funds"}</p>
                                         </div>
                                         <div className="col-md-10">
-                                            <h2><a href={ecosystemData.etherscanURL + 'address/' + (this.props.parent ? product.address : product.walletOnTop)} target="_blank">{this.props.parent ? product.address : product.walletOnTop}</a></h2>
+                                            <h2><a href={client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL) + 'address/' + (this.props.parent ? product.address : product.walletOnTop)} target="_blank">{this.props.parent ? product.address : product.walletOnTop}</a></h2>
                                         </div>
                                     </div>
                                     <br />

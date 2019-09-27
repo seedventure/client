@@ -6,7 +6,8 @@ var Index = React.createClass({
         'spa/fundingPool/create',
         'spa/preferences',
         'spa/dex',
-        'spa/choose'
+        'spa/choose',
+        'spa/detail'
     ],
     requiredScripts: [
         'spa/modal.jsx'
@@ -31,7 +32,7 @@ var Index = React.createClass({
         client.userManager.getBalances().then(balances => {
             _this.walletEth.innerHTML = Utils.roundWei(balances.eth);
             _this.walletSeed.innerHTML = Utils.roundWei(balances.seed);
-            _this.addressLink.attr('href', ecosystemData.etherscanURL + 'address/' + client.userManager.user.wallet);
+            _this.addressLink.attr('href', client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL) + 'address/' + client.userManager.user.wallet);
             _this.addressLink.html(client.userManager.user.wallet);
             _this.privateKeyLabel.html('***************************************************************************'.substring(0, 50));
             _this.renderOwnedTokens();
@@ -75,7 +76,7 @@ var Index = React.createClass({
     },
     showTransactionLockModal(title, transaction) {
         var body = '<span>Sealing transaction into Blockchain. This can take more than 30 seconds...</span><br/><br/>';
-        body += '<a href="' + (transaction ? ecosystemData.etherscanURL + 'tx/' + transaction : '#') + '" target="_blank">Follow on Etherscan</a>';
+        body += '<a href="' + (transaction ? client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL) + 'tx/' + transaction : '#') + '" target="_blank">Follow on Etherscan</a>';
         this.showLoaderModal(title, body);
     },
     showTransactionModal(txHash, title, error, tx) {
@@ -87,7 +88,7 @@ var Index = React.createClass({
             body += '<p>' + error.message || error + '</p>';
         } else {
             body += '<h3 class="success">Transaction Correctly submitted</h3><br/><br/>';
-            body += '<h3><a target="_blank" href="' + (txHash ? ecosystemData.etherscanURL + 'tx/' + txHash : '#') + '">View on Etherscan</a></h3>';
+            body += '<h3><a target="_blank" href="' + (txHash ? client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL) + 'tx/' + txHash : '#') + '">View on Etherscan</a></h3>';
         }
         this.transactionBody.html(body);
         this.transactionModal.isHidden() && this.transactionModal.show();

@@ -104,6 +104,7 @@ function ConfigurationManager() {
     }
     privateContext.encryptedContent && (context.content.user = privateContext.encryptedContent);
     privateContext.fs.writeFileSync(privateContext.data, JSON.stringify(context.content, null, 4));
+    context.encryptedUser = context.content.user;
     delete context.content.user;
     user && (context.content.user = user);
     lang && (context.content.lang = lang);
@@ -131,16 +132,21 @@ function ConfigurationManager() {
     return true;
   };
 
-  context.forget = function forget() {
-    privateContext.fs.unlinkSync(privateContext.configuration);
+  context.forget = function forget(user) {
+    var oldPlainUser = context.content.user;
+    var oldPassword = privateContext.password;
+    !user && privateContext.fs.unlinkSync(privateContext.configuration);
     try {
-      privateContext.fs.unlinkSync(window.userDataPath + 'data.json');
+      !user && privateContext.fs.unlinkSync(window.userDataPath + 'data.json');
     } catch(e) {
     }
+    user && privateContext.fs.writeFileSync(JSON.parse(privateContext.fs.readFileSync(privateContext.configuration, 'UTF-8')).data, JSON.stringify({user}));
     context.load();
-    $.publish('list/updated');
-    client.contractsManager.checkBaskets();
-    $.publish('configuration/forgotten');
+    user && (context.content.user = oldPlainUser);
+    user && (privateContext.password = oldPassword);
+    !user && $.publish('list/updated');
+    !user && client.blockchainManager.newProvider().then(client.contractsManager.checkBaskets);
+    !user && $.publish('configuration/forgotten');
   }
 
   context.hasUser = function hasUser() {
@@ -178,8 +184,12 @@ function ConfigurationManager() {
       context.load();
       return;
     }
-    context.content = JSON.parse(privateContext.fs.readFileSync(privateContext.data, 'UTF-8'));
-    context.content === undefined || context.content === null && (context.content = {});
+    try {
+      context.content = JSON.parse(privateContext.fs.readFileSync(privateContext.data, 'UTF-8'));
+    } catch(e) {
+    }
+    context.content = context.content || {};
+    context.content.user && (context.encryptedUser = context.content.user);
     context.content.user && (privateContext.encryptedContent = context.content.user);
     delete context.content.user;
     var defaultConfiguration = context.getDefaultConfiguration();

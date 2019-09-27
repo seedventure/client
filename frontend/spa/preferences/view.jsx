@@ -5,6 +5,14 @@ var Preferences = React.createClass({
     title: 'System Preferences',
     changeFactoryAddress(e) {
         e && e.preventDefault() && e.stopPropagation();
+        var main = $(this.blockchainNetwork).val() === 'mainnet';
+        var web3URL = ('wss://' + (main ? 'main' : 'test') + 'net.seedventure.io');
+        var etherscanURL = ('https://' + (main ? '' : 'ropsten.') + 'etherscan.io/');
+        try {
+            web3URL = main ? ecosystemData.mainnetWeb3URL : ecosystemData.testnetWeb3URL;
+            etherscanURL = main ? ecosystemData.mainnetEtherscanURL : ecosystemData.testnetEtherscanURL;
+        } catch(e) {
+        }
         var factoryAddress = this.factoryAddress.value;
         factoryAddress = factoryAddress.split(' ').join('');
         if (factoryAddress === '') {
@@ -15,16 +23,18 @@ var Preferences = React.createClass({
             alert('You must provide a valid ethereum address');
             return;
         }
-        if (factoryAddress.toLowerCase() === client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress).toLowerCase()) {
+        if (web3URL.toLowerCase() === client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL).toLowerCase() && factoryAddress.toLowerCase() === client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress).toLowerCase()) {
             return;
         }
         var _this = this;
-        _this.controller.changeFactoryAddress(factoryAddress).then(_this.showUpdated);
+        this.emit('loader/show', 'Switching to new Environment...');
+        _this.controller.changeFactoryAddress(web3URL, etherscanURL, factoryAddress).then(_this.showUpdated);
     },
     showUpdated() {
+        this.emit('loader/hide');
         var _this = this;
         setTimeout(() => _this.updateNotification.show());
-        setTimeout(() => _this.updateNotification.hide(), 2000);
+        setTimeout(() => _this.updateNotification.hide() && _this.emit('page/change'), 1300);
     },
     componentDidMount() {
         this.updateNavLinks();
@@ -45,10 +55,18 @@ var Preferences = React.createClass({
         _this.domRoot.children().find('input[name="all"]').prop('checked', false);
         var _last = $(e.target).prop('checked', true);
         client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.notifyAll, e.target.value === 'true');
-        setTimeout(function() {
+        setTimeout(function () {
             _this.domRoot.children().find('input[name="all"]').prop('checked', false);
             _last.prop('checked', true);
         });
+    },
+    onNetworkChange(e) {
+        e && e.preventDefault() && e.stopPropagation();
+        var main = e.target.value === 'mainnet';
+        try {
+            this.factoryAddress.value = e.target.value === 'mainnet' ? ecosystemData.mainnetFactoryAddress : ecosystemData.testnetFactoryAddress;
+        } catch(e) {
+        }
     },
     render() {
         return (
@@ -75,16 +93,30 @@ var Preferences = React.createClass({
                                     <legend>Blockchain Preferences</legend>
                                     <div className="form-group mb-5">
                                         <div className="input-container">
+                                            <h3>Choose your network:</h3>
+                                            <select ref={ref => this.blockchainNetwork = ref} onChange={this.onNetworkChange}>
+                                                <option value="mainnet" selected={client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL).indexOf('mainnet') !== -1}>Main Network</option>
+                                                <option value="testnet" selected={client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.web3URL).indexOf('testnet') !== -1}>Test Network (Ropsten)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="form-group mb-5">
+                                        <div className="input-container">
+                                            <h3>Main Factory Address:</h3>
                                             <input ref={ref => (this.factoryAddress = ref) && (this.factoryAddress.value = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress))} type="text" className="form-control form-control-last" placeholder="New Factory Address" />
                                         </div>
-                                        <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.changeFactoryAddress}>Change Factory Address</button>{"\u00A0"}{"\u00A0"}{"\u00A0"}<span ref={ref => (this.updateNotification = $(ref)).hide()}>Changes Updated</span>
+                                    </div>
+                                    <div className="form-group mb-5">
+                                        <div>
+                                            <button className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.changeFactoryAddress}>Change</button>{"\u00A0"}{"\u00A0"}{"\u00A0"}<span ref={ref => (this.updateNotification = $(ref)).hide()}>Changes Updated</span>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
                             <div className="tab-pane" id="notifications" role="tabpanel">
                                 <legend>Receive Notifications</legend>
-                                <h3><label><input name="all" type="radio" value="true" onChange={this.notificationSettingsChanged}/> {'\u00A0'} For every incubator</label></h3>
-                                <h3><label><input name="all" type="radio" value="false" onChange={this.notificationSettingsChanged}/> {'\u00A0'} Just for incubators I starred or I've invested in</label></h3>
+                                <h3><label><input name="all" type="radio" value="true" onChange={this.notificationSettingsChanged} /> {'\u00A0'} For every incubator</label></h3>
+                                <h3><label><input name="all" type="radio" value="false" onChange={this.notificationSettingsChanged} /> {'\u00A0'} Just for incubators I starred or I've invested in</label></h3>
                             </div>
                         </div>
                     </div>

@@ -816,6 +816,8 @@ function ContractsManager() {
             data = await context.Factory.getFactoryContext(factoryAddress);
         } catch (e) {
             data = undefined;
+            client.configurationManager.forget(client.configurationManager.encryptedUser);
+            await client.blockchainManager.newProvider();
         }
         if (!data) {
             return;
