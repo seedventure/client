@@ -91,7 +91,7 @@ var Modal = React.createClass({
                 </div>
                 <div className="modal-footer">
                     {readonly !== true && <button type="button" data-dismiss="modal" className="btn btn-undo" data-lang-id="close">Close</button>}
-                    {readonly !== true && this.renderActions()}
+                    {this.renderActions()}
                 </div>
             </div>
         );

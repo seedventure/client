@@ -7,7 +7,8 @@ var Index = React.createClass({
         'spa/preferences',
         'spa/dex',
         'spa/choose',
-        'spa/detail'
+        'spa/detail',
+        'spa/preferences/networkChooser'
     ],
     requiredScripts: [
         'spa/modal.jsx'
@@ -206,6 +207,7 @@ var Index = React.createClass({
         }
     },
     render() {
+        var _this = this;
         var rendered = this.state && this.state.element ? this.state.element : this.getDefaultRenderer();
         var props = this.state && this.state.props;
         !props && (props = {});
@@ -323,6 +325,24 @@ var Index = React.createClass({
                         }
                     }]}>
                     <h3>It is recommended to always keep the client update. You can do in any moment.</h3>
+                </Modal>
+                <Modal 
+                    ref={ref => ref && _this.state && _this.state && _this.state.element !== Unlock && _this.state.element !== Choose && !window.network && setTimeout(ref.show) && (window.network = true)}
+                    readonly="true"
+                    backdrop="static"
+                    keyboard="false"
+                    actions={[{
+                        text: "OK",
+                        className: "btn-brand btn-pill",
+                        onClick() {
+                            var _modal = this;
+                            _this.networkChooser.changeFactoryAddress(() => {
+                                _modal.hide();
+                                _this.forceUpdate();
+                            });
+                        }
+                    }]}>
+                    <NetworkChooser hideButton="true" ref={ref => this.networkChooser = ref}/>
                 </Modal>
             </div>
         );

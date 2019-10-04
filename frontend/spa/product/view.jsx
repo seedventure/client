@@ -30,7 +30,7 @@ var Product = React.createClass({
     tryUpdateProduct() {
         var _this = this;
         var product = _this.getProduct();
-        (!product.name || product.unavailable) && client.contractsManager.getFundingPanelData(product).then(p => p && p.name && !p.unavailable && _this.setState({product : p}));
+        (!product.name || product.unavailable) && client.contractsManager.getFundingPanelData(product).then(p => p && p.name && !p.unavailable && _this.setState({product : p}, () => _this.emit('products/search')));
     },
     makeUnsuitable(e) {
         e && e.preventDefault() && e.stopPropagation();
