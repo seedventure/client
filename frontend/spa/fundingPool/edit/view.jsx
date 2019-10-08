@@ -101,6 +101,16 @@ var EditFundingPool = React.createClass({
         } catch (error) {
         }
 
+        var basketSuccessFee = 0;
+        try {
+            basketSuccessFee = parseFloat(this.basketSuccessFee.value);
+        } catch (error) {
+            basketSuccessFee = 0;
+        }
+        if (!this.props.parent && (basketSuccessFee < 0 || basketSuccessFee > 100)) {
+            return alert('Basket success fee can be a percentage between 0 and 100');
+        }
+
         var totalSupply = 0;
         try {
             totalSupply = Utils.toWei(this.startupTotalSupply);
@@ -128,6 +138,8 @@ var EditFundingPool = React.createClass({
             documents: (this.state && this.state.documents) || [],
             totalSupply
         };
+        !this.props.parent && (newProduct.basketSuccessFee = basketSuccessFee);
+
         var thisProduct = this.getProduct();
         var oldProduct = {
             name: thisProduct.name,
@@ -137,6 +149,8 @@ var EditFundingPool = React.createClass({
             documents: thisProduct.documents,
             totalSupply : thisProduct.totalSupply
         }
+        !this.props.parent && (thisProduct.basketSuccessFee = thisProduct.basketSuccessFee);
+
         try {
             oldProduct.image = thisProduct.image.split('data:image/png;base64, ').join('');
         } catch (error) {
@@ -630,7 +644,7 @@ var EditFundingPool = React.createClass({
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateTotalSupply}>OK</button>
                                         </div>
                                     </div>
-                                    <br />
+                                    <br/>
                                     <div className="row">
                                         <div className="col-md-4">
                                             <h4>White List Threshold Balance</h4>
@@ -641,6 +655,26 @@ var EditFundingPool = React.createClass({
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.updateWhiteListThreshold}>OK</button>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <div className="row">
+                                        <div className="col-md-4">
+                                            <h4>Success fee percentage</h4>
+                                            <p className="small">the percentage of SEED tokens the incubator will obtain from a startup exit</p>
+                                        </div>
+                                        <div className="col-md-1 form-group">
+                                            <input className="form-control form-control-last" type="number" min="0" max="100" ref={ref => (this.basketSuccessFee = ref) && (ref.value = "" + Utils.normalizeBasketSuccessFee(product.basketSuccessFee || 0))}/>
+                                        </div>
+                                        <div className="col-md-1">
+                                            <br/>
+                                            <h2>%</h2>
+                                        </div>
+                                        <div className="col-md-4">
+                                            {"\u00A0"}
+                                        </div>
+                                        <div className="col-md-2">
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>OK</button>
                                         </div>
                                     </div>
                                 </form>

@@ -318,6 +318,14 @@ var Utils = function() {
         return title;
     }
 
+    var normalizeBasketSuccessFee = function normalizeBasketSuccessFee(value) {
+        if(!value) {
+            return 0;
+        }
+        typeof value === 'string' && (value = Utils.cleanNumber(value));
+        return parseFloat(value.toFixed(2));
+    }
+
     return {
         getJQueryElement: getJQueryElement,
         getCurrentWindowDimension: getCurrentWindowDimension,
@@ -342,6 +350,7 @@ var Utils = function() {
         tokenSymbolLimit,
         cleanTokenSymbol,
         weiDecimals,
-        getLastPartFile
+        getLastPartFile,
+        normalizeBasketSuccessFee
     };
 }();

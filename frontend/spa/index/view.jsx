@@ -312,6 +312,9 @@ var Index = React.createClass({
                     </div>
                 </Modal>
                 <Modal
+                    readonly="false"
+                    backdrop="static"
+                    keyboard="false"
                     title="New Version of the SEEDVenture Client is available!"
                     ref={this.checkDistDate}
                     className="index newVersionAvailableModel"

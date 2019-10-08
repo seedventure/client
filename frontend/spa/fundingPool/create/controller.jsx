@@ -17,7 +17,8 @@ var CreateFundingPoolController = function(view) {
                     var link = await client.documentsUploaderManager.uploadFile(document.link);
                     documents[i].link = link;
                 } catch(e) {
-                    alert("Unable to upload file '" + Utils.getLastPartFile(document.link) + "'. Please try again later");
+                    context.view.emit('loader/hide');
+                    return alert("Unable to upload file '" + Utils.getLastPartFile(document.link) + "'. Please try again later");
                 }
             }
         }
@@ -29,7 +30,13 @@ var CreateFundingPoolController = function(view) {
             documents,
             tags: data.tags
         };
-        var link = await client.documentsUploaderManager.uploadDocument(document);
+        var link;
+        try {
+            link = await client.documentsUploaderManager.uploadDocument(document);
+        } catch(e) {
+            context.view.emit('loader/hide');
+            return alert("Unable to upload document. An error occurred: '" + (e.message || e) + "'. Please try again later");
+        }
         context.view.emit('loader/hide');
         var tx = await client.contractsManager.Factory.deployPanelContracts(
             client.contractsManager.factoryAddress,
@@ -79,7 +86,8 @@ var CreateFundingPoolController = function(view) {
                     var link = await client.documentsUploaderManager.uploadFile(document.link);
                     documents[i].link = link;
                 } catch(e) {
-                    alert("Unable to upload file '" + Utils.getLastPartFile(document.link) + "'. Please try again later");
+                    context.view.emit('loader/hide');
+                    return alert("Unable to upload file '" + Utils.getLastPartFile(document.link) + "'. Please try again later");
                 }
             }
         }
@@ -91,7 +99,13 @@ var CreateFundingPoolController = function(view) {
             documents,
             totalSupply : Utils.toWei(data.totalSupply)
         };
-        var link = await client.documentsUploaderManager.uploadDocument(document);
+        var link;
+        try {
+            link = await client.documentsUploaderManager.uploadDocument(document);
+        } catch(e) {
+            context.view.emit('loader/hide');
+            return alert("Unable to upload document. An error occurred: '" + (e.message || e) + "'. Please try again later");
+        }
         context.view.emit('loader/hide');
         var tx = await client.contractsManager.FundingPanel.addMemberToSet(
             product.fundingPanelAddress,

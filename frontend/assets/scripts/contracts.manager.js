@@ -20,7 +20,8 @@ function ContractsManager() {
         contracts[key].map(function(contractElement) {
             if (contractElement.type !== "function") {
                 return;
-            }!context[key] && (context[key] = {});
+            }
+            !context[key] && (context[key] = {});
             context[key][contractElement.name] = function() {
                 var address = arguments[0];
                 var argumentsLength = arguments.length - 1;
@@ -488,18 +489,24 @@ function ContractsManager() {
         } catch (e) {}
         try {
             if (old.exchangeRateOnTop !== product.exchangeRateOnTop) {
-                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Exchange Rate on Top ' + Utils.roundWei(old.exchangeRateOnTop) + ' ' + product.symbol + ' to ' + Utils.roundWei(product.exchangeRateOnTop) + ' ' + product.symbol);
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') changed its Exchange Rate on Top ' + Utils.roundWei(old.exchangeRateOnTop) + ' ' + product.symbol + ' to ' + Utils.roundWei(product.exchangeRateOnTop) + ' ' + product.symbol);
             }
         } catch (e) {}
         try {
             if (old.seedRate !== product.seedRate) {
                 notification.forAll = true;
-                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Exchange Rate ' + Utils.roundWei(old.seedRate) + ' ' + product.symbol + ' to ' + Utils.roundWei(product.seedRate) + ' ' + product.symbol);
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') changed its Exchange Rate ' + Utils.roundWei(old.seedRate) + ' ' + product.symbol + ' to ' + Utils.roundWei(product.seedRate) + ' ' + product.symbol);
             }
         } catch (e) {}
         try {
             if (old.whiteListThreshold !== product.whiteListThreshold) {
-                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') change its Whitelist Threshold ' + Utils.roundWei(old.whiteListThreshold) + ' ' + product.symbol + ' to ' + Utils.roundWei(product.whiteListThreshold) + ' ' + product.symbol);
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') changed its Whitelist Threshold ' + Utils.roundWei(old.whiteListThreshold) + ' ' + product.symbol + ' to ' + Utils.roundWei(product.whiteListThreshold) + ' ' + product.symbol);
+            }
+        } catch (e) {}
+        try {
+            if (old.basketSuccessFee !== product.basketSuccessFee) {
+                notification.forAll = true;
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') changed its Basket Success Fee from ' + (old.basketSuccessFee || 0) + '% to ' + (product.basketSuccessFee || 0) + '%');
             }
         } catch (e) {}
         try {
@@ -524,6 +531,14 @@ function ContractsManager() {
     };
 
     context['0x10b2a5b108c7f1e07744f78d98a096424f89c30fca6176cb114052d552ea4650'] = function whiteListThresholdChanged(event, element) {
+        context.manageFundingPanelChanged(element.element || element);
+    };
+
+    context['0x09384e57f5d53342da2bbb810e7f68d5b6b397b491b7ae37f0b78b49d3d43ca5'] = function exchangeRateChanged(event, element) {
+        context.manageFundingPanelChanged(element.element || element);
+    };
+
+    context['0xe3c38d6fd9e7c851ad71a659e56c7bff558ad76dc5a9bfe93b1423eff36456c2'] = function exchangeRateOnTopChanged(event, element) {
         context.manageFundingPanelChanged(element.element || element);
     };
 

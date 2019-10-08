@@ -122,6 +122,16 @@ var CreateFundingPool = React.createClass({
             return;
         }
 
+        var basketSuccessFee = 0;
+        try {
+            basketSuccessFee = parseFloat(parseFloat(this.basketSuccessFee.value).toFixed(2));
+        } catch (error) {
+            basketSuccessFee = 0;
+        }
+        if (!this.props.parent && (basketSuccessFee < 0 || basketSuccessFee > 100)) {
+            return alert('Basket success fee can be a percentage between 0 and 100');
+        }
+
         var walletAddress = '';
         try {
             walletAddress = this.walletAddress.value.split(' ').join('');
@@ -143,6 +153,7 @@ var CreateFundingPool = React.createClass({
             exchangeRateOnTop,
             whiteListThreshold,
             totalSupply,
+            basketSuccessFee,
             walletAddress
         };
         var type = this.props.parent ? 'Member' : 'Basket';
@@ -378,6 +389,20 @@ var CreateFundingPool = React.createClass({
                     </div>
                     <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.whiteListThreshold = ref} onChange={Utils.parseNumber}/>
+                    </div>
+                </div>}
+                {!this.props.parent && <br/>}
+                {!this.props.parent && <div className="row">
+                    <div className="col-md-4">
+                        <h4>Success fee percentage</h4>
+                        <p className="small">the percentage of SEED tokens the incubator will obtain from a startup exit</p>
+                    </div>
+                    <div className="col-md-1 form-group">
+                        <input className="form-control form-control-last" type="number" min="0" max="100" ref={ref => this.basketSuccessFee = ref}/>
+                    </div>
+                    <div className="col-md-6">
+                        <br/>
+                        <h2>%</h2>
                     </div>
                 </div>}
                 {this.props.parent && <br/>}

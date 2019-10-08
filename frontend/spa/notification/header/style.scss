@@ -1,4 +1,7 @@
 .notificationHeader {
+    .dropdown-menu {
+        z-index: 1000;
+    }
     span:not(.kt-badge) {
         display: inline-block;
         padding: 20px 0;

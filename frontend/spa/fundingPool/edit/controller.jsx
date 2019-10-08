@@ -27,7 +27,8 @@ var EditFundingPoolController = function (view) {
                     var link = await client.documentsUploaderManager.uploadFile(document.link);
                     documents[i].link = link;
                 } catch (e) {
-                    alert("Unable to upload file '" + Utils.getLastPartFile(document.link) + "'. Please try again later");
+                    context.view.emit('loader/hide');
+                    return alert("Unable to upload file '" + Utils.getLastPartFile(document.link) + "'. Please try again later");
                 }
             }
         }
@@ -37,10 +38,17 @@ var EditFundingPoolController = function (view) {
             url: data.url,
             image: data.image,
             documents,
-            tags: data.tags
+            tags: data.tags,
+            basketSuccessFee: data.basketSuccessFee || 0
         };
         isStartup && (document.totalSupply = data.totalSupply);
-        var url = await client.documentsUploaderManager.uploadDocument(document);
+        var url;
+        try {
+            url = await client.documentsUploaderManager.uploadDocument(document);
+        } catch(e) {
+            context.view.emit('loader/hide');
+            return alert("Unable to upload document. An error occurred: '" + (e.message || e) + "'. Please try again later");
+        }
         var contract = new web3.eth.Contract(contracts.FundingPanel);
         var method = contract.methods.setOwnerData(
             url,

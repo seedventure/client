@@ -378,6 +378,16 @@ var Detail = React.createClass({
                                             <h2>{Utils.roundWei(product.whiteListThreshold)} {product.symbol}</h2>
                                         </div>
                                     </div>
+                                    <br/>
+                                    <div className="row">
+                                        <div className="col-md-4">
+                                            <h4>Success fee percentage</h4>
+                                            <p className="small">the percentage of SEED tokens the incubator will obtain from a startup exit</p>
+                                        </div>
+                                        <div className="col-md-8">
+                                            <h2>{Utils.normalizeBasketSuccessFee(product.basketSuccessFee || 0)}%</h2>
+                                        </div>
+                                    </div>
                                 </form>
                             </div>}
                             {!this.props.parent && <div className="tab-pane" id="members" role="tabpanel">
