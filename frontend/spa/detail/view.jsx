@@ -388,6 +388,16 @@ var Detail = React.createClass({
                                             <h2>{Utils.normalizeBasketSuccessFee(product.basketSuccessFee || 0)}%</h2>
                                         </div>
                                     </div>
+                                    <br/>
+                                    <div className="row">
+                                        <div className="col-md-4">
+                                            <h4>Portfolio value</h4>
+                                            <p className="small">The extimated value of the basket, expressed in local currency</p>
+                                        </div>
+                                        <div className="col-md-8">
+                                            <h2>{!product.basketPortfolioValue || product.basketPortfolioValue <= 0 ? 'NONE' : (Utils.normalizeBasketSuccessFee(product.basketPortfolioValue) + " " + (product.basketPortfolioCurrency || "EUR"))}</h2>
+                                        </div>
+                                    </div>
                                 </form>
                             </div>}
                             {!this.props.parent && <div className="tab-pane" id="members" role="tabpanel">

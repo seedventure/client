@@ -111,6 +111,25 @@ var EditFundingPool = React.createClass({
             return alert('Basket success fee can be a percentage between 0 and 100');
         }
 
+        var basketPortfolioValue = 0;
+        try {
+            basketPortfolioValue = parseFloat(parseFloat(this.basketPortfolioValue.value).toFixed(2));
+        } catch (error) {
+            basketPortfolioValue = 0;
+        }
+        if (!this.props.parent && (isNaN(basketPortfolioValue) || basketPortfolioValue < 0)) {
+            return alert('Basket portfolio value must be a number greater or equal to zero');
+        }
+
+        var basketPortfolioCurrency = 'EUR';
+        try {
+            basketPortfolioCurrency = this.basketPortfolioCurrency.val();
+        } catch (error) {
+        }
+        if (!this.props.parent && basketPortfolioCurrency === '') {
+            return alert('Basket portfolio currency must be a valid currency');
+        }
+
         var totalSupply = 0;
         try {
             totalSupply = Utils.toWei(this.startupTotalSupply);
@@ -139,6 +158,8 @@ var EditFundingPool = React.createClass({
             totalSupply
         };
         !this.props.parent && (newProduct.basketSuccessFee = basketSuccessFee);
+        !this.props.parent && (newProduct.basketPortfolioValue = basketPortfolioValue);
+        !this.props.parent && (newProduct.basketPortfolioCurrency = basketPortfolioCurrency);
 
         var thisProduct = this.getProduct();
         var oldProduct = {
@@ -149,7 +170,9 @@ var EditFundingPool = React.createClass({
             documents: thisProduct.documents,
             totalSupply : thisProduct.totalSupply
         }
-        !this.props.parent && (thisProduct.basketSuccessFee = thisProduct.basketSuccessFee);
+        !this.props.parent && (oldProduct.basketSuccessFee = thisProduct.basketSuccessFee);
+        !this.props.parent && (oldProduct.basketPortfolioValue = thisProduct.basketPortfolioValue);
+        !this.props.parent && (oldProduct.basketPortfolioCurrency = thisProduct.basketPortfolioCurrency);
 
         try {
             oldProduct.image = thisProduct.image.split('data:image/png;base64, ').join('');
@@ -672,6 +695,26 @@ var EditFundingPool = React.createClass({
                                         </div>
                                         <div className="col-md-4">
                                             {"\u00A0"}
+                                        </div>
+                                        <div className="col-md-2">
+                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>OK</button>
+                                        </div>
+                                    </div>
+                                    <br/>
+                                    <div className="row">
+                                        <div className="col-md-4">
+                                            <h4>Portfolio Value</h4>
+                                            <p className="small">The extimated value of the basket, expressed in local currency</p>
+                                        </div>
+                                        <div className="col-md-1 form-group">
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.basketPortfolioValue = ref) && (ref.value = Utils.normalizeBasketSuccessFee(product.basketPortfolioValue || 0))} onChange={Utils.parseNumber}/>
+                                        </div>
+                                        <div className="col-md-1">
+                                            <select ref={ref => this.basketPortfolioCurrency = $(ref)}>
+                                                <option selected={!product.basketPortfolioCurrency || product.basketPortfolioCurrency === 'EUR'} value="EUR">EUR</option>
+                                                <option selected={product.basketPortfolioCurrency && product.basketPortfolioCurrency === 'USD'} value="USD">USD</option>
+                                                <option selected={product.basketPortfolioCurrency && product.basketPortfolioCurrency === 'USD'} value="CHF">CHF</option>
+                                            </select>
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>OK</button>

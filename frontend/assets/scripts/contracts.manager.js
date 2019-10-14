@@ -510,6 +510,12 @@ function ContractsManager() {
             }
         } catch (e) {}
         try {
+            if (old.basketPortfolioValue !== product.basketPortfolioValue || old.basketPortfolioCurrency !== product.basketPortfolioCurrency) {
+                notification.forAll = true;
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') changed its Basket Portfolio value from ' + (old.basketPortfolioValue && Utils.cleanNumber(old.basketPortfolioValue)|| 0) + ' ' + (old.basketPortfolioCurrency || 'EUR') + ' to ' + (product.basketPortfolioValue && Utils.cleanNumber(product.basketPortfolioValue)|| 0) + ' ' + (product.basketPortfolioCurrency || 'EUR'));
+            }
+        } catch (e) {}
+        try {
             var oldMembers = old.members ? Object.keys(old.members) : [];
             var newMembers = product.members ? Object.keys(product.members) : [];
             if (oldMembers.length < newMembers.length) {

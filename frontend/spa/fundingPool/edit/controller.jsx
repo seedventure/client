@@ -38,10 +38,12 @@ var EditFundingPoolController = function (view) {
             url: data.url,
             image: data.image,
             documents,
-            tags: data.tags,
-            basketSuccessFee: data.basketSuccessFee || 0
+            tags: data.tags
         };
         isStartup && (document.totalSupply = data.totalSupply);
+        !isStartup && (document.basketSuccessFee = data.basketSuccessFee);
+        !isStartup && (document.basketPortfolioValue = data.basketPortfolioValue);
+        !isStartup && (document.basketPortfolioCurrency = data.basketPortfolioCurrency);
         var url;
         try {
             url = await client.documentsUploaderManager.uploadDocument(document);

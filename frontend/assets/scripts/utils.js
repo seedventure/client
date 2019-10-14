@@ -326,6 +326,8 @@ var Utils = function() {
         return parseFloat(value.toFixed(2));
     }
 
+    
+
     return {
         getJQueryElement: getJQueryElement,
         getCurrentWindowDimension: getCurrentWindowDimension,

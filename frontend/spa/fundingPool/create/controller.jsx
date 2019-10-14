@@ -30,6 +30,9 @@ var CreateFundingPoolController = function(view) {
             documents,
             tags: data.tags
         };
+        data.basketSuccessFee && (document.basketSuccessFee = data.basketSuccessFee);
+        data.basketPortfolioValue && (document.basketPortfolioValue = data.basketPortfolioValue);
+        data.basketPortfolioCurrency && (document.basketPortfolioCurrency = data.basketPortfolioCurrency);
         var link;
         try {
             link = await client.documentsUploaderManager.uploadDocument(document);
