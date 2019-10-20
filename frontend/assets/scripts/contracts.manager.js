@@ -350,6 +350,39 @@ function ContractsManager() {
         return product;
     };
 
+    context.getPortfolioValue = function getPortfolioValue(product) {
+        var value = 0;
+        try {
+            for(var i in product.members) {
+                try {
+                    var member = product.members[i];
+                    member.portfolioValue && (value += member.portfolioValue);
+                } catch(e) {
+                }
+            }
+        } catch(e) {
+        }
+        return !value || value <= 0 ? 'NONE' : Utils.normalizeBasketSuccessFee(value);
+    }
+
+    context.getPortfolioCurrency = function getPortfolioCurrency(product) {
+        var currency = '';
+        try {
+            for(var i in product.members) {
+                try {
+                    var member = product.members[i];
+                    member.portfolioCurrency && (currency = member.portfolioCurrency);
+                    if(currency) {
+                        break;
+                    }
+                } catch(e) {
+                }
+            }
+        } catch(e) {
+        }
+        return context.getPortfolioValue(product) === 'NONE' ? '' : (currency || 'EUR');
+    }
+
     context.manageFundingPanelChanged = function manageFundingPanelChanged(element, created) {
         var product = element.element || element;
         if (!client.configurationManager.hasUnlockedUser() || (!product.name && created !== true)) {
@@ -510,9 +543,13 @@ function ContractsManager() {
             }
         } catch (e) {}
         try {
-            if (old.basketPortfolioValue !== product.basketPortfolioValue || old.basketPortfolioCurrency !== product.basketPortfolioCurrency) {
+            var oldPortfolio = context.getPortfolioValue(old) + ' ' + context.getPortfolioCurrency(old);
+            oldPortfolio = oldPortfolio.split(' ').join('') === '' ? '' : oldPortfolio;
+            var productPortfolio = context.getPortfolioValue(product) + ' ' + context.getPortfolioCurrency(product);
+            productPortfolio = productPortfolio.split(' ').join('') === '' ? '' : productPortfolio;
+            if (oldPortfolio !== productPortfolio) {
                 notification.forAll = true;
-                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') changed its Basket Portfolio value from ' + (old.basketPortfolioValue && Utils.cleanNumber(old.basketPortfolioValue)|| 0) + ' ' + (old.basketPortfolioCurrency || 'EUR') + ' to ' + (product.basketPortfolioValue && Utils.cleanNumber(product.basketPortfolioValue)|| 0) + ' ' + (product.basketPortfolioCurrency || 'EUR'));
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') changed its Basket Portfolio value to ' + productPortfolio);
             }
         } catch (e) {}
         try {

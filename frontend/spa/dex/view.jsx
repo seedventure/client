@@ -594,10 +594,10 @@ var Dex = React.createClass({
                                                     {trade.amount}
                                                 </div>
                                                 <div className="col-md-3">
-                                                    {Utils.roundWei(trade.buy ? trade.amountGiveDecursion : trade.amountGetDecursion)}
+                                                    {Utils.roundWei(trade.buy ? trade.amountGetDecursion : trade.amountGiveDecursion)}
                                                 </div>
                                                 <div className="col-md-3">
-                                                    {Utils.roundWei(trade.buy ? trade.amountGetDecursion : trade.amountGiveDecursion)}
+                                                    {Utils.roundWei(trade.buy ? trade.amountGiveDecursion : trade.amountGetDecursion)}
                                                 </div>
                                                 <div className="col-md-3">
                                                     <a href={client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL) + "tx/" + trade.transactionHash}>Detail</a>

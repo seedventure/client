@@ -121,6 +121,20 @@ var Detail = React.createClass({
         } catch (e) {
         }
     },
+    renderPortfolioValue() {
+        var product = this.getProduct();
+        if(!this.props.parent) {
+            return client.contractsManager.getPortfolioValue(product);
+        }
+        return !product.portfolioValue || product.portfolioValue <= 0 ? 'NONE' : Utils.normalizeBasketSuccessFee(product.portfolioValue);
+    },
+    renderPortfolioCurrency() {
+        var product = this.getProduct();
+        if(!this.props.parent) {
+            return client.contractsManager.getPortfolioCurrency(product);
+        }
+        return this.renderPortfolioValue() === 'NONE' ? '' : (product.portfolioCurrency || "EUR");
+    },
     render() {
         var product = this.getProduct();
         var favorite = false;
@@ -333,6 +347,16 @@ var Detail = React.createClass({
                                             {product.tags && <h2>{product.tags.join(' ')}</h2>}
                                         </div>
                                     </div>}
+                                    {this.props.parent && <br />}
+                                    {this.props.parent &&<div className="row">
+                                        <div className="col-md-4">
+                                            <h4>Portfolio value</h4>
+                                            <p className="small">The extimated value of the basket, expressed in local currency</p>
+                                        </div>
+                                        <div className="col-md-8">
+                                            <h2>{this.renderPortfolioValue() + " " + this.renderPortfolioCurrency()}</h2>
+                                        </div>
+                                    </div>}
                                     <br />
                                     <br />
                                 </form>
@@ -395,7 +419,7 @@ var Detail = React.createClass({
                                             <p className="small">The extimated value of the basket, expressed in local currency</p>
                                         </div>
                                         <div className="col-md-8">
-                                            <h2>{!product.basketPortfolioValue || product.basketPortfolioValue <= 0 ? 'NONE' : (Utils.normalizeBasketSuccessFee(product.basketPortfolioValue) + " " + (product.basketPortfolioCurrency || "EUR"))}</h2>
+                                            <h2>{this.renderPortfolioValue() + " " + this.renderPortfolioCurrency()}</h2>
                                         </div>
                                     </div>
                                 </form>

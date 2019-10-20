@@ -111,22 +111,22 @@ var EditFundingPool = React.createClass({
             return alert('Basket success fee can be a percentage between 0 and 100');
         }
 
-        var basketPortfolioValue = 0;
+        var portfolioValue = 0;
         try {
-            basketPortfolioValue = parseFloat(parseFloat(this.basketPortfolioValue.value).toFixed(2));
+            portfolioValue = parseFloat(parseFloat(this.portfolioValue.value).toFixed(2));
         } catch (error) {
-            basketPortfolioValue = 0;
+            portfolioValue = 0;
         }
-        if (!this.props.parent && (isNaN(basketPortfolioValue) || basketPortfolioValue < 0)) {
+        if (!this.props.parent && (isNaN(portfolioValue) || portfolioValue < 0)) {
             return alert('Basket portfolio value must be a number greater or equal to zero');
         }
 
-        var basketPortfolioCurrency = 'EUR';
+        var portfolioCurrency = 'EUR';
         try {
-            basketPortfolioCurrency = this.basketPortfolioCurrency.val();
+            portfolioCurrency = this.portfolioCurrency.val();
         } catch (error) {
         }
-        if (!this.props.parent && basketPortfolioCurrency === '') {
+        if (!this.props.parent && portfolioCurrency === '') {
             return alert('Basket portfolio currency must be a valid currency');
         }
 
@@ -158,8 +158,8 @@ var EditFundingPool = React.createClass({
             totalSupply
         };
         !this.props.parent && (newProduct.basketSuccessFee = basketSuccessFee);
-        !this.props.parent && (newProduct.basketPortfolioValue = basketPortfolioValue);
-        !this.props.parent && (newProduct.basketPortfolioCurrency = basketPortfolioCurrency);
+        this.props.parent && (newProduct.portfolioValue = portfolioValue);
+        this.props.parent && (newProduct.portfolioCurrency = portfolioCurrency);
 
         var thisProduct = this.getProduct();
         var oldProduct = {
@@ -171,8 +171,8 @@ var EditFundingPool = React.createClass({
             totalSupply : thisProduct.totalSupply
         }
         !this.props.parent && (oldProduct.basketSuccessFee = thisProduct.basketSuccessFee);
-        !this.props.parent && (oldProduct.basketPortfolioValue = thisProduct.basketPortfolioValue);
-        !this.props.parent && (oldProduct.basketPortfolioCurrency = thisProduct.basketPortfolioCurrency);
+        this.props.parent && (oldProduct.portfolioValue = thisProduct.portfolioValue);
+        this.props.parent && (oldProduct.portfolioCurrency = thisProduct.portfolioCurrency);
 
         try {
             oldProduct.image = thisProduct.image.split('data:image/png;base64, ').join('');
@@ -399,6 +399,7 @@ var EditFundingPool = React.createClass({
         }
         return (
             <div className="kt-content kt-grid__item kt-grid__item--fluid">
+                <br />
                 {!this.props.parent && <div className="progress">
                     <div className="progress-bar" role="progressbar" ref={ref => this.progressBar = $(ref)} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
                 </div>}
@@ -532,6 +533,26 @@ var EditFundingPool = React.createClass({
                                         </div>
                                         <div className="col-md-10 form-group">
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.tags = ref) && product.tags && product.tags.length > 0 && (this.tags.value = product.tags.join(' '))} />
+                                        </div>
+                                    </div>}
+                                    {this.props.parent && <br />}
+                                    {this.props.parent && <div className="row">
+                                        <div className="col-md-4">
+                                            <h4>Portfolio Value</h4>
+                                            <p className="small">The extimated value of the basket, expressed in local currency</p>
+                                        </div>
+                                        <div className="col-md-1 form-group">
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.portfolioValue = ref) && (ref.value = Utils.normalizeBasketSuccessFee(product.portfolioValue || 0))} onChange={Utils.parseNumber}/>
+                                        </div>
+                                        <div className="col-md-1">
+                                            <select ref={ref => this.portfolioCurrency = $(ref)}>
+                                                <option selected={!product.portfolioCurrency || product.portfolioCurrency === 'EUR'} value="EUR">EUR</option>
+                                                <option selected={product.portfolioCurrency && product.portfolioCurrency === 'USD'} value="USD">USD</option>
+                                                <option selected={product.portfolioCurrency && product.portfolioCurrency === 'USD'} value="CHF">CHF</option>
+                                            </select>
+                                        </div>
+                                        <div className="col-md-2">
+                                            {'\u00A0'}
                                         </div>
                                     </div>}
                                     <br />
@@ -695,26 +716,6 @@ var EditFundingPool = React.createClass({
                                         </div>
                                         <div className="col-md-4">
                                             {"\u00A0"}
-                                        </div>
-                                        <div className="col-md-2">
-                                            <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>OK</button>
-                                        </div>
-                                    </div>
-                                    <br/>
-                                    <div className="row">
-                                        <div className="col-md-4">
-                                            <h4>Portfolio Value</h4>
-                                            <p className="small">The extimated value of the basket, expressed in local currency</p>
-                                        </div>
-                                        <div className="col-md-1 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.basketPortfolioValue = ref) && (ref.value = Utils.normalizeBasketSuccessFee(product.basketPortfolioValue || 0))} onChange={Utils.parseNumber}/>
-                                        </div>
-                                        <div className="col-md-1">
-                                            <select ref={ref => this.basketPortfolioCurrency = $(ref)}>
-                                                <option selected={!product.basketPortfolioCurrency || product.basketPortfolioCurrency === 'EUR'} value="EUR">EUR</option>
-                                                <option selected={product.basketPortfolioCurrency && product.basketPortfolioCurrency === 'USD'} value="USD">USD</option>
-                                                <option selected={product.basketPortfolioCurrency && product.basketPortfolioCurrency === 'USD'} value="CHF">CHF</option>
-                                            </select>
                                         </div>
                                         <div className="col-md-2">
                                             <button type="button" className="btn btn-brand btn-pill btn-elevate browse-btn" onClick={this.saveDoc}>OK</button>

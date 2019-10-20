@@ -1,6 +1,15 @@
 .index {
     margin: 15px;
 
+    p.faucets {
+        a {
+            font-size: 25px;
+            &:last-of-type {
+                float: right;
+            }
+        }
+    }
+
     a.back {
         text-decoration: none;
     }

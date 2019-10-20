@@ -31,8 +31,6 @@ var CreateFundingPoolController = function(view) {
             tags: data.tags
         };
         data.basketSuccessFee && (document.basketSuccessFee = data.basketSuccessFee);
-        data.basketPortfolioValue && (document.basketPortfolioValue = data.basketPortfolioValue);
-        data.basketPortfolioCurrency && (document.basketPortfolioCurrency = data.basketPortfolioCurrency);
         var link;
         try {
             link = await client.documentsUploaderManager.uploadDocument(document);
@@ -102,6 +100,8 @@ var CreateFundingPoolController = function(view) {
             documents,
             totalSupply : Utils.toWei(data.totalSupply)
         };
+        data.portfolioValue && (document.portfolioValue = data.portfolioValue);
+        data.portfolioCurrency && (document.portfolioCurrency = data.portfolioCurrency);
         var link;
         try {
             link = await client.documentsUploaderManager.uploadDocument(document);

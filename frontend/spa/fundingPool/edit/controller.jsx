@@ -42,8 +42,8 @@ var EditFundingPoolController = function (view) {
         };
         isStartup && (document.totalSupply = data.totalSupply);
         !isStartup && (document.basketSuccessFee = data.basketSuccessFee);
-        !isStartup && (document.basketPortfolioValue = data.basketPortfolioValue);
-        !isStartup && (document.basketPortfolioCurrency = data.basketPortfolioCurrency);
+        isStartup && (document.portfolioValue = data.portfolioValue);
+        isStartup && (document.portfolioCurrency = data.portfolioCurrency);
         var url;
         try {
             url = await client.documentsUploaderManager.uploadDocument(document);
