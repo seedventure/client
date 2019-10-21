@@ -134,7 +134,7 @@ var CreateFundingPool = React.createClass({
 
         var portfolioValue = 0;
         try {
-            portfolioValue = parseFloat(parseFloat(this.portfolioValue.value).toFixed(2));
+            portfolioValue = parseFloat(Utils.numberToString(this.portfolioValue.value));
         } catch (error) {
             portfolioValue = 0;
         }

@@ -124,9 +124,10 @@ var Detail = React.createClass({
     renderPortfolioValue() {
         var product = this.getProduct();
         if(!this.props.parent) {
-            return client.contractsManager.getPortfolioValue(product);
+            var value = client.contractsManager.getPortfolioValue(product);
+            return value === 'NONE' ? value : Utils.numberToString(value, true)
         }
-        return !product.portfolioValue || product.portfolioValue <= 0 ? 'NONE' : Utils.normalizeBasketSuccessFee(product.portfolioValue);
+        return !product.portfolioValue || product.portfolioValue <= 0 ? 'NONE' : Utils.numberToString(Utils.normalizeBasketSuccessFee(product.portfolioValue), true);
     },
     renderPortfolioCurrency() {
         var product = this.getProduct();

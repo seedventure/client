@@ -113,7 +113,7 @@ var EditFundingPool = React.createClass({
 
         var portfolioValue = 0;
         try {
-            portfolioValue = parseFloat(parseFloat(this.portfolioValue.value).toFixed(2));
+            portfolioValue = parseFloat(Utils.numberToString(this.portfolioValue.value));
         } catch (error) {
             portfolioValue = 0;
         }
@@ -542,7 +542,7 @@ var EditFundingPool = React.createClass({
                                             <p className="small">The extimated value of the basket, expressed in local currency</p>
                                         </div>
                                         <div className="col-md-1 form-group">
-                                            <input className="form-control form-control-last" type="text" ref={ref => (this.portfolioValue = ref) && (ref.value = Utils.normalizeBasketSuccessFee(product.portfolioValue || 0))} onChange={Utils.parseNumber}/>
+                                            <input className="form-control form-control-last" type="text" ref={ref => (this.portfolioValue = ref) && (ref.value = Utils.numberToString(Utils.normalizeBasketSuccessFee(product.portfolioValue || 0), true))} onChange={Utils.parseNumber}/>
                                         </div>
                                         <div className="col-md-1">
                                             <select ref={ref => this.portfolioCurrency = $(ref)}>
