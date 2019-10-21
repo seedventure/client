@@ -52,7 +52,7 @@ const deleteFolderRecursive = async function (path, mustBeEmpty) {
                     try {
                         fs.unlinkSync(curPath);
                     } catch (e) {
-                        console.error(e);
+                        (e.message || e).toString().indexOf('no such file or directory') === -1 && console.error(e);
                     }
                 } else {
                     remove = false;
@@ -63,7 +63,7 @@ const deleteFolderRecursive = async function (path, mustBeEmpty) {
             try {
                 fs.rmdirSync(path);
             } catch (e) {
-                console.error(e);
+                (e.message || e).toString().indexOf('no such file or directory') === -1 && console.error(e);
             }
         }
     }
@@ -190,7 +190,7 @@ async function run(root, src, dst) {
         await deleteFolderRecursive(distFolder);
         await start();
     } catch (e) {
-        console.error(e);
+        (e.message || e).toString().indexOf('no such file or directory') === -1 && console.error(e);
     }
 }
 

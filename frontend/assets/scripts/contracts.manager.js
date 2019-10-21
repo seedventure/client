@@ -613,6 +613,10 @@ function ContractsManager() {
         context.manageFundingPanelChanged(element.element || element);
     };
 
+    context['0x99928ca43d8ee8b7ad3f45bfb7a95a1faed74716efc0123e21c23271da930808'] = function totalSupplyChanged(event, element) {
+        context.manageFundingPanelChanged(element.element || element);
+    };
+
     context['0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7'] = function depositToDEX(event) {
         if (!client.userManager.user) {
             return;

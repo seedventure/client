@@ -418,7 +418,7 @@ var CreateFundingPool = React.createClass({
                 {!this.props.parent && <div className="row">
                     <div className="col-md-4">
                         <h4>Success fee percentage</h4>
-                        <p className="small">the percentage of SEED tokens the incubator will obtain from a startup exit</p>
+                        <p className="small">the percentage of capital the incubator will retain from a startup's exit</p>
                     </div>
                     <div className="col-md-1 form-group">
                         <input className="form-control form-control-last" type="number" min="0" max="100" ref={ref => this.basketSuccessFee = ref}/>
