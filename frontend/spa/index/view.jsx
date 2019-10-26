@@ -310,7 +310,7 @@ var Index = React.createClass({
                     <h4>Your wallet contains <strong><span ref={ref => this.walletEth = ref}></span> eth</strong> and <strong><span ref={ref => this.walletSeed = ref}></span> SEED</strong></h4>
                     <br/>
                     {client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL).indexOf('ropsten') === -1 && <p>You can purchase them on <a href="https://www.therocktrading.com" target="_blank">TheRock Trading</a></p>}
-                    {client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL).indexOf('ropsten') !== -1 && <p className="faucets"><a href="https://faucet.ropsten.be" target="_blank" onClick={this.openEthFaucet}>Get 1 Eth</a> <a href={"http://86.107.98.39/faucet?addr=" + client.userManager.user.wallet} target="_blank">Get 100 SEEDs</a></p>}
+                    {client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL).indexOf('ropsten') !== -1 && <p className="faucets"><a href="https://faucet.ropsten.be" target="_blank" onClick={this.openEthFaucet}>Get 1 Eth</a> <a href={"http://86.107.98.39/faucet?addr=" + (client.userManager.user && client.userManager.user.wallet || '')} target="_blank">Get 100 SEEDs</a></p>}
                     <br />
                     <h2>Owned Basket Tokens</h2>
                     <br />
