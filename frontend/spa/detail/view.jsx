@@ -351,8 +351,8 @@ var Detail = React.createClass({
                                     {this.props.parent && <br />}
                                     {this.props.parent &&<div className="row">
                                         <div className="col-md-4">
-                                            <h4>Portfolio value</h4>
-                                            <p className="small">The extimated value of the basket, expressed in local currency</p>
+                                            <h4>Startup value</h4>
+                                            <p className="small">The extimated value of the startup, expressed in local currency</p>
                                         </div>
                                         <div className="col-md-8">
                                             <h2>{this.renderPortfolioValue() + " " + this.renderPortfolioCurrency()}</h2>

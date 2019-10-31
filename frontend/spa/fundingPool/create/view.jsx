@@ -138,8 +138,8 @@ var CreateFundingPool = React.createClass({
         } catch (error) {
             portfolioValue = 0;
         }
-        if (!this.props.parent && (isNaN(portfolioValue) || portfolioValue < 0)) {
-            return alert('Basket portfolio value must be a number greater or equal to zero');
+        if (this.props.parent && (isNaN(portfolioValue) || portfolioValue < 0)) {
+            return alert('Startup value must be a number greater or equal to zero');
         }
 
         var portfolioCurrency = 'EUR';
@@ -147,8 +147,8 @@ var CreateFundingPool = React.createClass({
             portfolioCurrency = this.portfolioCurrency.val();
         } catch (error) {
         }
-        if (!this.props.parent && portfolioCurrency === '') {
-            return alert('Basket portfolio currency must be a valid currency');
+        if (this.props.parent && portfolioCurrency === '') {
+            return alert('Startup value currency must be a valid currency');
         }
 
         var walletAddress = '';
@@ -432,7 +432,7 @@ var CreateFundingPool = React.createClass({
                 {this.props.parent && <div className="row">
                     <div className="col-md-4">
                         <h4>Portfolio Value</h4>
-                        <p className="small">The extimated value of the basket, expressed in local currency</p>
+                        <p className="small">The extimated value of the Startup, expressed in local currency</p>
                     </div>
                     <div className="col-md-4 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => (this.portfolioValue = ref) && (ref.value = Utils.normalizeBasketSuccessFee(0.0))} onChange={Utils.parseNumber}/>
