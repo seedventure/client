@@ -21,4 +21,12 @@
             margin-top: 5%;
         }
     }
+    .kt-portlet__body {
+        position: relative;
+        .sticker {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+        }
+    }
 }

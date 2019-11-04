@@ -70,6 +70,9 @@ var Product = React.createClass({
                         {this.props.view === 'mine' && [<span>{'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}</span>,
                         <dd><button className="btn btn-pill micro btn-brand" onClick={this.makeUnsuitable}>Make Unsuitable</button></dd>]}
                     </dl>
+                    {product.sticker && <div className="sticker">
+                        Verified by {'\u00A0\u00A0\u00A0\u00A0'}<img width="30" height="30" src={"data:image/png;base64, " + product.sticker} />
+                    </div>}
                 </div>
             </div>
         );

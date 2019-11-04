@@ -41,6 +41,32 @@ var CreateFundingPool = React.createClass({
             return;
         }
 
+        var sticker = '';
+        try {
+            sticker = this.sticker.attr('src').split("data:image/png;base64, ").join('');
+        } catch (error) {
+        }
+
+        var stickerUrl = ''
+        try {
+            stickerUrl = this.stickerUrl.value.split(' ').join('').toLowerCase();
+        } catch (error) {
+        }
+        if (stickerUrl !== '') {
+            if (stickerUrl.indexOf('http://') !== 0 && stickerUrl.indexOf('https://') !== 0) {
+                alert('Verufucator URL must start with http:// or https://');
+                return;
+            }
+            if (!stickerUrl.match(this.controller.urlRegex)) {
+                alert('Wrong Verificator URL');
+                return;
+            }
+        }
+
+        if((sticker === '' && stickerUrl !== '') || (sticker !== '' && stickerUrl === '')) {
+            return alert("If you specify Verificator you must insert logo and url");
+        }
+
         var url = ''
         try {
             url = this.url.value.split(' ').join('').toLowerCase();
@@ -162,6 +188,8 @@ var CreateFundingPool = React.createClass({
         }
         var data = {
             name,
+            sticker,
+            stickerUrl,
             description: $.base64.encode(encodeURI(this.description.summernote('code'))),
             url,
             image,
@@ -182,6 +210,7 @@ var CreateFundingPool = React.createClass({
     },
     loadImage(e) {
         e && e.preventDefault() && e.stopPropagation();
+        var _image = $(e.target);
         var userChosenPath = require('electron').remote.dialog.showOpenDialog({
             defaultPath: undefined,
             filters: [
@@ -194,12 +223,12 @@ var CreateFundingPool = React.createClass({
         if (userChosenPath) {
             var file = require('electron').remote.require('fs').readFileSync(userChosenPath[0]).toString('base64');
             file = "data:image/png;base64, " + file;
-            this.image.attr('src', file);
+            _image.attr('src', file);
         }
     },
     deleteImage(e) {
         e && e.preventDefault() && e.stopPropagation();
-        this.image.attr('src', '');
+        $(e.target).parent().parent().children().find('img').removeAttr('src');
     },
     addDocument(e) {
         e && e.preventDefault() && e.stopPropagation();
@@ -273,6 +302,23 @@ var CreateFundingPool = React.createClass({
                         <input className="form-control form-control-last" type="text" ref={ref => this.name = ref} />
                     </div>
                 </div>
+                {!this.props.parent && <br/>}
+                {!this.props.parent && <div className="row">
+                    <div className="col-md-2">
+                        <h4>Verificator</h4>
+                        <p className="small">of the Incubator</p>
+                    </div>
+                    <div className="col-md-5 form-group">
+                        <input className="form-control form-control-last" type="text" placeholder="Link must start with http:// or https://..."  ref={ref => this.stickerUrl = ref}/>
+                    </div>
+                    <div className="col-md-5 form-group">
+                        <a href="javascript:;" onClick={this.loadImage}>
+                            <img width="100" height="100" ref={ref => this.sticker = $(ref)} />
+                        </a>
+                         {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                        <a href="javascript:;" onClick={this.deleteImage}><i className="fas fa-remove"></i></a>
+                    </div>
+                </div>}
                 <br/>
                 <div className="row">
                     <div className="col-md-2">

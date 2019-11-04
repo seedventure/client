@@ -543,6 +543,16 @@ function ContractsManager() {
             }
         } catch (e) {}
         try {
+            if (old.sticker !== product.sticker) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') changed its Vendor sticker');
+            }
+        } catch (e) {}
+        try {
+            if (old.stickerUrl !== product.stickerUrl) {
+                notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') changed its sticker URL');
+            }
+        } catch (e) {}
+        try {
             var oldPortfolio = context.getPortfolioValue(old) + ' ' + context.getPortfolioCurrency(old);
             oldPortfolio = oldPortfolio.split(' ').join('') === '' ? '' : oldPortfolio;
             var productPortfolio = context.getPortfolioValue(product) + ' ' + context.getPortfolioCurrency(product);

@@ -40,4 +40,13 @@
             }
         }
     }
+
+    .relative {
+        position: relative;
+        .sticker {
+            position: absolute;
+            bottom: 5px;
+            left: 100px;
+        }
+    }
 }

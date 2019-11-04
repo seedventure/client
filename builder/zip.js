@@ -34,9 +34,13 @@ function navigate(p) {
     }
     zip.file(file, fs.readFileSync(path), {binary: true});
 }
-navigate(root);
-zip.generateNodeStream({type:'nodebuffer', streamFiles:true })
-   .pipe(fs.createWriteStream(zipFileName))
-   .on('finish', function () {
-       process.exit(0);
-    });
+try {
+    navigate(root);
+    zip.generateNodeStream({type:'nodebuffer', streamFiles:true })
+       .pipe(fs.createWriteStream(zipFileName))
+       .on('finish', function () {
+           process.exit(0);
+        });
+} catch(e) {
+    console.error(e);
+}

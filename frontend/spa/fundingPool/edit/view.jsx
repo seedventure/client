@@ -48,6 +48,7 @@ var EditFundingPool = React.createClass({
     },
     loadImage(e) {
         e && e.preventDefault() && e.stopPropagation();
+        var _image = $(e.target);
         var userChosenPath = require('electron').remote.dialog.showOpenDialog({
             defaultPath: undefined,
             filters: [
@@ -60,12 +61,12 @@ var EditFundingPool = React.createClass({
         if (userChosenPath) {
             var file = require('electron').remote.require('fs').readFileSync(userChosenPath[0]).toString('base64');
             file = "data:image/png;base64, " + file;
-            this.image.attr('src', file);
+            _image.attr('src', file);
         }
     },
     deleteImage(e) {
         e && e.preventDefault() && e.stopPropagation();
-        this.image.attr('src', '');
+        $(e.target).parent().parent().children().find('img').removeAttr('src');
     },
     saveDoc(e) {
         e && e.preventDefault() && e.stopPropagation();
@@ -77,6 +78,32 @@ var EditFundingPool = React.createClass({
         if (name === '') {
             alert('Please insert the name of the ' + this.props.parent ? "Startup" : "Basket");
             return;
+        }
+
+        var sticker = '';
+        try {
+            sticker = this.sticker.attr('src').split("data:image/png;base64, ").join('');
+        } catch (error) {
+        }
+
+        var stickerUrl = ''
+        try {
+            stickerUrl = this.stickerUrl.value.split(' ').join('').toLowerCase();
+        } catch (error) {
+        }
+        if (stickerUrl !== '') {
+            if (stickerUrl.indexOf('http://') !== 0 && stickerUrl.indexOf('https://') !== 0) {
+                alert('Verufucator URL must start with http:// or https://');
+                return;
+            }
+            if (!stickerUrl.match(this.controller.urlRegex)) {
+                alert('Wrong Verificator URL');
+                return;
+            }
+        }
+
+        if((sticker === '' && stickerUrl !== '') || (sticker !== '' && stickerUrl === '')) {
+            return alert("If you specify Verificator you must insert logo and url");
         }
 
         var url = ''
@@ -158,6 +185,8 @@ var EditFundingPool = React.createClass({
             totalSupply
         };
         !this.props.parent && (newProduct.basketSuccessFee = basketSuccessFee);
+        !this.props.parent && (newProduct.sticker = sticker);
+        !this.props.parent && (newProduct.stickerUrl = stickerUrl);
         this.props.parent && (newProduct.portfolioValue = portfolioValue);
         this.props.parent && (newProduct.portfolioCurrency = portfolioCurrency);
 
@@ -171,11 +200,16 @@ var EditFundingPool = React.createClass({
             totalSupply : thisProduct.totalSupply
         }
         !this.props.parent && (oldProduct.basketSuccessFee = thisProduct.basketSuccessFee);
+        !this.props.parent && (oldProduct.stickerUrl = thisProduct.stickerUrl);
         this.props.parent && (oldProduct.portfolioValue = thisProduct.portfolioValue);
         this.props.parent && (oldProduct.portfolioCurrency = thisProduct.portfolioCurrency);
 
         try {
             oldProduct.image = thisProduct.image.split('data:image/png;base64, ').join('');
+        } catch (error) {
+        }
+        try {
+            !this.props.parent && (oldProduct.sticker = thisProduct.sticker.split('data:image/png;base64, ').join(''));
         } catch (error) {
         }
         if (JSON.stringify(oldProduct) === JSON.stringify(newProduct)) {
@@ -434,6 +468,23 @@ var EditFundingPool = React.createClass({
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.name = ref) && (this.name.value = product.name)} />
                                         </div>
                                     </div>
+                                    {!this.props.parent && <br/>}
+                                    {!this.props.parent && <div className="row">
+                                        <div className="col-md-2">
+                                            <h4>Verificator</h4>
+                                            <p className="small">of the Incubator</p>
+                                        </div>
+                                        <div className="col-md-5 form-group">
+                                            <input className="form-control form-control-last" type="text" placeholder="Link must start with http:// or https://..." ref={ref => (this.stickerUrl = ref) && (this.stickerUrl.value = product.stickerUrl)}/>
+                                        </div>
+                                        <div className="col-md-5 form-group">
+                                            <a href="javascript:;" onClick={this.loadImage}>
+                                                <img width="100" height="100" ref={ref => this.sticker = $(ref)} src={product.sticker ? ("data:image/png;base64, " + product.sticker) : ''} />
+                                            </a>
+                                            {'\u00A0'}{'\u00A0'}{'\u00A0'}{'\u00A0'}
+                                            <a href="javascript:;" onClick={this.deleteImage}><i className="fas fa-remove"></i></a>
+                                        </div>
+                                    </div>}
                                     <br />
                                     <div className="row">
                                         <div className="col-md-2">

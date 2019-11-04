@@ -99,7 +99,7 @@ var Detail = React.createClass({
         e && e.preventDefault() && e.stopPropagation();
         var product = this.getProduct();
         try {
-            if(product.investors[client.userManager.user.wallet.toLowerCase()] && product.investors[client.userManager.user.wallet.toLowerCase()] > 0) {
+            if (product.investors[client.userManager.user.wallet.toLowerCase()] && product.investors[client.userManager.user.wallet.toLowerCase()] > 0) {
                 return;
             }
         } catch (e) {
@@ -111,9 +111,9 @@ var Detail = React.createClass({
                 client.userManager.user.list.push(product.position);
                 return;
             }
-            for(var i in client.userManager.user.list) {
+            for (var i in client.userManager.user.list) {
                 var position = client.userManager.user.list[i];
-                if(position === product.position) {
+                if (position === product.position) {
                     client.userManager.user.list.splice(i, 1);
                     return;
                 }
@@ -123,7 +123,7 @@ var Detail = React.createClass({
     },
     renderPortfolioValue() {
         var product = this.getProduct();
-        if(!this.props.parent) {
+        if (!this.props.parent) {
             var value = client.contractsManager.getPortfolioValue(product);
             return value === 'NONE' ? value : Utils.numberToString(value, true)
         }
@@ -131,13 +131,14 @@ var Detail = React.createClass({
     },
     renderPortfolioCurrency() {
         var product = this.getProduct();
-        if(!this.props.parent) {
+        if (!this.props.parent) {
             return client.contractsManager.getPortfolioCurrency(product);
         }
         return this.renderPortfolioValue() === 'NONE' ? '' : (product.portfolioCurrency || "EUR");
     },
     render() {
         var product = this.getProduct();
+        var sticker = (this.props.parent || product).sticker;
         var favorite = false;
         try {
             favorite = Enumerable.From(client.userManager.user.list).Any(it => product.position === it);
@@ -247,6 +248,20 @@ var Detail = React.createClass({
                                             <h2>{product.name}</h2>
                                         </div>
                                     </div>
+                                    {!this.props.parent && product.sticker && <br />}
+                                    {!this.props.parent && product.sticker && <br />}
+                                    {!this.props.parent && product.sticker && <div className="row">
+                                        <div className="col-md-2">
+                                            <h4>Validator</h4>
+                                            <p className="small">of the {this.props.parent ? "Startup" : "Incubator"}</p>
+                                        </div>
+                                        <div className="col-md-5">
+                                            <a href={product.stickerUrl} target="_blank">{product.stickerUrl}</a>
+                                        </div>
+                                        <div className="col-md-5">
+                                            <img width="100" height="100" ref={ref => this.image = $(ref)} src={"data:image/png;base64, " + product.sticker} />
+                                        </div>
+                                    </div>}
                                     <br />
                                     <br />
                                     <div className="row">
@@ -349,13 +364,16 @@ var Detail = React.createClass({
                                         </div>
                                     </div>}
                                     {this.props.parent && <br />}
-                                    {this.props.parent &&<div className="row">
+                                    {this.props.parent && <div className="row">
                                         <div className="col-md-4">
                                             <h4>Startup value</h4>
                                             <p className="small">The extimated value of the startup, expressed in local currency</p>
                                         </div>
-                                        <div className="col-md-8">
+                                        <div className="col-md-8 relative">
                                             <h2>{this.renderPortfolioValue() + " " + this.renderPortfolioCurrency()}</h2>
+                                            {sticker && this.renderPortfolioValue() !== 'NONE' && <div className="sticker">
+                                                Verified by {'\u00A0\u00A0\u00A0\u00A0'}<img width="30" height="30" src={"data:image/png;base64, " + sticker} />
+                                            </div>}
                                         </div>
                                     </div>}
                                     <br />
@@ -403,7 +421,7 @@ var Detail = React.createClass({
                                             <h2>{Utils.roundWei(product.whiteListThreshold)} {product.symbol}</h2>
                                         </div>
                                     </div>
-                                    <br/>
+                                    <br />
                                     <div className="row">
                                         <div className="col-md-4">
                                             <h4>Success fee percentage</h4>
@@ -413,14 +431,17 @@ var Detail = React.createClass({
                                             <h2>{Utils.normalizeBasketSuccessFee(product.basketSuccessFee || 0)}%</h2>
                                         </div>
                                     </div>
-                                    <br/>
+                                    <br />
                                     <div className="row">
                                         <div className="col-md-4">
                                             <h4>Portfolio value</h4>
                                             <p className="small">The extimated value of the basket, expressed in local currency</p>
                                         </div>
-                                        <div className="col-md-8">
+                                        <div className="col-md-8 relative">
                                             <h2>{this.renderPortfolioValue() + " " + this.renderPortfolioCurrency()}</h2>
+                                            {sticker && this.renderPortfolioValue() !== 'NONE' && <div className="sticker">
+                                                Verified by {'\u00A0\u00A0\u00A0\u00A0'}<img width="30" height="30" src={"data:image/png;base64, " + sticker} />
+                                            </div>}
                                         </div>
                                     </div>
                                 </form>

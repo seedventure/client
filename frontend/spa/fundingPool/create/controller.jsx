@@ -28,7 +28,9 @@ var CreateFundingPoolController = function(view) {
             url : data.url,
             image : data.image,
             documents,
-            tags: data.tags
+            tags: data.tags,
+            sticker: data.sticker,
+            stickerUrl: data.stickerUrl
         };
         data.basketSuccessFee && (document.basketSuccessFee = data.basketSuccessFee);
         var link;
