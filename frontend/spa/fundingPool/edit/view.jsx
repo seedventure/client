@@ -93,17 +93,17 @@ var EditFundingPool = React.createClass({
         }
         if (stickerUrl !== '') {
             if (stickerUrl.indexOf('http://') !== 0 && stickerUrl.indexOf('https://') !== 0) {
-                alert('Verufucator URL must start with http:// or https://');
+                alert('Association URL must start with http:// or https://');
                 return;
             }
             if (!stickerUrl.match(this.controller.urlRegex)) {
-                alert('Wrong Verificator URL');
+                alert('Wrong Association URL');
                 return;
             }
         }
 
         if((sticker === '' && stickerUrl !== '') || (sticker !== '' && stickerUrl === '')) {
-            return alert("If you specify Verificator you must insert logo and url");
+            return alert("If you specify an Association you must insert logo and url");
         }
 
         var url = ''

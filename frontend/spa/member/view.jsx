@@ -72,7 +72,7 @@ var Member = React.createClass({
                         {this.props.view === 'mine' && <input type="text" className="form-control" placeholder="Funds to unlock" ref={ref => this.unlockAmount = ref} onChange={Utils.parseNumber}/>}
                     </dl>
                     {this.props.parent.sticker && <div className="sticker">
-                        Verified by {'\u00A0\u00A0\u00A0\u00A0'}<img width="30" height="30" src={"data:image/png;base64, " + this.props.parent.sticker} />
+                        Associated with {'\u00A0\u00A0\u00A0\u00A0'}<img width="30" height="30" src={"data:image/png;base64, " + this.props.parent.sticker} />
                     </div>}
                 </div>
                 {this.props.view === 'mine' && <div className="kt-portlet__foot">

@@ -252,8 +252,8 @@ var Detail = React.createClass({
                                     {!this.props.parent && product.sticker && <br />}
                                     {!this.props.parent && product.sticker && <div className="row">
                                         <div className="col-md-2">
-                                            <h4>Validator</h4>
-                                            <p className="small">of the {this.props.parent ? "Startup" : "Incubator"}</p>
+                                            <h4>Association</h4>
+                                            <p className="small">of the Incubator</p>
                                         </div>
                                         <div className="col-md-5">
                                             <a href={product.stickerUrl} target="_blank">{product.stickerUrl}</a>
