@@ -28,7 +28,7 @@ var Products = React.createClass({
         }
         this.props.view !== 'mine' && (products = Enumerable.From(products).Where(it => it.totalSupply === undefined || parseInt(it.totalSupply) > 0).OrderByDescending(it => parseInt(it.position)).ToArray());
         try {
-            this.props.view !== 'mine' && client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.zeroStartups) === true && (products = Enumerable.From(products).Where(it => it.members && it.members.length > 0).OrderByDescending(it => parseInt(it.position)).ToArray());
+            this.props.view !== 'mine' && client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.zeroStartups) === true && (products = Enumerable.From(products).Where(it => it.members && Object.keys(it.members).length > 0).OrderByDescending(it => parseInt(it.position)).ToArray());
             this.props.view !== 'mine' && client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.zeroURL) === true && (products = Enumerable.From(products).Where(it => it.url && it.url !== '').OrderByDescending(it => parseInt(it.position)).ToArray());
         } catch(e) {
         }

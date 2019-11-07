@@ -19,7 +19,7 @@ var Members = React.createClass({
         }
         members = Enumerable.From(members).Distinct(it => it.position);
         try {
-            this.props.view !== 'mine' && client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.zeroDocs) === true && (members = Enumerable.From(members).Where(it => it.documents && it.documents.length > 0).ToArray());
+            this.props.view !== 'mine' && client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.zeroDocs) === true && members.Where(it => it.documents && it.documents.length > 0);
         } catch(e) {
         }
         if(this.state && this.state.search) {
