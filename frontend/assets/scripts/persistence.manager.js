@@ -12,7 +12,10 @@ function PersistenceManager() {
     'documentsUploaderHost',
     'documentsUploaderProviderSet',
     'orderThreshold',
-    'notifyAll'
+    'notifyAll',
+    "zeroStartups",
+    "zeroURL",
+    "zeroDocs"
   ];
   Object.keys(ecosystemData).map(function(key) {
       context.PERSISTENCE_PROPERTIES.push(key);

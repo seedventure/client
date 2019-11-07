@@ -18,6 +18,10 @@ var Members = React.createClass({
             members.push(productMembers[i]);
         }
         members = Enumerable.From(members).Distinct(it => it.position);
+        try {
+            this.props.view !== 'mine' && client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.zeroDocs) === true && (members = Enumerable.From(members).Where(it => it.documents && it.documents.length > 0).ToArray());
+        } catch(e) {
+        }
         if(this.state && this.state.search) {
             var search = this.state.search.toLowerCase();
             members = members.Where(it => it.name.toLowerCase().indexOf(search) === 0);
