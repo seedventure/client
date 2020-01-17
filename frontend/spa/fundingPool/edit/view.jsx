@@ -175,6 +175,9 @@ var EditFundingPool = React.createClass({
         } catch (error) {
         }
 
+        var visibility = parseInt(this.visibilitySelect.value);
+        isNaN(visibility) && (visibility = 0);
+
         var newProduct = {
             name,
             description: $.base64.encode(encodeURI(this.description.summernote('code'))),
@@ -187,6 +190,7 @@ var EditFundingPool = React.createClass({
         !this.props.parent && (newProduct.basketSuccessFee = basketSuccessFee);
         !this.props.parent && (newProduct.sticker = sticker);
         !this.props.parent && (newProduct.stickerUrl = stickerUrl);
+        !this.props.parent && (newProduct.visibility = visibility);
         this.props.parent && (newProduct.portfolioValue = portfolioValue);
         this.props.parent && (newProduct.portfolioCurrency = portfolioCurrency);
 
@@ -201,6 +205,7 @@ var EditFundingPool = React.createClass({
         }
         !this.props.parent && (oldProduct.basketSuccessFee = thisProduct.basketSuccessFee);
         !this.props.parent && (oldProduct.stickerUrl = thisProduct.stickerUrl);
+        !this.props.parent && (oldProduct.visibility = thisProduct.visibility);
         this.props.parent && (oldProduct.portfolioValue = thisProduct.portfolioValue);
         this.props.parent && (oldProduct.portfolioCurrency = thisProduct.portfolioCurrency);
 
@@ -584,6 +589,20 @@ var EditFundingPool = React.createClass({
                                         </div>
                                         <div className="col-md-10 form-group">
                                             <input className="form-control form-control-last" type="text" ref={ref => (this.tags = ref) && product.tags && product.tags.length > 0 && (this.tags.value = product.tags.join(' '))} />
+                                        </div>
+                                    </div>}
+                                    {!this.props.parent && <br/>}
+                                    {!this.props.parent && <div className="row">
+                                        <div className="col-md-4">
+                                            <h4>Visibility</h4>
+                                            <p className="small">of the basket to the public</p>
+                                        </div>
+                                        <div className="col-md-8 form-group">
+                                            <select ref={ref => this.visibilitySelect = ref}>
+                                                <option value="0" selected={!product.visibility}>Visible to all</option>
+                                                <option value="1" selected={product.visibility === 1}>Visible to Whitelisted addresses only</option>
+                                                <option value="2" selected={product.visibility === 2}>Hidden</option>
+                                            </select>
                                         </div>
                                     </div>}
                                     {this.props.parent && <br />}

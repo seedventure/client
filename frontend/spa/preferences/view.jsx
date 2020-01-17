@@ -32,11 +32,16 @@ var Preferences = React.createClass({
         if(!ref) {
             return;
         }
-        ref.checked = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES[ref.id]) === true;
+        try {
+            ref.checked = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES[ref.id]) === true;
+        } catch(e) {
+        }
     },
     incubatorChoose(e) {
-        e && e.preventDefault(true) && e.stopPropagation(true);
-        client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES[e.target.id], e.target.checked === true);
+        try {
+            client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES[e.target.id], e.target.checked === true);
+        } catch(e) {
+        }
     },
     render() {
         return (
@@ -60,9 +65,10 @@ var Preferences = React.createClass({
                         <div className="tab-content">
                             <div className="tab-pane" id="incubators" role="tabpanel">
                                 <legend>Incubators</legend>
-                                <h3><label><input id="zeroStartups" type="checkbox" onChange={this.incubatorChoose} ref={this.incubatorChooseRef}/> {'\u00A0'} Hide 0-Startups Baskets</label></h3>
-                                <h3><label><input id="zeroURL" type="checkbox" onChange={this.incubatorChoose}  ref={this.incubatorChooseRef}/> {'\u00A0'} Hide Baskets without URL</label></h3>
-                                <h3><label><input id="zeroDocs" type="checkbox" onChange={this.incubatorChoose}  ref={this.incubatorChooseRef}/> {'\u00A0'} Hide 0-Docs Startups</label></h3>
+                                <h3><label for="zeroStartups"><input id="zeroStartups" type="checkbox" onChange={this.incubatorChoose} ref={this.incubatorChooseRef}/> {'\u00A0'} Hide 0-Startups Baskets</label></h3>
+                                <h3><label for="zeroURL"><input id="zeroURL" type="checkbox" onChange={this.incubatorChoose} ref={this.incubatorChooseRef}/> {'\u00A0'} Hide Baskets without URL</label></h3>
+                                <h3><label for="zeroDocs"><input id="zeroDocs" type="checkbox" onChange={this.incubatorChoose} ref={this.incubatorChooseRef}/> {'\u00A0'} Hide 0-Docs Startups</label></h3>
+                                {false && <h3><label for="tradingNotifications"><input id="tradingNotifications" type="checkbox" onChange={this.incubatorChoose} ref={this.incubatorChooseRef}/> {'\u00A0'} Trading Notifications for SEED/ETH couple</label></h3>}
                             </div>
                             {client.configurationManager.hasUnlockedUser() && <div className="tab-pane" id="documents" role="tabpanel">
                                 <DocumentUploader />

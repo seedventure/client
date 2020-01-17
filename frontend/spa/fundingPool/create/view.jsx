@@ -186,6 +186,10 @@ var CreateFundingPool = React.createClass({
             alert('Wallet address is mandatory');
             return;
         }
+
+        var visibility = parseInt(this.visibilitySelect.value);
+        isNaN(visibility) && (visibility = 0);
+
         var data = {
             name,
             sticker,
@@ -203,7 +207,8 @@ var CreateFundingPool = React.createClass({
             basketSuccessFee,
             portfolioValue,
             portfolioCurrency,
-            walletAddress
+            walletAddress,
+            visibility
         };
         var type = this.props.parent ? 'Member' : 'Basket';
         this.controller['deploy' + type](data, this.props.parent);
@@ -408,6 +413,20 @@ var CreateFundingPool = React.createClass({
                     </div>
                     <div className="col-md-8 form-group">
                         <input className="form-control form-control-last" type="text" ref={ref => this.tags = ref} />
+                    </div>
+                </div>}
+                {!this.props.parent && <br/>}
+                {!this.props.parent && <div className="row">
+                    <div className="col-md-4">
+                        <h4>Visibility</h4>
+                        <p className="small">of the basket to the public</p>
+                    </div>
+                    <div className="col-md-8 form-group">
+                        <select ref={ref => this.visibilitySelect = ref}>
+                            <option value="0" selected="true">Visible to all</option>
+                            <option value="1">Visible to Whitelisted addresses only</option>
+                            <option value="2">Hidden</option>
+                        </select>
                     </div>
                 </div>}
                 {!this.props.parent && <br/>}

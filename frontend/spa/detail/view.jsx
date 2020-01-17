@@ -61,7 +61,7 @@ var Detail = React.createClass({
         var percentage = parseFloat(((totalRaised / totalSupply) * 100).toFixed(2));
         totalRaised = Utils.roundWei(totalRaised);
         totalSupply = Utils.roundWei(totalSupply);
-        this.progressBar.attr('aria-valuenow', percentage).css('width', percentage + '%').css('color', percentage > 6 ? "white" : "black").html(totalRaised + ' of ' + totalSupply + ' SEEDs raised');
+        this.progressBar && this.progressBar.attr('aria-valuenow', percentage).css('width', percentage + '%').css('color', percentage > 6 ? "white" : "black").html(totalRaised + ' of ' + totalSupply + ' SEEDs raised');
     },
     componentDidMount() {
         this.updateGui();
@@ -98,9 +98,12 @@ var Detail = React.createClass({
     toggleFavorite(e) {
         e && e.preventDefault() && e.stopPropagation();
         var product = this.getProduct();
+        var save = function() {
+            client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.tradingNotifications, client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.tradingNotifications));
+        }
         try {
             if (product.investors[client.userManager.user.wallet.toLowerCase()] && product.investors[client.userManager.user.wallet.toLowerCase()] > 0) {
-                return;
+                return save();
             }
         } catch (e) {
         }
@@ -109,17 +112,43 @@ var Detail = React.createClass({
             client.userManager.user.list = Enumerable.From(client.userManager.user.list).Distinct().OrderBy(it => it).ToArray();
             if (add) {
                 client.userManager.user.list.push(product.position);
-                return;
+                return save();
             }
             for (var i in client.userManager.user.list) {
                 var position = client.userManager.user.list[i];
                 if (position === product.position) {
                     client.userManager.user.list.splice(i, 1);
-                    return;
+                    return save();
                 }
             }
         } catch (e) {
         }
+        return save();
+    },
+    toggleTradeNotifications(e) {
+        e && e.preventDefault() && e.stopPropagation();
+        var product = this.getProduct();
+        var add = $(e.target).toggleClass('favorite').hasClass('favorite');
+        !client.userManager.user.tradeNotifications && (client.userManager.user.tradeNotifications = []);
+        var save = function() {
+            client.persistenceManager.set(client.persistenceManager.PERSISTENCE_PROPERTIES.tradingNotifications, client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.tradingNotifications));
+        }
+        try {
+            client.userManager.user.tradeNotifications = Enumerable.From(client.userManager.user.tradeNotifications).Distinct().OrderBy(it => it).ToArray();
+            if (add) {
+                client.userManager.user.tradeNotifications.push(product.position);
+                return save();
+            }
+            for (var i in client.userManager.user.tradeNotifications) {
+                var position = client.userManager.user.tradeNotifications[i];
+                if (position === product.position) {
+                    client.userManager.user.tradeNotifications.splice(i, 1);
+                    return save();
+                }
+            }
+        } catch (e) {
+        }
+        return save();
     },
     renderPortfolioValue() {
         var product = this.getProduct();
@@ -138,6 +167,22 @@ var Detail = React.createClass({
     },
     render() {
         var product = this.getProduct();
+        var invisible = true;
+        try {
+            invisible = product.visibility == 2 || (product.visibility == 1 && !Enumerable.From(product.whiteList).Any(it => it.toLowerCase() === client.userManager.user.wallet.toLowerCase()));
+        } catch(e) {
+        }
+        if(invisible) {
+            return (
+                <div className="kt-content kt-grid__item kt-grid__item--fluid">
+                    <br/>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <h1>This Basket is not available right now, please contact incubator.</h1>
+                </div>
+            );
+        }
         var sticker = (this.props.parent || product).sticker;
         var favorite = false;
         try {
@@ -149,6 +194,11 @@ var Detail = React.createClass({
                 favorite = (product.investors[client.userManager.user.wallet.toLowerCase()] && product.investors[client.userManager.user.wallet.toLowerCase()] > 0);
             } catch (e) {
             }
+        }
+        var tradeNotifications = false;
+        try {
+            tradeNotifications = Enumerable.From(client.userManager.user.tradeNotifications).Any(it => product.position === it);
+        } catch (e) {
         }
         var description = '';
         try {
@@ -170,12 +220,10 @@ var Detail = React.createClass({
         return (
             <div className="kt-content kt-grid__item kt-grid__item--fluid">
                 {full === true && <h2>{"This " + (this.props.parent ? "Startup" : "Basket") + " has reached its goal!"}</h2>}
-                {(!this.props.parent || product.totalSupply) && [
-                    <div className="progress">
+                {(!this.props.parent || product.totalSupply) && <div className="progress">
                         <div className="progress-bar" role="progressbar" ref={ref => this.progressBar = $(ref)} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-                    </div>,
-                    <h3><strong>{Utils.roundWei(product.totalUnlocked)}</strong>{" SEED Tokens " + (this.props.parent ? "Raised by this Startup" : "Unlocked for its Startups")}</h3>
-                ]}
+                    </div>}
+                {!this.props.parent && <h3><strong>{Utils.roundWei(product.totalUnlocked)}</strong>{" SEED Tokens " + (this.props.parent ? "Raised by this Startup" : "Unlocked for its Startups")}</h3>}
                 {this.props.parent && product.productPosition !== undefined && <h3>This Startup raised <strong>{Utils.roundWei(product.totalRaised)}</strong> SEED Tokens Unlocked from this Basket</h3>}
                 {full !== true && !client.configurationManager.hasUnlockedUser() && <div className="investments">
                     <h3>To invest in this Basket you need to <a href="#" onClick={() => this.emit('page/change', CreateConfiguration)}>create a new wallet</a> or <a href="#" onClick={() => this.emit('page/change', ImportConfiguration)}>import an existing one</a></h3>
@@ -214,11 +262,16 @@ var Detail = React.createClass({
                 </form>}
                 {!this.props.parent &&
                     <div className="row">
-                        <div className="col-md-10 mt-5">
+                        <div className="col-md-8 mt-5">
                             <h3><a href="javascript:;" onClick={this.trade}>Trade</a></h3>
                         </div>
                         <div className="col-md-2 mt-5">
                             {client.configurationManager.hasUnlockedUser() && <h2><a href="javascript:;" onClick={this.toggleFavorite} ><i className={"fa fa-star" + (favorite ? " favorite" : "")} aria-hidden="true"></i></a></h2>}
+                            <h4>Favorite</h4>
+                        </div>
+                        <div className="col-md-2 mt-5">
+                            {client.configurationManager.hasUnlockedUser() && <h2><a href="javascript:;" onClick={this.toggleTradeNotifications} ><i className={"fa fa-money" + (tradeNotifications ? " favorite" : "")} aria-hidden="true"></i></a></h2>}
+                            <h4>Receive Trading notifications</h4>
                         </div>
                     </div>}
                 <br />

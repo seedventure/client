@@ -131,7 +131,7 @@ var ScriptLoader = function() {
                 var newScript = document.createElement('script')
                 newScript.type = 'text/javascript'
                 var evaluation = Babel.transform(code, {
-                    presets: ['es2015', 'es2015-loose', 'react', 'stage-2'],
+                    presets: ['es2015', 'es2015-loose', 'react'],
                     sourceMaps: true
                 }).code + '\n//# sourceURL='
                 if (src !== undefined && src !== null && src !== '') {

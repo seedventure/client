@@ -155,7 +155,7 @@ var start = async function () {
     await deleteFolderRecursive(distFolder + '/' + _src, true);
     fs.copyFileSync(scriptMinSrc, scriptMinDst);
     fs.copyFileSync(styleMinSrc, styleMinDst);
-    await deleteFolderRecursive(distFolder);
+    //await deleteFolderRecursive(distFolder);
     console.log("Build End - Exit");
 };
 

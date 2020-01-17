@@ -4,8 +4,8 @@ function BlockchainProvider(url) {
     context.url = url;
 
     var input = context.url;
-    input && input.indexOf('ws') === 0 && (input = new Web3.providers.WebsocketProvider(input));
-    context.web3 = new Web3(input);
+    input && input.indexOf('ws') === 0 && (input = new Web3Browser.providers.WebsocketProvider(input));
+    context.web3 = new Web3Browser(input);
 
     context.fetchLastBlockNumber = async function fetchLastBlockNumber() {
         return await context.web3.eth.getBlockNumber();
@@ -53,5 +53,13 @@ function BlockchainProvider(url) {
 
     context.balanceOf = async function balanceOf(address) {
         return await context.web3.eth.getBalance(address);
+    }
+
+    context.getTransaction = async function getTransaction(transactionHash) {
+        return await context.web3.eth.getTransaction(transactionHash);
+    }
+
+    context.getTransactionReceipt = async function getTransactionReceipt(transactionHash) {
+        return await context.web3.eth.getTransactionReceipt(transactionHash);
     }
 };

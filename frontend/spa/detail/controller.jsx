@@ -82,7 +82,7 @@ var DetailController = function (view) {
 
         var second = false;
         if((second = investmentWei > allowance)) {
-            var toAllow = investmentWei - allowance;
+            var toAllow = investmentWeinp;
             try {
                 if(!await client.contractsManager.submit('Step 1 of 2 - Allow this Basket to spend ' + Utils.roundWei(toAllow) + ' SEEDs for you', contracts.ERC20Seed, client.contractsManager.SEEDTokenAddress, 'approve', basket.fundingPanelAddress, Utils.numberToString(toAllow))) {
                     return;

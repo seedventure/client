@@ -41,6 +41,19 @@
         }
     }
 
+    .fa-money {
+        color: darkgray;
+        &:hover {
+            color: lightblue;
+        }
+        &.favorite {
+            color: blue;
+            &:hover {
+                color: blueviolet;
+            }
+        }
+    }
+
     .relative {
         position: relative;
         .sticker {

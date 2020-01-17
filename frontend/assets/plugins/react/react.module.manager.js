@@ -46,14 +46,10 @@ var ReactModuleManager = function() {
                         try {
                             rendered = this.oldRender.apply(this);
                         } catch(e) {
-                            if(requireCalled === true) {
-                                console.error(e);
-                                return;
-                            }
                             loader = true;
                             requireCalled = false;
                         }
-                    }
+                    } 
                     if(requireCalled === false) {
                         if(this.getCustomLoader) {
                             rendered = this.getCustomLoader();
@@ -84,6 +80,7 @@ var ReactModuleManager = function() {
                         this.domRoot = $(ref);
                         ref && ref.domRoot && (this.domRoot = ref.domRoot);
                         this.domRoot && this.domRoot[0] && (this.domRoot[0].reactInstance = this);
+                        this.domRoot && this.domRoot[0] && this.parentClass && (this.domRoot.parent()[0].className = this.parentClass);
                         if (this.oldRef !== undefined && this.oldRef !== null) {
                             this.oldRef.apply(this, [ref]);
                         }
@@ -232,7 +229,8 @@ var ReactModuleManager = function() {
         } else if (window.loadedModules[viewName] !== undefined) {
             element = window.loadedModules[viewName]
         } else {
-            element = React.createElement2(window[viewName])
+            callerArguments[0] = window[viewName];
+            element = React.createElement2.apply(React, callerArguments)
         }
 
         if (involveLoadedModules === true && window.loadedModules[viewName] === undefined) {

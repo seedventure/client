@@ -25,7 +25,8 @@ var Index = React.createClass({
             'transaction/unlock': () => this.genericLoadingModal.hide(),
             'transaction/submitted': this.showTransactionModal,
             'investment/mine': this.renderOwnedToken,
-            'configuration/forgotten': this.refreshTokenList
+            'configuration/forgotten': this.refreshTokenList,
+            'network/switch': this.refreshTokenList
         };
     },
     showWalletModal() {
@@ -86,11 +87,11 @@ var Index = React.createClass({
         var body = '';
         if (error) {
             body += '<h3 class="error">Transaction error:</h3><br/><br/>';
-            body += '<p>' + error.message || error + '</p>';
+            body += '<p>' + (error.message || error) + '</p>';
         } else {
             body += '<h3 class="success">Transaction Correctly submitted</h3><br/><br/>';
-            body += '<h3><a target="_blank" href="' + (txHash ? client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL) + 'tx/' + txHash : '#') + '">View on Etherscan</a></h3>';
         }
+        body += '<h3><a target="_blank" href="' + (txHash ? client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL) + 'tx/' + txHash : '#') + '">View on Etherscan</a></h3>';
         this.transactionBody.html(body);
         this.transactionModal.isHidden() && this.transactionModal.show();
     },

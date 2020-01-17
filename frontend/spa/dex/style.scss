@@ -163,4 +163,15 @@
             max-height: 300px;
         }
     }
+    .ellipsis {
+        max-width: 155px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    .last-trades {
+        .ellipsis {
+            max-width: 80px;
+        }
+    }
 }

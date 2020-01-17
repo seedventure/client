@@ -43,23 +43,30 @@ function BlockchainManager() {
                     $.publish('transaction/lock', [title, txHash]);
                     var tx = undefined;
                     var error = undefined;
+                    var lastOperations = function(tx, error) {
+                        if(!lastOperations) {
+                            return;
+                        }
+                        lastOperations = undefined;
+                        $.publish('transaction/unlock');
+                        client.userManager.getBalances();
+                        var finalize = function() {
+                            $.unsubscribe('transaction/finalize', finalize);
+                            if (error) {
+                                return ko(error);
+                            }
+                            ok(tx);
+                        };
+                        $.subscribe('transaction/finalize', finalize);
+                        $.publish('transaction/submitted', [txHash, title, error, tx]);
+                    };
+                    context.waitForReceipt(txHash, lastOperations);
                     try {
                         tx = await context.provider.sendSignedTransaction(signedTransaction);
                     } catch (e) {
                         error = e;
                     }
-                    $.publish('transaction/unlock');
-                    client.userManager.getBalances();
-                    var finalize = function() {
-                        $.unsubscribe('transaction/finalize', finalize);
-                        if (error) {
-                            ko(error);
-                            return;
-                        }
-                        ok(tx);
-                    };
-                    $.subscribe('transaction/finalize', finalize);
-                    $.publish('transaction/submitted', [txHash, title, error, tx]);
+                    lastOperations(tx, error);
                 };
                 $.subscribe('transaction/submit', submit);
                 $.publish('transaction/ask', [txHash, title]);
@@ -72,6 +79,23 @@ function BlockchainManager() {
             throw error;
         }
         return result;
+    }
+
+    context.waitForReceipt = function waitForReceipt(txHash, lastOperations) {
+        var check = async function check() {
+            var tx;
+            var error;
+            try {
+                tx = await context.provider.getTransactionReceipt(txHash);
+            } catch(e) {
+                error = e;
+            }
+            if(tx || error) {
+                return lastOperations((tx && tx.status) || error ? tx : undefined, error || (tx && tx.status) ? undefined : 'Failed to submit transaction');
+            }
+            setTimeout(check, 7000);
+        }
+        setTimeout(check, 7000);
     }
 
     context.getChainId = async function getChainId() {
@@ -176,6 +200,10 @@ function BlockchainManager() {
 
     context.balanceOf = async function balanceOf(address) {
         return await context.provider.balanceOf(address);
+    }
+
+    context.getTransaction = async function getTransaction(transactionHash) {
+        return await context.provider.getTransaction(transactionHash);
     }
 
     context.newProvider = function newProvider(stop) {

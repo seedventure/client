@@ -20,8 +20,7 @@ function ContractsManager() {
         contracts[key].map(function(contractElement) {
             if (contractElement.type !== "function") {
                 return;
-            }
-            !context[key] && (context[key] = {});
+            }!context[key] && (context[key] = {});
             context[key][contractElement.name] = function() {
                 var address = arguments[0];
                 var argumentsLength = arguments.length - 1;
@@ -353,33 +352,29 @@ function ContractsManager() {
     context.getPortfolioValue = function getPortfolioValue(product) {
         var value = 0;
         try {
-            for(var i in product.members) {
+            for (var i in product.members) {
                 try {
                     var member = product.members[i];
                     member.portfolioValue && (value += member.portfolioValue);
-                } catch(e) {
-                }
+                } catch (e) {}
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         return !value || value <= 0 ? 'NONE' : Utils.normalizeBasketSuccessFee(value);
     }
 
     context.getPortfolioCurrency = function getPortfolioCurrency(product) {
         var currency = '';
         try {
-            for(var i in product.members) {
+            for (var i in product.members) {
                 try {
                     var member = product.members[i];
                     member.portfolioCurrency && (currency = member.portfolioCurrency);
-                    if(currency) {
+                    if (currency) {
                         break;
                     }
-                } catch(e) {
-                }
+                } catch (e) {}
             }
-        } catch(e) {
-        }
+        } catch (e) {}
         return context.getPortfolioValue(product) === 'NONE' ? '' : (currency || 'EUR');
     }
 
@@ -423,21 +418,19 @@ function ContractsManager() {
         var finalize = function finalize() {
             if (notification.texts.length === 0) {
                 return;
-            }
-            !product.notifications && (product.notifications = []);
+            }!product.notifications && (product.notifications = []);
             product.notifications.push(notification);
             $.publish('notifications/new');
         }
         try {
             if (old == product) {
-                for(var x = 0; x < 3; x++) {
+                for (var x = 0; x < 3; x++) {
                     try {
-                        if(product.name) {
+                        if (product.name) {
                             break;
                         }
                         product = await getFundingPanelData(product);
-                    } catch(e) {
-                    }
+                    } catch (e) {}
                 }
                 notification.forAll = true;
                 notification.texts.push('New Incubator: ' + (product.name ? (product.name + ' (' + product.symbol + ')') : product.symbol) + '.');
@@ -567,14 +560,13 @@ function ContractsManager() {
             var newMembers = product.members ? Object.keys(product.members) : [];
             if (oldMembers.length < newMembers.length) {
                 var member = product.members[Enumerable.From(newMembers).OrderByDescending(it => it).First()];
-                for(var x = 0; x < 3; x++) {
+                for (var x = 0; x < 3; x++) {
                     try {
-                        if(member.name) {
+                        if (member.name) {
                             break;
                         }
                         member = await getFundingPanelMemberData(member);
-                    } catch(e) {
-                    }
+                    } catch (e) {}
                 }
                 notification.forAll = true;
                 notification.texts.push('Incubator ' + name + ' (' + product.symbol + ') has a new Startup' + (!member.name ? '' : (' ' + member.name)) + '.');
@@ -650,6 +642,53 @@ function ContractsManager() {
 
     context[context.orderEvent] = function dexOrder(event) {
         $.publish('dex/order', event);
+        setTimeout(function() {
+            var first = '0x' + event.topics[1].toLowerCase().split(context.addressTopicPrefix)[1];
+            var second = '0x' + event.topics[2].toLowerCase().split(context.addressTopicPrefix)[1];
+            var sender = '0x' + event.topics[3].toLowerCase().split(context.addressTopicPrefix)[1];
+            try {
+                if(client.userManager.user.wallet.toLowerCase() === sender) {
+                    return;
+                }
+            } catch(e) {
+                return;
+            }
+            try {
+                if (first === context.ethAddress) {
+                    return;
+                }
+                if (second === context.ethAddress) {// && client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.tradingNotifications)) {
+                    return;
+                }
+                if (second === context.SEEDTokenAddress) {
+                    return;
+                }
+            } catch (e) {}
+            var data = web3.eth.abi.decodeParameters(context.orderEventData, event.data);
+            var amountGive = Utils.roundWei(parseInt(data[1]));
+            var product = Enumerable.From(context.getArray()).Where(it => it.tokenAddress.toLowerCase() === second).First();
+            try {
+                if(!Enumerable.From(client.userManager.user.tradeNotifications).Any(it => it === product.position)) {
+                    return;
+                }
+            } catch(e) {
+                return;
+            }
+            var notification = {
+                blockNumber: new Date().getTime(),
+                productPosition: product.position,
+                texts: []
+            }
+            var finalize = function finalize() {
+                if (notification.texts.length === 0) {
+                    return;
+                }!product.notifications && (product.notifications = []);
+                product.notifications.push(notification);
+                $.publish('notifications/new');
+            }
+            notification.texts.push('A new order of ' + amountGive + ' ' + product.symbol + ' tokens has been published for the incubator ' + product.name + '.');
+            return finalize();
+        });
     };
 
     context[context.cancelEvent] = function cancelOrder(event) {
@@ -692,6 +731,67 @@ function ContractsManager() {
                 }
             }
         } catch (e) {}
+    };
+
+    context['0x955b1f7b995d13427aea52a8a87fc6796aa2b0fb0032530c05368b036a2db2fa'] = async function whiteListAdd(event, element) {
+        var txn = await client.blockchainManager.getTransaction(event.transactionHash);
+        var input = '0x' + txn.input.substring(10);
+        var params = web3.eth.abi.decodeParameters(['address', 'uint256'], input);
+        var address = params[0].toLowerCase();
+        var value = parseInt(params[1]);
+        !element.whiteList && (element.whiteList = []);
+        if (value > 0) {
+            if (!Enumerable.From(element.whiteList).Any(it => it.toLowerCase() === address)) {
+                element.whiteList.push(address);
+            }
+        } else {
+            var index = Enumerable.From(element.whiteList).IndexOf(address);
+            if (index > -1) {
+                element.whiteList.splice(index, 1);
+            }
+        }
+        $.publish('list/updated');
+    };
+
+    context['0x0744328baa0d2ad3d5d5ad3e012a2fc5d6179b7603a6e847fc706c6cf2301244'] = context['0x955b1f7b995d13427aea52a8a87fc6796aa2b0fb0032530c05368b036a2db2fa'];
+
+    context['0x73450dd6bdb58661b481d055804764fc3347d1a96ea03a120cdc6817905b705b'] = async function whiteListMultiAdd(event, element) {
+        var txn = await client.blockchainManager.getTransaction(event.transactionHash);
+        var input = '0x' + txn.input.substring(10);
+        var params = web3.eth.abi.decodeParameters(['address[]', 'uint256[]'], input);
+        var addresses = params[0];
+        var values = params[1];
+        !element.whiteList && (element.whiteList = []);
+        for (var i in addresses) {
+            var address = addresses[i].toLowerCase();
+            var value = parseInt(values[i]);
+            if (value > 0) {
+                if (!Enumerable.From(element.whiteList).Any(it => it.toLowerCase() === address)) {
+                    element.whiteList.push(address);
+                }
+            } else {
+                var index = Enumerable.From(element.whiteList).IndexOf(address);
+                if (index > -1) {
+                    element.whiteList.splice(index, 1);
+                }
+            }
+        }
+        $.publish('list/updated');
+    };
+
+    context['0x807f3ee80f9bd8448e21901b9604409271edba18e5a084eb04185b81a2ed7a71'] = async function whiteListRemoved(event, element) {
+        if (!element.whiteList) {
+            return;
+        }
+        var txn = await client.blockchainManager.getTransaction(event.transactionHash);
+        var input = '0x' + txn.input.substring(10);
+        var params = web3.eth.abi.decodeParameters(['address', 'uint256'], input);
+        var address = params[0].toLowerCase();
+        var index = Enumerable.From(element.whiteList).IndexOf(address);
+        if (index > -1) {
+            element.whiteList.splice(index, 1);
+        }
+        $.publish('list/updated');
     };
 
     context.getOrders = async function getOrders(a, evts, event) {

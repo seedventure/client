@@ -30,7 +30,8 @@ var CreateFundingPoolController = function(view) {
             documents,
             tags: data.tags,
             sticker: data.sticker,
-            stickerUrl: data.stickerUrl
+            stickerUrl: data.stickerUrl,
+            visibilty: data.visibilty || 0
         };
         data.basketSuccessFee && (document.basketSuccessFee = data.basketSuccessFee);
         var link;

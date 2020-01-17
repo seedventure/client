@@ -50,9 +50,6 @@ var NotificationList = React.createClass({
         for (var i in products) {
             var product = products[i];
             try {
-                if (product.walletOnTop.toLowerCase() === userWallet) {
-                    continue;
-                }
                 var favorite = false;
                 try {
                     favorite = Enumerable.From(client.userManager.user.list).Any(it => product.position === it);
@@ -64,7 +61,14 @@ var NotificationList = React.createClass({
                     } catch (e) {
                     }
                 }
-                Enumerable.From(product.notifications).Where(it => (all && it.forAll) || favorite).ForEach(it => notifications.push(it));
+                Enumerable.From(product.notifications).Select(it => {
+                    if (product.walletOnTop.toLowerCase() === userWallet) {
+                        var texts = Enumerable.From(it.texts).Where(it => it.indexOf('A new order of ') === 0).ToArray();
+                        it.texts = texts;
+                        return texts.length === 0 ? undefined : it;
+                    }
+                    return it;
+                }).Where(it => it !== undefined).Where(it => (all && it.forAll) || favorite).ForEach(it => notifications.push(it));
             } catch (e) {
             }
         }

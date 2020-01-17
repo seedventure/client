@@ -15,7 +15,8 @@ function PersistenceManager() {
     'notifyAll',
     "zeroStartups",
     "zeroURL",
-    "zeroDocs"
+    "zeroDocs",
+    "tradingNotifications"
   ];
   Object.keys(ecosystemData).map(function(key) {
       context.PERSISTENCE_PROPERTIES.push(key);

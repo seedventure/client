@@ -28,6 +28,16 @@ var Dex = React.createClass({
             symbol: 'SEED',
             position: '-1'
         });
+        try {
+            products = Enumerable.From(products).Where(it => {
+                try {
+                    return it.visibility !== 2 && (it.visibility !== 1 || Enumerable.From(product.whiteList).Any(it => it.toLowerCase() === client.userManager.user.wallet.toLowerCase()));
+                } catch(e) {
+                    return false;
+                }
+            }).ToArray();
+        } catch(e) {
+        }
         var search = this.state && this.state.search;
         search && (search = search.toLowerCase()) && (products = Enumerable.From(products).Where(product => {
             if (product.fundingPanelAddress && product.fundingPanelAddress.toLowerCase().indexOf(search) !== -1) {
@@ -121,13 +131,13 @@ var Dex = React.createClass({
             }
             _this.controller.setBalances(result);
             var token = Utils.roundWei(address ? result.token : result.seed);
-            _this.domRoot.children().find('.amount-token').each((_pos, elem) => $(elem).html(token));
+            _this.domRoot.children().find('.amount-token').each((_pos, elem) => $(elem).addClass('ellipsis').attr('title', amount).html(token));
             var seed = Utils.roundWei(address ? result.seed : result.eth);
-            _this.domRoot.children().find('.amount-seed').each((_pos, elem) => $(elem).html(seed));
+            _this.domRoot.children().find('.amount-seed').each((_pos, elem) => $(elem).addClass('ellipsis').attr('title', seed).html(seed));
             var dexToken = Utils.roundWei(address ? result.dexToken : result.dexSEED);
-            _this.domRoot.children().find('.amount-token-dex').each((_pos, elem) => $(elem).html(dexToken));
+            _this.domRoot.children().find('.amount-token-dex').each((_pos, elem) => $(elem).addClass('ellipsis').attr('title', dexToken).html(dexToken));
             var dexSeed = Utils.roundWei(address ? result.dexSEED : result.dexEth);
-            _this.domRoot.children().find('.amount-seed-dex').each((_pos, elem) => $(elem).html(dexSeed));
+            _this.domRoot.children().find('.amount-seed-dex').each((_pos, elem) => $(elem).addClass('ellipsis').attr('title', dexSeed).html(dexSeed));
         });
     },
     updateNavLinks() {
@@ -525,13 +535,13 @@ var Dex = React.createClass({
                                                 {sellOrders.map(order =>
                                                     <div key={order.key} className="order row" onClick={e => _this.askTrade(e, order)}>
                                                         <div className="col-md-4 color-red">
-                                                            {order.amount}
+                                                            <div className="ellipsis" title={order.amount}>{order.amount}</div>
                                                         </div>
                                                         <div className="col-md-4">
-                                                            {Utils.roundWei(order.amountGiveSum)}
+                                                            <div className="ellipsis" title={Utils.roundWei(order.amountGiveSum)}>{Utils.roundWei(order.amountGiveSum)}</div>
                                                         </div>
                                                         <div className="col-md-4">
-                                                            {Utils.roundWei(order.amountGetSum)}
+                                                            <div className="ellipsis" title={Utils.roundWei(order.amountGetSum)}>{Utils.roundWei(order.amountGetSum)}</div>
                                                         </div>
                                                     </div>
                                                 )}
@@ -555,13 +565,13 @@ var Dex = React.createClass({
                                                 {buyOrders.map(order =>
                                                     <div key={order.key} className="order row" onClick={e => _this.askTrade(e, order)}>
                                                         <div className="col-md-4 color-green">
-                                                            {order.amount}
+                                                            <div className="ellipsis" title={order.amount}>{order.amount}</div>
                                                         </div>
                                                         <div className="col-md-4">
-                                                            {Utils.roundWei(order.amountGetSum)}
+                                                            <div className="ellipsis" title={Utils.roundWei(order.amountGetSum)}>{Utils.roundWei(order.amountGetSum)}</div>
                                                         </div>
                                                         <div className="col-md-4">
-                                                            {Utils.roundWei(order.amountGiveSum)}
+                                                            <div className="ellipsis" title={Utils.roundWei(order.amountGiveSum)}>{Utils.roundWei(order.amountGiveSum)}</div>
                                                         </div>
                                                     </div>
                                                 )}
@@ -591,13 +601,13 @@ var Dex = React.createClass({
                                         {trades.map(trade =>
                                             <div key={trade.transactionHash} className="trade row">
                                                 <div className={"col-md-3 color-" + (trade.buy ? 'green' : 'red')}>
-                                                    {trade.amount}
+                                                    <div className="ellipsis" title={trade.amount}>{trade.amount}</div>
                                                 </div>
                                                 <div className="col-md-3">
-                                                    {Utils.roundWei(trade.buy ? trade.amountGetDecursion : trade.amountGiveDecursion)}
+                                                    <div className="ellipsis" title={Utils.roundWei(trade.buy ? trade.amountGetDecursion : trade.amountGiveDecursion)}>{Utils.roundWei(trade.buy ? trade.amountGetDecursion : trade.amountGiveDecursion)}</div>
                                                 </div>
                                                 <div className="col-md-3">
-                                                    {Utils.roundWei(trade.buy ? trade.amountGiveDecursion : trade.amountGetDecursion)}
+                                                    <div className="ellipsis" title={Utils.roundWei(trade.buy ? trade.amountGiveDecursion : trade.amountGetDecursion)}>{Utils.roundWei(trade.buy ? trade.amountGiveDecursion : trade.amountGetDecursion)}</div>
                                                 </div>
                                                 <div className="col-md-3">
                                                     <a href={client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.etherscanURL) + "tx/" + trade.transactionHash}>Detail</a>
@@ -690,7 +700,7 @@ var Dex = React.createClass({
                                     {client.userManager.user && <ul>
                                         {myOrders.map(order =>
                                             <li key={order.key}>
-                                                <strong>{order.buy ? "BUY" : "SELL"}</strong> {Utils.roundWei(order.amountGet)} {Utils.cleanTokenSymbol(order.buy ? product.symbol : product.otherSymbol)} For {Utils.roundWei(order.amountGive)} {Utils.cleanTokenSymbol(order.buy ? product.otherSymbol : product.symbol)} ({order.amount} {Utils.cleanTokenSymbol(order.buy ? product.symbol : product.otherSymbol)} / {Utils.cleanTokenSymbol(order.buy ? product.otherSymbol : product.symbol)})
+                                                <strong>{order.buy ? "BUY" : "SELL"}</strong>{'\u00A0'}<div className="ellipsis" title={Utils.roundWei(order.amountGet)}>{Utils.roundWei(order.amountGet)}</div>{'\u00A0'}{Utils.cleanTokenSymbol(order.buy ? product.symbol : product.otherSymbol)}{'\u00A0'}For <div className="ellipsis" title={Utils.roundWei(order.amountGive)}>{Utils.roundWei(order.amountGive)}</div>{'\u00A0'}{Utils.cleanTokenSymbol(order.buy ? product.otherSymbol : product.symbol)}{'\u00A0'}(<div className="ellipsis" title={order.amount}>{order.amount}</div>{'\u00A0'}{Utils.cleanTokenSymbol(order.buy ? product.symbol : product.otherSymbol)} / {Utils.cleanTokenSymbol(order.buy ? product.otherSymbol : product.symbol)})
                                                 <a href="javascript:;" data-key={order.key} onClick={_this.cancelOrder}>Cancel</a>
                                             </li>
                                         )}
@@ -722,10 +732,10 @@ var Dex = React.createClass({
                                 <h4>{Utils.cleanTokenSymbol(product.symbol)}</h4>
                             </div>
                             <div className="col-md-6 form-group">
-                                <input className="form-control" type="text" ref={ref => (this.tradeModalAmount = ref) && (ref.value = Utils.roundWei())} onChange={this.onTradeChange} />
+                                <input className="form-control" type="text" ref={ref => (this.tradeModalAmount = ref) && (ref.value = Utils.roundWei())} onChange={this.onTradeChange} disabled/>
                             </div>
                             <div className="col-md-3 form-group">
-                                <h4 ref={ref => this.tradeModalAvailable = ref}>of {Utils.roundWei()}</h4>
+                                <h4 style={{"visibility": "hidden"}} ref={ref => this.tradeModalAvailable = ref}>of {Utils.roundWei()}</h4>
                             </div>
                         </div>
                         <div className="row">

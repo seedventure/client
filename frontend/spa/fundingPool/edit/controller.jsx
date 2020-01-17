@@ -46,6 +46,7 @@ var EditFundingPoolController = function (view) {
         isStartup && (document.portfolioCurrency = data.portfolioCurrency);
         !isStartup && (document.sticker = data.sticker);
         !isStartup && (document.stickerUrl = data.stickerUrl);
+        !isStartup && (document.visibility = data.visibility);
         var url;
         try {
             url = await client.documentsUploaderManager.uploadDocument(document);
