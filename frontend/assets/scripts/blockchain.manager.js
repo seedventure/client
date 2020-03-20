@@ -66,7 +66,7 @@ function BlockchainManager() {
                     } catch (e) {
                         error = e;
                     }
-                    lastOperations(tx, error);
+                    lastOperations && lastOperations(tx, error);
                 };
                 $.subscribe('transaction/submit', submit);
                 $.publish('transaction/ask', [txHash, title]);

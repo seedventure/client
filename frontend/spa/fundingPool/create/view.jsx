@@ -187,7 +187,7 @@ var CreateFundingPool = React.createClass({
             return;
         }
 
-        var visibility = parseInt(this.visibilitySelect.value);
+        var visibility = parseInt(this.visibilitySelect && this.visibilitySelect.value);
         isNaN(visibility) && (visibility = 0);
 
         var data = {
