@@ -65,7 +65,11 @@ var Detail = React.createClass({
     },
     componentDidMount() {
         this.updateGui();
-        this.setState({ documents: this.getProduct().documents }, this.controller.updateInvestments);
+        var product = this.getProduct();
+        var _this = this;
+        client.contractsManager.getFundingPanelData(product).then(function (p) {
+            return p && p.name && !p.unavailable && _this.setState({product: p, documents: _this.getProduct().documents}, _this.controller.updateInvestments);
+        });
     },
     onInvestChange(e) {
         Utils.parseNumber(e, this.investChanged);

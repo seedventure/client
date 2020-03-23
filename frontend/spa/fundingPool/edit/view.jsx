@@ -318,7 +318,9 @@ var EditFundingPool = React.createClass({
     },
     componentDidMount() {
         this.updateGui();
-        this.setState({ documents: this.copyDocuments(this.getProduct().documents) });
+        var product = this.getProduct();
+        var _this = this;
+        client.contractsManager.getFundingPanelData(product).then(p => p && p.name && !p.unavailable && _this.setState({product : p, documents: _this.copyDocuments(_this.getProduct().documents)}));
     },
     walletRef(ref) {
         (this.wallet = ref) && $(this.wallet).focus((e) => $(e.target).select());
