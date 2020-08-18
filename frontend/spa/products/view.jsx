@@ -15,7 +15,7 @@ var Products = React.createClass({
         var products = [];
         if (this.state && this.state.products) {
             var prods = this.state.products;
-            Object.keys(prods).map((key) => {
+            Object.keys(prods).filter(ind=> (ind <43 || ind >51)&&(ind<39||ind>40)&&(ind<34 || ind >34)).map((key) => { 
                 var prod = prods[key];
                 try {
                     if (this.props.view === 'mine' && prod.owner.toLowerCase() !== client.userManager.user.wallet.toLowerCase()) {
