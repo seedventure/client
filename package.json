@@ -14,7 +14,7 @@
     "dist": "node builder/dist.js",
     "build": "npm run dist && npm run minify && npm run zip && npm run pack"
   },
-  "repository": {
+  "repository": { 
     "type": "git",
     "url": "git+https://github.com/seedventure/client.git"
   },
