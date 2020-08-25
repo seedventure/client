@@ -26,5 +26,5 @@ function Boot(callback) {
 
 $(document).ready(function() {
     ReactDOM.render(React.createElement(Loader, {size : 'x2'}), document.body);
-    (window.client = new Client()).init(/*window.lazyLoad ||*/ Boot);
+    (window.client = new Client()).init(window.lazyLoad || Boot);
 });
