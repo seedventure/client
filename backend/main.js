@@ -99,6 +99,7 @@ app.on('ready', async function () {
     electronWindow.maximize();
     globalShortcut.register('f5', loadData);
     globalShortcut.register('CommandOrControl+R', loadData);
+    globalShortcut.register('Ctrl+I', ()=> electronWindow.webContents.openDevTools())
     loadData();
     (debug || test || dist) && electronWindow.webContents.openDevTools();
 });

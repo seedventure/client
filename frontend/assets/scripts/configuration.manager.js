@@ -1,5 +1,5 @@
 function ConfigurationManager() {
-
+  
   var context = this;
 
   var electron = window.require('electron').remote;
@@ -11,7 +11,6 @@ function ConfigurationManager() {
     CryptoJS: electron.require('crypto-js'),
     configuration: window.userDataPath + 'config.json'
   };
-
   $(document).on('click', 'a[href^="http"]', function(event) {
     event && event.preventDefault();
     try {
@@ -19,7 +18,7 @@ function ConfigurationManager() {
     } catch(e) {
     }
   });
-
+  
   context.dump = function dump(password) {
     if (password === undefined || password === null || password.split(' ').join('') === '' || privateContext.password !== md5(password).toUpperCase()) {
       throw 'password';
@@ -41,7 +40,7 @@ function ConfigurationManager() {
     }
     return userChosenPath;
   };
-
+  
   context.import = function (userChosenPath) {
     typeof userChosenPath !== 'string' && (userChosenPath = privateContext.electron.dialog.showOpenDialog({
       defaultPath: undefined,
@@ -70,7 +69,7 @@ function ConfigurationManager() {
     context.load();
     return userChosenPath;
   };
-
+  
   context.move = function move(password) {
     var path = context.dump(password);
     path && context.import(path);
@@ -109,8 +108,9 @@ function ConfigurationManager() {
     user && (context.content.user = user);
     lang && (context.content.lang = lang);
   };
-
+  
   context.unlockUser = function unlockUser(password) {
+    
     if (password === undefined || password === null || password.split(' ').join('') === '') {
       return false;
     }
@@ -202,4 +202,5 @@ function ConfigurationManager() {
       }
     }
   })();
+  
 };

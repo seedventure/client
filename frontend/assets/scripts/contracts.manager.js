@@ -106,8 +106,9 @@ function ContractsManager() {
         return await client.blockchainManager.sendSignedTransaction(signedTransaction, title);
     };
 
-    context.getList = function getList() {
+    context.getList = function getList(variabile) {
         var list = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.list);
+        console.log("vediamo la variabile ",variabile)
         if (list === undefined || list === null) {
             list = {};
         }
@@ -116,7 +117,7 @@ function ContractsManager() {
 
     context.getArray = function getArray() {
         var array = [];
-        var list = context.getList();
+        var list = context.getList("getArray");
         Object.keys(list).map(function(key) {
             array.push(list[key]);
         });
@@ -124,6 +125,7 @@ function ContractsManager() {
     };
 
     context.getDictionary = function getDictionary() {
+        
         context.dictionary = [];
         context.dictionary.push({
             address: context.factoryAddress.toLowerCase(),
@@ -137,7 +139,7 @@ function ContractsManager() {
             address: context.SEEDTokenAddress.toLowerCase(),
             type: 'SEEDToken'
         });
-        var list = context.getList();
+        var list = context.getList("getDict");
         var keys = Object.keys(list);
         for (var i in keys) {
             var element = list[keys[i]];
@@ -160,6 +162,7 @@ function ContractsManager() {
                 position: keys[i]
             });
         }
+        console.log("arriva fin qui?")
         return (context.dictionary = Enumerable.From(context.dictionary));
     };
 
@@ -395,6 +398,7 @@ function ContractsManager() {
                 product.members[i].unavailable = true;
             }
         } catch (e) {}
+        console.log($.publish('fundingPanel/' + product.position + '/updated', product))
         $.publish('fundingPanel/' + product.position + '/updated', product);
         var subscripted = async function(event, product) {
             $.unsubscribe('fundingPanel/' + product.position + '/updated', subscripted);
@@ -946,7 +950,7 @@ function ContractsManager() {
         var data = web3.eth.abi.decodeParameters(['address', 'address', 'address', 'address', 'uint'], event.data);
 
         var position = (parseInt(data['4']) - 1).toString();
-        var list = context.getList();
+        var list = context.getList("newFundingPanel");
         if (list[position] !== undefined && list[position] !== null) {
             return;
         }
@@ -982,6 +986,7 @@ function ContractsManager() {
     };
 
     context.refreshContext = async function refreshContext(cleanBlockNumber) {
+       
         var factoryAddress = client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress);
         var data = undefined;
         try {
@@ -1004,6 +1009,7 @@ function ContractsManager() {
     };
 
     context.checkBaskets = async function checkBaskets() {
+       
         if (!client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.seedTokenAddress)) {
             await context.changeFactoryAddress(client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.factoryAddress));
             return;
@@ -1013,7 +1019,7 @@ function ContractsManager() {
         if (result === 0) {
             return;
         }
-        var list = context.getList();
+        var list = context.getList("checkBasket");
         var indexes = Enumerable.From(Object.keys(list)).Select(it => parseInt(it));
         var missing = Enumerable.Range(0, result).Where(it => !indexes.Contains(it)).ToArray();
         if (missing.length === 0) {
