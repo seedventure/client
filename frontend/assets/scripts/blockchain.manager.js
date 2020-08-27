@@ -2,7 +2,7 @@ function BlockchainManager() {
     var context = this;
 
     context.defaultLastCheckedBlockNumber = -1
-    context.defaultTimeToNextEventsCheck = 9000;
+    context.defaultTimeToNextEventsCheck = 40000;
     context.blockSequenceToCheck = 45000;
     context.addressesSplit = 500;
 
@@ -171,19 +171,13 @@ function BlockchainManager() {
         !context.addressesToCheck && (context.addressesToCheck = []);
         !context.topicsToCheck && (context.topicsToCheck = []);
 
-        if (context.addressesToCheck.length === 0) {
-            var addressesToCheck = client.contractsManager.getDictionary().Select(it => it.address).ToArray();
-            while (addressesToCheck.length) {
-                context.addressesToCheck.push(addressesToCheck.splice(0, addressesToCheck.length > context.addressesSplit ? context.addressesSplit : addressesToCheck.length));
-            }
-        }
-        var address = context.addressesToCheck.shift();
+        var address = context.addressesToCheck.length >= 0 ?context.addressesToCheck.shift(): [];
         var fromBlock = lastCheckedBlockNumber + 1;
         var toBlock = fromBlock + context.blockSequenceToCheck;
         if (toBlock > context.lastFetchedBlockNumber) {
             toBlock = context.lastFetchedBlockNumber;
         }
-        setTimeout(function() { context.provider.retrieveEvents(fromBlock, toBlock, address, context.getTopics()).then(context.onEvents) });
+        //setTimeout(function() { context.provider.retrieveEvents(fromBlock, toBlock, address, context.getTopics()).then(context.onEvents) });
     };
 
     context.fetchLastBlockNumber = function fetchLastBlockNumber() {
