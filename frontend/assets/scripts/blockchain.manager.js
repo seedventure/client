@@ -139,7 +139,7 @@ function BlockchainManager() {
 
     context.scheduleCallFunc = function scheduleCallFunc(func, event) {
         setTimeout(function() {
-            var element = client.contractsManager.getDictionary().Where(it => it.address.toLowerCase() === event.address.toLowerCase()).First();
+            var element = client.contractsManager.getDictionary().Where(it => it.address.toLowerCase() === event.address.toLowerCase());
             func(event, element.element ? element.element : element);
         });
     };
@@ -177,7 +177,7 @@ function BlockchainManager() {
         if (toBlock > context.lastFetchedBlockNumber) {
             toBlock = context.lastFetchedBlockNumber;
         }
-        //setTimeout(function() { context.provider.retrieveEvents(fromBlock, toBlock, address, context.getTopics()).then(context.onEvents) });
+        setTimeout(function() { context.provider.retrieveEvents(fromBlock, toBlock, address, context.getTopics()).then(context.onEvents) });
     };
 
     context.fetchLastBlockNumber = function fetchLastBlockNumber() {
