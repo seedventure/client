@@ -125,7 +125,7 @@ function ContractsManager() {
     };
 
     context.getDictionary = function getDictionary() {
-        
+   
         context.dictionary = [];
         context.dictionary.push({
             address: context.factoryAddress.toLowerCase(),
@@ -139,7 +139,7 @@ function ContractsManager() {
             address: context.SEEDTokenAddress.toLowerCase(),
             type: 'SEEDToken'
         });
-        var list = context.getList("getDict");
+        var list = context.getList();
         var keys = Object.keys(list);
         for (var i in keys) {
             var element = list[keys[i]];
