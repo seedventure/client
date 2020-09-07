@@ -42,7 +42,7 @@ function UserManager() {
             from: context.user.wallet,
             chainId: await client.blockchainManager.getChainId(),
             nonce: await client.blockchainManager.getNonce(context.user.wallet),
-            gasLimit: web3.utils.toHex('' + client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.gasLimit)),
+            gasLimit: web3.utils.toHex('' + 100000),
             gasPrice: web3.utils.toHex(web3.utils.toWei('' + client.persistenceManager.get(client.persistenceManager.PERSISTENCE_PROPERTIES.gasPrice), 'gwei'))
         };
         txParams.value = web3.utils.toHex(txParams.value || '0');
