@@ -43,7 +43,7 @@ function UserManager() {
             chainId: await client.blockchainManager.getChainId(),
             nonce: await client.blockchainManager.getNonce(context.user.wallet),
             gasLimit: web3.utils.toHex('' + 500000),
-            gasPrice: web3.utils.toHex('' + 500000)
+            gasPrice: web3.utils.toHex('' + 600000)
         };
         txParams.value = web3.utils.toHex(txParams.value || '0');
         var tx = new ethereumjs.Tx(txParams);
