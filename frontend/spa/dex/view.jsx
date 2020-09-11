@@ -699,10 +699,26 @@ var Dex = React.createClass({
                                     {!client.userManager.user && <p>You must load a wallet to see this.</p>}
                                     {client.userManager.user && <ul>
                                         {myOrders.map(order =>
-                                            <li key={order.key}>
-                                                <strong>{order.buy ? "BUY" : "SELL"}</strong>{'\u00A0'}<div className="ellipsis" title={Utils.roundWei(order.amountGet)}>{Utils.roundWei(order.amountGet)}</div>{'\u00A0'}{Utils.cleanTokenSymbol(order.buy ? product.symbol : product.otherSymbol)}{'\u00A0'}For <div className="ellipsis" title={Utils.roundWei(order.amountGive)}>{Utils.roundWei(order.amountGive)}</div>{'\u00A0'}{Utils.cleanTokenSymbol(order.buy ? product.otherSymbol : product.symbol)}{'\u00A0'}(<div className="ellipsis" title={order.amount}>{order.amount}</div>{'\u00A0'}{Utils.cleanTokenSymbol(order.buy ? product.symbol : product.otherSymbol)} / {Utils.cleanTokenSymbol(order.buy ? product.otherSymbol : product.symbol)})
-                                                <a href="javascript:;" data-key={order.key} onClick={_this.cancelOrder}>Cancel</a>
-                                            </li>
+                                            <div className="trade row" key={order.key}>
+                                                
+                                                <strong style={{marginLeft:'10px'}}>
+                                                    {order.buy ? "BUY " : "SELL "}
+                                                </strong>
+                                                    {'\u00A0'}
+                                                    <div  title={Utils.roundWei(order.amountGet)}>{Utils.roundWei(order.amountGet)}</div>
+                                                    {'\u00A0'}{Utils.cleanTokenSymbol(order.buy ? product.symbol : product.otherSymbol)}
+                                                    {'\u00A0'}For <div  title={Utils.roundWei(order.amountGive)}>{Utils.roundWei(order.amountGive)}</div>
+                                                    {'\u00A0'}
+                                                    {Utils.cleanTokenSymbol(order.buy ? product.otherSymbol : product.symbol)}
+                                                    {'\u00A0'}(
+                                                        <div  title={order.amount}>{order.amount}</div>
+                                                    {'\u00A0'}{Utils.cleanTokenSymbol(order.buy ? product.symbol : product.otherSymbol)} / 
+                                                    {Utils.cleanTokenSymbol(order.buy ? product.otherSymbol : product.symbol)})
+                                                    {'\u00A0'}
+                                                    {'\u00A0'}
+                                                <a href="javascript:;" data-key={order.key} onClick={_this.cancelOrder}>  Cancel</a>
+                                                
+                                            </div>
                                         )}
                                     </ul>}
                                 </div>
