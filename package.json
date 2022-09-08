@@ -30,7 +30,7 @@
   "homepage": "https://github.com/seedventure/client#readme",
   "dependencies": {
     "crypto-js": "^3.1.9-1",
-    "jszip": "^3.2.2",
+    "jszip": "^3.7.0",
     "electron": "^4.1.4",
     "electron-packager": "^13.1.1",
     "electron-zip-packager": "^4.0.2"
